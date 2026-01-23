@@ -41,6 +41,7 @@
 #define IDD_CONFIG                      110
 #define IDD_ADDDOCTYPE                  111
 #define IDD_ABOUTDLG                    112
+#define IDD_EDITLAYOUT                  113
 
 #define IDC_ABOUTSTR                    1000
 #define IDC_ABOUTURL                    1001
@@ -83,6 +84,20 @@
 #define IDC_NEWLB2                      1033
 #define IDC_NEWDT                       1033
 #define IDC_CRLFLBL                     1050
+
+#define IDC_LAY_FONTNAME                1051
+#define IDC_LAY_FONTSZ                  1052
+#define IDC_LAY_FONWEIGHT               1053
+#define IDC_CHOOSEFONT                  1054
+#define IDC_LAY_TABSZ                   1055
+#define IDC_LAY_SHOWEOF                 1056
+#define IDC_LAY_SHOWNL                  1057
+#define IDC_LAY_SHOWTAB                 1058
+#define IDC_LAY_SHOWSPACE               1059
+#define IDC_LAY_SHOWCTRLC               1060
+#define IDC_LAY_SHOWLN                  1061
+#define IDC_LAY_SMARTWRAP               1062
+#define IDC_LAY_FONFLAGS                1063
 
 #define ID_CMD_OPENELEVATED             40001
 #define ID_CMD_REOPENFILE               40002

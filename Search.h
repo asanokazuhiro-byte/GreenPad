@@ -110,6 +110,64 @@ private:
 	bool FindNextFromImpl( DPos s, DPos* beg, DPos* end );
 	bool FindPrevFromImpl( DPos s, DPos* beg, DPos* end );
 
+	void AddToComboBoxHistoric(UINT idc_cbb, const TCHAR *str)
+	{
+		if( !str || !*str )
+			return;
+		
+		// Save edit selection state:
+		HRESULT oldsel = SendMsgToItem( idc_cbb, CB_GETEDITSEL, 0, 0 );
+		
+		int found_index = SendMsgToItem( idc_cbb, CB_FINDSTRINGEXACT, 0, (LPARAM)str );
+		if( found_index == CB_ERR )
+		{
+			// Item was not found in historic.
+			int item_count = SendMsgToItem( idc_cbb, CB_GETCOUNT, 0, 0);
+			if( item_count > 15 )
+				SendMsgToItem( idc_cbb, CB_DELETESTRING, item_count-1, 0);
+		}
+		else
+		{
+			// Item was found in historic.
+			// Remove old entry
+			SendMsgToItem( idc_cbb, CB_DELETESTRING, found_index, 0);
+		}
+		// Alway Insert last searched string at the begining of the list
+		SendMsgToItem( idc_cbb, CB_INSERTSTRING, /*index*/0, (LPARAM)str );
+
+		// Restore combobox edit state
+		SendMsgToItem( idc_cbb, CB_SETCURSEL, 0, 0 );
+		SendMsgToItem( idc_cbb, CB_SETEDITSEL, 0, (LPARAM)oldsel );
+	}
+
+	void fillFromHistoric( UINT idc_cbb, ki::String *hist, size_t hist_len )
+	{
+		for( size_t i=0; i < hist_len; i++ )
+		{
+			if( hist[i].len() > 0 )
+				SendMsgToItem( idc_cbb, CB_ADDSTRING, 0, (LPARAM)hist[i].c_str() );
+		}
+	}
+
+	void saveToHistoric( UINT idc_cbb, ki::String *hist, size_t hist_len )
+	{
+		int item_count = SendMsgToItem( idc_cbb, CB_GETCOUNT, 0, 0);
+		if(item_count <= 0)
+			return;
+
+		for( size_t i=0; i < Min((size_t)item_count, hist_len) ; i++ )
+		{
+			LPARAM txtlen = SendMsgToItem(idc_cbb, CB_GETLBTEXTLEN, i, 0);
+			TCHAR *txt = (TCHAR *)ki::TS.alloc( txtlen+1 );
+			if( txt )
+			{
+				SendMsgToItem(idc_cbb, CB_GETLBTEXT, i, (LPARAM)txt);
+				hist[i] = txt; // save
+				ki::TS.freelast( txt, txtlen+1 );
+			}
+		}
+	}
+
 private:
 	editwing::EwEdit& edit_;
 	Searchable *searcher_;
@@ -123,6 +181,9 @@ private:
 
 	ki::String findStr_;
 	ki::String replStr_;
+
+	ki::String findHistoric_[16];
+	ki::String replHistoric_[16];
 
 private:
 	NOCOPY(SearchManager);

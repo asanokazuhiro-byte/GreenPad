@@ -124,9 +124,13 @@ void SearchManager::on_init()
 
 	SetItemText( IDC_REPLACEBOX, replStr_.c_str() );
 
+	fillFromHistoric(IDC_FINDBOX,    findHistoric_, countof(findHistoric_) );
+	fillFromHistoric(IDC_REPLACEBOX, replHistoric_, countof(replHistoric_) );
+
 	::SetFocus( item(IDC_FINDBOX) );
-	SendMsgToItem( IDC_FINDBOX, EM_SETSEL, 0,
-		::GetWindowTextLength(item(IDC_FINDBOX)) );
+	SendMsgToItem( IDC_FINDBOX, EM_SETSEL, 0, ::GetWindowTextLength(item(IDC_FINDBOX)) );
+	
+	bChanged_ = true;
 }
 
 void SearchManager::on_destroy()
@@ -136,7 +140,7 @@ void SearchManager::on_destroy()
 
 bool SearchManager::on_command( UINT cmd, UINT id, HWND ctrl )
 {
-	if( cmd==EN_CHANGE )
+	if( cmd==CBN_SELCHANGE || cmd == CBN_EDITCHANGE )
 	{
 		// ï∂éöóÒïœçXÇ™Ç†Ç¡ÇΩÇ±Ç∆ÇãLâØ
 		bChanged_ = true;
@@ -175,6 +179,10 @@ bool SearchManager::on_command( UINT cmd, UINT id, HWND ctrl )
 bool SearchManager::on_cancel()
 {
 	UpdateData();
+
+	saveToHistoric(IDC_FINDBOX,    findHistoric_, countof(findHistoric_) );
+	saveToHistoric(IDC_REPLACEBOX, replHistoric_, countof(replHistoric_) );
+
 	return true;
 }
 
@@ -223,6 +231,7 @@ void SearchManager::UpdateData()
 	inichanged_ = bIgnoreCase_ != IgnoreCase || RegExp != bRegExp_;
 	bIgnoreCase_ = IgnoreCase;
 	bRegExp_ = RegExp;
+
 	SaveToINI();
 
 	TCHAR* str;
@@ -232,6 +241,7 @@ void SearchManager::UpdateData()
 	{
 		GetItemText( IDC_FINDBOX, n+1, str );
 		findStr_ = str;
+		AddToComboBoxHistoric(IDC_FINDBOX, str);
 		TS.freelast( str, sizeof(TCHAR) * (n+1) );
 	}
 
@@ -241,6 +251,7 @@ void SearchManager::UpdateData()
 	{
 		GetItemText( IDC_REPLACEBOX, n+1, str );
 		replStr_ = str;
+		AddToComboBoxHistoric(IDC_REPLACEBOX, str);
 		TS.freelast( str, sizeof(TCHAR) * (n+1) );
 	}
 }
