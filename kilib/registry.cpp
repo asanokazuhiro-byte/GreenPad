@@ -29,11 +29,8 @@ DWORD IniFile::GetIniPath(TCHAR *ini)
 
 void IniFile::SetSectionAsUserName()
 {
-	TCHAR usr[256+1];
-	DWORD siz = countof(usr);
-	if( ::GetUserName( usr, &siz ) )
-		SetSection( usr );
-	else
+	DWORD siz = countof(section_);
+	if( !::GetUserName( section_, &siz ) )
 		SetSection( TEXT("Default") );
 }
 

@@ -258,6 +258,7 @@ private:
 			if( i->name == cfg_.newfileDoctype_ )
 				nfd_idx = nfd_cnt;
 		}
+		SendMsgToItem( IDC_DOCTYPELIST, LB_SETCURSEL, 0, 0 ); // Select 1st in list
 		SendMsgToItem( IDC_NEWDT, CB_SETCURSEL, nfd_idx );
 
 		FindFile f;
@@ -528,11 +529,13 @@ void ConfigManager::LoadLayout( ConfigManager::DocType* dt )
 		for( ptr=buf; ptr<buf+len; ptr=nptr ) // !EOF
 		{
 			// Get to next line
-			while( *nptr != L'\0' &&  *nptr != L'\r' && *nptr != L'\n' && *nptr != L'|' )
+			while( *nptr != L'\0' && *nptr != L'\r' && *nptr != L'\n' && *nptr != L'|' )
 				nptr++;
-			*nptr++ = L'\0'; // zero out endline.
-			nptr += *(nptr) == L'\n'; // Skip eventual \n
-
+			if( nptr < buf+len )
+			{
+				*nptr++ = L'\0'; // zero out endline.
+				nptr += *(nptr) == L'\n'; // Skip eventual \n
+			}
 			if( nptr-ptr < 3 || ptr[0] == L';' || ptr[2] != L'=' )
 				continue;
 

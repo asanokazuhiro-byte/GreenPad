@@ -45,8 +45,15 @@ class OleDnDTarget A_FINAL: public IDropTarget
 
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
 
-	ULONG STDMETHODCALLTYPE AddRef()  override { return ::InterlockedIncrement(&refcnt); }
-	ULONG STDMETHODCALLTYPE Release() override { return ::InterlockedDecrement(&refcnt); }
+	ULONG STDMETHODCALLTYPE AddRef()  override { LOGGER("OleDnDTarget::AddRef()"); return ::InterlockedIncrement(&refcnt); }
+	ULONG STDMETHODCALLTYPE Release() override
+	{
+		LOGGER("OleDnDTarget::Release()");
+		ULONG ret = ::InterlockedDecrement(&refcnt);
+//		if( ret == 0 )
+//			delete this;
+		return ret;
+	}
 
 	HRESULT STDMETHODCALLTYPE DragEnter(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override
 	{

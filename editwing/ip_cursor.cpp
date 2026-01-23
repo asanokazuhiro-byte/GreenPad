@@ -767,7 +767,7 @@ void Cursor::Copy()
 		// NT系ならそのままダイレクトに, Direct copy
 		// Also on Win9x we can use CF_UNICODETEXT with UNICOWS
 		// In MBCS build we still copy in CF_UNICODETEXT if running on NT
-		h = ::GlobalAlloc( GMEM_MOVEABLE, (len+1)*2 );
+		h = ::GlobalAlloc( GMEM_MOVEABLE|GMEM_DDESHARE, (len+1)*2 );
 		if (!h) {
 			MessageBox(NULL, TEXT("Selection is too large to hold into memory!")
 				, NULL, MB_OK|MB_TASKMODAL|MB_TOPMOST) ;
@@ -792,7 +792,7 @@ void Cursor::Copy()
 		// So that other programs can access the clipboard.
 		// Same for pure ansi mode.
 		// 9x系なら変換が必要, convert to ANSI before.
-		h = ::GlobalAlloc( GMEM_MOVEABLE, (len+1)*3 );
+		h = ::GlobalAlloc( GMEM_MOVEABLE|GMEM_DDESHARE, (len+1)*3 );
 		if (!h) {
 			MessageBox(NULL, TEXT("Selection is too large to hold into memory!")
 				, NULL, MB_OK|MB_TASKMODAL|MB_TOPMOST) ;
@@ -937,6 +937,32 @@ unicode* WINAPI Cursor::ASCIIOnlyW(unicode *str, size_t *lenp, LPARAM param)
 	}
 	return cnt? str: NULL;
 }
+
+//unicode *WINAPI Cursor::MapStringW(unicode *str, size_t *lenp, LPARAM param)
+//{
+//	//#define FLAGS MAP_FOLDCZONE|MAP_FOLDDIGITS|MAP_PRECOMPOSED
+//
+//	//int olen = FoldString(FLAGS, str, *lenp, NULL, 0);
+//	int olen = LCMapString( LOCALE_USER_DEFAULT, param, str, *lenp, NULL, 0 );
+//	if( olen > 0 )
+//	{
+//		unicode *obuf = (unicode *)malloc( olen * sizeof(unicode) );
+//		if( obuf )
+//		{
+//			//int ret = FoldString(FLAGS, str, *lenp, obuf, olen);
+//			int ret = LCMapString( LOCALE_USER_DEFAULT, param, str, *lenp, obuf, olen );
+//			if( ret < 0 )
+//			{
+//				free( obuf );
+//				return NULL;
+//			}
+//			*lenp = ret; // OK!
+//		}
+//		return obuf;
+//	}
+//	return NULL;
+//}
+
 
 // Since Windows XP/2003 we got the NORMALIZ.DLL
 unicode *WINAPI Cursor::UnicodeNormalizeW( unicode *str, size_t *lenp, LPARAM normalizeMode )
@@ -1459,11 +1485,11 @@ OleDnDTarget::OleDnDTarget( HWND hwnd, ViewImpl& vw )
 }
 OleDnDTarget::~OleDnDTarget(  )
 {
-	if( app().hOle32() && hwnd_ && ::IsWindow( hwnd_ ) )
+	if( ki::app().hOle32() && hwnd_ && ::IsWindow( hwnd_ ) )
 	{
 		HRESULT (WINAPI *dyn_RevokeDragDrop)(HWND hwnd) =
 			( HRESULT (WINAPI *)(HWND hwnd) )
-			GetProcAddress( app().hOle32(), "RevokeDragDrop" );
+			GetProcAddress( ki::app().hOle32(), "RevokeDragDrop" );
 
 		if( dyn_RevokeDragDrop )
 		{
@@ -1545,6 +1571,7 @@ HRESULT STDMETHODCALLTYPE OleDnDTarget::QueryInterface(REFIID riid, void **ppvOb
 	// Define locally IID_IDropTarget GUID,
 	// gcc bloats the exe with a bunch of useless GUIDS otherwise.
 	static const IID myIID_IDropTarget = { 0x00000122, 0x0000, 0x0000, {0xc0,0x00,0x00,0x00,0x00,0x00,0x00,0x46} };
+	if( !ppvObject ) return E_POINTER;
 	if( memEQ(&riid, &myIID_IUnknown, sizeof(riid))
 	||  memEQ(&riid, &myIID_IDropTarget, sizeof(riid)) )
 	{

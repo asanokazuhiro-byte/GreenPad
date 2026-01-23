@@ -3,9 +3,13 @@
 #include "types.h"
 #include "thread.h"
 #ifndef __ccdoc__
+
+inline void* operator new(size_t, void *p) { return p; }
+inline void* operator new[](size_t, void *p) { return p; }
+/*inline void operator delete(void*, void*) { }
+inline void operator delete[](void*, void*) { } */
 namespace ki {
 #endif
-
 
 // W版ではHeapAllocを直接呼び出すバージョンを使う
 //#if !defined(_UNICODE) && defined(SUPERTINY)

@@ -442,6 +442,7 @@ private:
 
 	enum { MAX_EVHAN = 4 };
 	ki::uptr<Parser>             parser_; // 文字列解析役
+
 	unicode               CommentStr_[8];
 	ki::gapbufobjnoref<Line>       text_;   // テキストデータ
 	size_t                     evHanNum_;

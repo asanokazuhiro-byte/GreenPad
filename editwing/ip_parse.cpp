@@ -794,11 +794,21 @@ void Document::SetKeyword( const unicode* defbuf, size_t siz )
 
 
 	// パーサー作成
-	Parser *prs = new Parser(
-		tags[0], taglen[0], tags[1], taglen[1], tags[2], taglen[2],
-		flags[1], flags[2], flags[3], flags[0] );
-	if( prs )
-		parser_.reset( prs );
+	void *pp = parser_.get();
+	if( pp )
+	{
+		new ( pp ) Parser(
+			tags[0], taglen[0], tags[1], taglen[1], tags[2], taglen[2],
+			flags[1], flags[2], flags[3], flags[0] );
+	}
+	else
+	{
+		Parser *prs = new Parser(
+			tags[0], taglen[0], tags[1], taglen[1], tags[2], taglen[2],
+			flags[1], flags[2], flags[3], flags[0] );
+		if( prs )
+			parser_.reset( prs );
+	}
 
 	if( siz > 0 && !r.isEmpty() )
 	{

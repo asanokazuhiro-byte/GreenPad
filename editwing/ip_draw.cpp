@@ -144,6 +144,8 @@ Cursor& View::cur()
 
 LRESULT View::on_message( UINT msg, WPARAM wp, LPARAM lp )
 {
+	if( doc_.isBusy() && msg != WM_PAINT ) return false;
+
 	switch( msg )
 	{
 
@@ -722,6 +724,8 @@ void A_HOT ViewImpl::on_paint( const PAINTSTRUCT& ps )
 //	FillRect( ps.hdc, &ps.rcPaint, (HBRUSH)(COLOR_HIGHLIGHT+1) );
 //	GdiFlush( );
 //	Sleep( 200 );
+	if( doc_.isBusy() )
+		p.Fill( ps.rcPaint );
 
 	if( ps.rcPaint.right <= lna()  )
 	{

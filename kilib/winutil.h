@@ -35,16 +35,20 @@ public:
 	Clipboard( HWND owner, bool read=true );
 
 	//@{ 閉じる //@}
-	~Clipboard();
+	~Clipboard()
+		{ if( opened_ ) ::CloseClipboard(); }
 
 	//@{ データ読み込み //@}
-	HANDLE GetData( UINT uFormat ) const;
+	static HANDLE GetData( UINT uFormat )
+		{ return ::GetClipboardData( uFormat ); }
 
 	//@{ 指定フォーマットのデータがクリップボード上にあるか？ //@}
-	bool IsAvail( UINT uFormat ) const;
+	static bool IsAvail( UINT uFormat )
+		{ return FALSE != ::IsClipboardFormatAvailable(uFormat); }
 
 	//@{ 指定フォーマットのデータがクリップボード上にあるか？(複数) //@}
-	bool IsAvail( UINT uFormats[], int num ) const;
+	static bool IsAvail( UINT uFormats[], int num )
+		{ return -1 != ::GetPriorityClipboardFormat(uFormats,num); }
 
 	//@{ テキスト情報保持クラス //@}
 	class Text {
@@ -74,15 +78,17 @@ public:
 	Text GetUnicodeText() const;
 
 	//@{ データ書き込み //@}
-	bool SetData( UINT uFormat, HANDLE hData );
+	static bool SetData( UINT uFormat, HANDLE hData )
+		{ return NULL != ::SetClipboardData( uFormat, hData ); }
 
 	//@{ 独自フォーマットの登録 //@}
-	static UINT RegisterFormat( const TCHAR* name );
+	static UINT RegisterFormat( const TCHAR* name )
+		{ return ::RegisterClipboardFormat(name); }
 
 public:
 
 	//@{ 正常に開かれているかチェック //@}
-	bool isOpened() const;
+	inline bool isOpened() const { return opened_; }
 
 private:
 
@@ -92,28 +98,6 @@ private:
 
 	NOCOPY(Clipboard);
 };
-
-
-
-//-------------------------------------------------------------------------
-
-inline bool Clipboard::isOpened() const
-	{ return opened_; }
-
-inline HANDLE Clipboard::GetData( UINT uFormat ) const
-	{ return ::GetClipboardData( uFormat ); }
-
-inline bool Clipboard::SetData( UINT uFormat, HANDLE hData )
-	{ return NULL != ::SetClipboardData( uFormat, hData ); }
-
-inline bool Clipboard::IsAvail( UINT uFormat ) const
-	{ return false!=::IsClipboardFormatAvailable(uFormat); }
-
-inline bool Clipboard::IsAvail( UINT uFormats[], int num ) const
-	{ return -1!=::GetPriorityClipboardFormat(uFormats,num); }
-
-inline UINT Clipboard::RegisterFormat( const TCHAR* name )
-	{ return ::RegisterClipboardFormat(name); }
 
 
 //=========================================================================
@@ -158,6 +142,7 @@ public:
 	//
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override
 	{
+		if( !ppvObject ) return E_POINTER;
 		if( memEQ(&riid, &myIID_IUnknown, sizeof(riid) )
 		||  memEQ(&riid, &myIID_IEnumFORMATETC, sizeof(riid) ) )
 		{
@@ -166,6 +151,7 @@ public:
 			AddRef();
 			return S_OK;
 		}
+		*ppvObject = NULL;
 		LOGGER( "CEnumFormatEtc::QueryInterface E_NOINTERFACE" );
 		return E_NOINTERFACE;
 	}
@@ -299,6 +285,7 @@ private:
 public:
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override
 	{
+		if( !ppvObject ) return E_POINTER;
 		if( memEQ(&riid, &myIID_IUnknown, sizeof(riid) )
 		||  memEQ(&riid, &myIID_IDataObject, sizeof(riid) ) )
 		{
@@ -307,6 +294,7 @@ public:
 			AddRef();
 			return S_OK;
 		}
+		*ppvObject = NULL;
 		LOGGER( "IDataObjectTxt::QueryInterface E_NOINTERFACE" );
 		return E_NOINTERFACE;
 	}
@@ -401,6 +389,7 @@ public:
 public:
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override
 	{
+		if( !ppvObject ) return E_POINTER;
 		if( memEQ(&riid, &myIID_IUnknown, sizeof(riid) )
 		||  memEQ(&riid, &myIID_IDropSource, sizeof(riid) ) )
 		{
@@ -409,6 +398,7 @@ public:
 			AddRef();
 			return S_OK;
 		}
+		*ppvObject = NULL;
 		LOGGER( "OleDnDSourceTxt::QueryInterface E_NOINTERFACE" );
 		return E_NOINTERFACE;
 	}

@@ -331,6 +331,8 @@ LRESULT GreenPadWnd::on_message( UINT msg, WPARAM wp, LPARAM lp )
 
 bool GreenPadWnd::on_command( UINT id, HWND ctrl )
 {
+	if( edit_.getDoc().isBusy() ) return false;
+
 	switch( id )
 	{
 	// Window
@@ -1428,6 +1430,9 @@ void GreenPadWnd::on_move( const DPos& c, const DPos& s )
 	if( edit_.getDoc().isBusy() && ((++busy_cnt)&0xff) )
 		return;
 
+	if( c == old_cur_ && s == old_sel_ )
+		return; // Nothing to do
+
 	if( c == s )
 	{
 		// Update U+XXXXh text in the StatusBar.
@@ -1442,9 +1447,6 @@ void GreenPadWnd::on_move( const DPos& c, const DPos& s )
 			: Max(c.tl, s.tl) - Min(c.tl, s.tl);
 		stb_.SetText( Ulong2lStr(buf, N), GpStBar::UNI_PART );
 	}
-
-	if( c == old_cur_ && s == old_sel_ )
-		return; // Nothing to do
 
 	old_cur_ = c;
 	old_sel_ = s;

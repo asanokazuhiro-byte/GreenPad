@@ -57,12 +57,6 @@ Clipboard::Clipboard( HWND owner, bool read )
 	}
 }
 
-Clipboard::~Clipboard()
-{
-	if( opened_ )
-		::CloseClipboard();
-}
-
 Clipboard::Text Clipboard::GetUnicodeText() const
 {
 	// Always try to get the best available clipboard data.
@@ -185,9 +179,9 @@ HRESULT STDMETHODCALLTYPE IDataObjectTxt::GetData(FORMATETC *fmt, STGMEDIUM *pm)
 	{
 		mem00( pm, sizeof(*pm) ); // In case...
 		if( fmt->cfFormat == CF_HDROP )
-			pm->hGlobal = GlobalAlloc( GMEM_MOVEABLE, sizeof(DROPFILES) + Max((size_t)MAX_PATH+2, (size_t)(len_+4)*sizeof(unicode) ) );
+			pm->hGlobal = GlobalAlloc( GMEM_MOVEABLE|GMEM_DDESHARE, sizeof(DROPFILES) + Max((size_t)MAX_PATH+2, (size_t)(len_+4)*sizeof(unicode) ) );
 		else
-			pm->hGlobal = GlobalAlloc( GMEM_MOVEABLE, (len_+1)*sizeof(unicode) );
+			pm->hGlobal = GlobalAlloc( GMEM_MOVEABLE|GMEM_DDESHARE, (len_+1)*sizeof(unicode) );
 		if( !pm->hGlobal )
 			return E_OUTOFMEMORY;
 		// Copy the data into pm
