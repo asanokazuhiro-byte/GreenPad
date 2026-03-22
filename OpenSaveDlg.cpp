@@ -91,7 +91,10 @@ using namespace ki;
 CharSetList::CharSetList()
 	: list_( 72 )
 {
-	short useJP = GetACP() == 932;
+	// Determine language based on UI language, not system ACP
+	// GetUserDefaultUILanguage() returns language ID (0x411=Japanese, 0x804=Chinese Simplified, etc.)
+	LANGID uiLang = ::GetUserDefaultUILanguage();
+	short useJP = (uiLang & 0xFF) == LANG_JAPANESE;
 	#define Enroll(_id,_nm)  EnrollCs( _id, _nm | BOTH<<8 | useJP<<16 )
 	#define EnrollS(_id,_nm) EnrollCs( _id, _nm | SAVE<<8 | useJP<<16 )
 	#define EnrollL(_id,_nm) EnrollCs( _id, _nm | LOAD<<8 | useJP<<16 )
