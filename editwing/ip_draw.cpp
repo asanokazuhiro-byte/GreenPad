@@ -504,9 +504,11 @@ inline void Painter::StringOut
 {
 	// If unicode text is not 2bytes-aligned then TextOutW can randomly fail
 	// To avoid this we must be careful in the Line class...
-	BOOL ret = ::TextOutW( dc_, x, y, str, len );
 	#ifdef _DEBUG
+		BOOL ret = ::TextOutW( dc_, x, y, str, len );
 		if(!ret) LOGGER("TextOutW failed!");
+	#else
+		::TextOutW( dc_, x, y, str, len );
 	#endif
 }
 
@@ -759,8 +761,8 @@ void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 	// 作業用変数１, Working variable 1
 	RECT  a = { 0, v.YMIN, 0, v.YMIN+p.H() };
 	int clr = -1;
-	register int   x=0, x2;
-	register ulong i=0, i2;
+	int   x=0, x2;
+	ulong i=0, i2;
 	// 論理行単位のLoop. Loop per logical line.
 	for( ulong tl=v.TLMIN; a.top<v.YMAX; ++tl )
 	{

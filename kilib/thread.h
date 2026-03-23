@@ -157,11 +157,13 @@ protected:
 	};
 
 private:
+	#ifdef USE_THREADS
 	CRITICAL_SECTION csection_;
 	#ifdef __DMC__
 		friend struct EzLockable::AutoLock;
 	#else
 		friend struct AutoLock;
+	#endif
 	#endif
 };
 

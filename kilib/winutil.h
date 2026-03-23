@@ -235,7 +235,7 @@ public:
 		}
 	}
 
-	virtual ~CEnumFormatEtc()
+	~CEnumFormatEtc()
 	{
 		if(m_pFormatEtc)
 		{
@@ -267,7 +267,7 @@ public:
 			SetFORMATETC(&m_rgfe[DATA_TEXT],         CF_TEXT);
 			SetFORMATETC(&m_rgfe[DATA_HDROP],        CF_HDROP);
 		}
-	virtual ~IDataObjectTxt(){}
+	~IDataObjectTxt(){}
 
 private:
 	void SetFORMATETC(FORMATETC* pfe, UINT cf, TYMED tymed = TYMED_HGLOBAL, LONG lindex = -1,

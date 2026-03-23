@@ -97,8 +97,8 @@ RES = $(INTDIR)/gp_rsrc.o
 
 VPATH    = editwing:kilib
 CXXFLAGS = \
- -nostdlib -lmsvcrt -m64 -c -Os -fdata-sections -ffunction-sections \
- -flto -fuse-linker-plugin \
+ -nostdlib -m64 -c -Os -fdata-sections -ffunction-sections \
+ -flto \
  -mtune=generic \
  -march=x86-64 \
  -mno-stack-arg-probe \

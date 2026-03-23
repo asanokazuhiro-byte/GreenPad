@@ -18,7 +18,6 @@ SearchManager::SearchManager( ki::Window& w, editwing::EwEdit& e )
 	: DlgImpl( IDD_FINDREPLACE )
 	, edit_( e )
 	, searcher_( NULL )
-	, mainWnd_( w )
 	, bIgnoreCase_( true ) // 1.08 default true
 	, bRegExp_( false )
 	, bDownSearch_( true )

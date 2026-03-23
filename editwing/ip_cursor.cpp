@@ -1439,7 +1439,7 @@ OleDnDTarget::~OleDnDTarget(  )
 HRESULT STDMETHODCALLTYPE OleDnDTarget::Drop(IDataObject *pDataObj, DWORD grfKeyState, POINTL ptl, DWORD *pdwEffect)
 {
 	LOGGER( "OleDnDTarget::Drop()" );
-	STGMEDIUM stg = { 0, NULL, NULL };
+	STGMEDIUM stg = { 0, {NULL}, NULL };
 	// Try with UNICODE text first!
 	FORMATETC fmt = { CF_UNICODETEXT, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	POINT pt; pt.x = ptl.x, pt.y = ptl.y;

@@ -79,6 +79,7 @@ static HMENU getDocTypeSubMenu(HWND hwnd) { return GetSubMenu( ::GetSubMenu(::Ge
 inline GpStBar::GpStBar()
 	: str_(NULL)
 	, lb_(2)
+	, zoom_(100)
 {
 }
 
@@ -110,6 +111,7 @@ void GpStBar::SetUnicode( const unicode *uni )
 
 void GpStBar::SetZoom( short z )
 {
+	zoom_ = z;
 	TCHAR buf[INT_DIGITS+1 + 2];
 	const TCHAR *b = Int2lStr(buf, z);
 	buf[INT_DIGITS+2] = TEXT('\0');
@@ -140,6 +142,7 @@ int GpStBar::AutoResize( bool maximized )
 	SetParts( countof(w), w );
 	SetCsText( str_ );
 	SetLbText( lb_ );
+	SetZoom( zoom_ );
 	return h;
 }
 

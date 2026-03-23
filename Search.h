@@ -175,7 +175,6 @@ private:
 private:
 	editwing::EwEdit& edit_;
 	Searchable *searcher_;
-	ki::Window& mainWnd_;
 
 	bool bIgnoreCase_; // 大文字小文字を同一視？
 	bool bRegExp_;     // 正規表現？

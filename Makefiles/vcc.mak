@@ -56,7 +56,7 @@ PRE:
 RES = $(INTDIR)\gp_rsrc.res
 DEF = /D NDEBUG /D UNICODE /D _UNICODE /D USEGLOBALIME
 
-COPT = /nologo $(DEF) /utf-8 /O1 /Os /Gy /Gw /GL /GR- /EHs-c- /Zc:wchar_t /Fd$(INTDIR) /W3 /MD /c
+COPT = /nologo $(DEF) /utf-8 /O1 /Os /Gy /Gw /GL /GR- /EHs-c- /Zc:wchar_t /Fd$(INTDIR) /W3 /wd4244 /wd4267 /MD /c
 LOPT = /nologo /manifest:no /LTCG /OPT:REF /OPT:ICF
 ROPT = $(DEF) /L 0x411 /c 65001 /I "rsrc"
 

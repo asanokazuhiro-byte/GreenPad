@@ -28,6 +28,7 @@ public:
 private:
 	const TCHAR *str_;
 	int lb_;
+	short zoom_;
 };
 
 
