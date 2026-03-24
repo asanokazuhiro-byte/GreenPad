@@ -84,6 +84,19 @@ void SearchManager::on_init()
 	if( bIgnoreCase_ ) CheckItem( IDC_IGNORECASE );
 	if( bRegExp_ )     CheckItem( IDC_REGEXP );
 
+	// PCRE2 が有効な場合, 正規表現チェックボックスにバージョンを付加
+	{
+		wchar_t ver[64];
+		if( PcreSearch::GetVersionStr( ver, countof(ver) ) )
+		{
+			wchar_t cap[256];
+			GetItemText( IDC_REGEXP, countof(cap), cap );
+			wchar_t newcap[256];
+			::wsprintfW( newcap, L"%s (PCRE2 %s)", cap, ver );
+			SetItemText( IDC_REGEXP, newcap );
+		}
+	}
+
 	const VPos *stt, *end;
 	edit_.getCursor().getCurPos( &stt, &end );
 	// Set non multiline selection as find string.

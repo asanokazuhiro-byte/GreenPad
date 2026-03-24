@@ -16,6 +16,7 @@ public:
 
 	bool valid() const { return valid_; }
 	static bool IsAvailable();
+	static bool GetVersionStr( wchar_t* buf, int bufSize );
 
 	ulong captureCount() const override;
 	bool  getCapture( ulong n, ulong* mbg, ulong* med ) const override;

@@ -16,6 +16,7 @@ typedef int                  (*Fn_match)(const pcre2_code_16*, PCRE2_SPTR16, PCR
 typedef PCRE2_SIZE*          (*Fn_ovector)(pcre2_match_data_16*);
 typedef void                 (*Fn_mdata_free)(pcre2_match_data_16*);
 typedef void                 (*Fn_code_free)(pcre2_code_16*);
+typedef int                  (*Fn_config)(uint32_t, void*);
 
 static HMODULE         s_hDll         = NULL;
 static Fn_compile      s_compile      = NULL;
@@ -24,6 +25,7 @@ static Fn_match        s_match        = NULL;
 static Fn_ovector      s_ovector      = NULL;
 static Fn_mdata_free   s_mdata_free   = NULL;
 static Fn_code_free    s_code_free    = NULL;
+static Fn_config       s_config       = NULL;
 static bool            s_tried        = false;
 
 static bool LoadPcre2Dll()
@@ -40,6 +42,7 @@ static bool LoadPcre2Dll()
 	s_ovector      = (Fn_ovector)      ::GetProcAddress( s_hDll, "pcre2_get_ovector_pointer_16" );
 	s_mdata_free   = (Fn_mdata_free)   ::GetProcAddress( s_hDll, "pcre2_match_data_free_16" );
 	s_code_free    = (Fn_code_free)    ::GetProcAddress( s_hDll, "pcre2_code_free_16" );
+	s_config       = (Fn_config)       ::GetProcAddress( s_hDll, "pcre2_config_16" );
 
 	if( !s_compile || !s_mdata_create || !s_match ||
 	    !s_ovector || !s_mdata_free   || !s_code_free )
@@ -58,6 +61,18 @@ static bool LoadPcre2Dll()
 bool PcreSearch::IsAvailable()
 {
 	return LoadPcre2Dll();
+}
+
+bool PcreSearch::GetVersionStr( wchar_t* buf, int bufSize )
+{
+	if( !LoadPcre2Dll() || !s_config ) return false;
+	wchar_t tmp[64];
+	if( s_config( PCRE2_CONFIG_VERSION, tmp ) < 0 ) return false;
+	// バージョン文字列 (例: "10.45 2024-06-18") の日付部分を除去
+	for( wchar_t* p = tmp; *p; ++p )
+		if( *p == ' ' ) { *p = '\0'; break; }
+	::lstrcpynW( buf, tmp, bufSize );
+	return true;
 }
 
 PcreSearch::PcreSearch( const unicode* pattern, bool caseSensitive, bool down )
