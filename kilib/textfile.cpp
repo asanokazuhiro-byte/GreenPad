@@ -7,6 +7,162 @@
 using namespace ki;
 #define ISHIGHSURROGATE( ch ) ( ( 0xD800 <= (unicode)(ch) && (unicode)(ch) <= 0xDBFF ) )
 
+namespace {
+
+struct ChardetProbeResult {
+	bool tried;
+	bool available;
+	bool hasVersion;
+	wchar_t version[64];
+};
+static ChardetProbeResult s_chardetProbe = { false, false, false, L"" };
+
+static const TCHAR* GetChardetDllName()
+{
+	#if defined(_M_AMD64) || defined(_M_X64)
+	return TEXT("chardet.dll");
+	#elif defined(_M_IA64)
+	return TEXT("chardet_ia64.dll");
+	#elif defined(_M_ARM64)
+	return TEXT("chardet_arm64.dll");
+	#elif defined(_M_ARM)
+	return TEXT("chardet_arm.dll");
+	#elif defined(_M_ALPHA)
+	return TEXT("cdetaxp.dll");
+	#elif defined(_M_MRX000) || defined(_MIPS_)
+	return TEXT("cdetmips.dll");
+	#elif defined(_M_PPC)
+	return TEXT("cdetppc.dll");
+	#else
+	return TEXT("chardet_x86.dll");
+	#endif
+}
+
+static Path GetChardetDllPath()
+{
+	return Path(Path::Exe) + GetChardetDllName();
+}
+
+static bool GetFileVersionText( const TCHAR* filePath, wchar_t* buf, int bufSize )
+{
+	typedef DWORD (WINAPI *FnGetFileVersionInfoSize)(LPCTSTR, LPDWORD);
+	typedef BOOL  (WINAPI *FnGetFileVersionInfo)(LPCTSTR, DWORD, DWORD, LPVOID);
+	typedef BOOL  (WINAPI *FnVerQueryValue)(LPCVOID, LPCTSTR, LPVOID*, PUINT);
+
+	HMODULE hVer = ::LoadLibrary( TEXT("version.dll") );
+	if( !hVer ) return false;
+
+	FnGetFileVersionInfoSize fnSize = (FnGetFileVersionInfoSize)::GetProcAddress(
+		hVer,
+	#ifdef _UNICODE
+		"GetFileVersionInfoSizeW"
+	#else
+		"GetFileVersionInfoSizeA"
+	#endif
+	);
+	FnGetFileVersionInfo fnInfo = (FnGetFileVersionInfo)::GetProcAddress(
+		hVer,
+	#ifdef _UNICODE
+		"GetFileVersionInfoW"
+	#else
+		"GetFileVersionInfoA"
+	#endif
+	);
+	FnVerQueryValue fnQuery = (FnVerQueryValue)::GetProcAddress(
+		hVer,
+	#ifdef _UNICODE
+		"VerQueryValueW"
+	#else
+		"VerQueryValueA"
+	#endif
+	);
+	if( !fnSize || !fnInfo || !fnQuery )
+	{
+		::FreeLibrary( hVer );
+		return false;
+	}
+
+	DWORD dummy = 0;
+	DWORD infoSize = fnSize( filePath, &dummy );
+	if( infoSize == 0 )
+	{
+		::FreeLibrary( hVer );
+		return false;
+	}
+
+	byte* info = (byte*)TS.alloc( infoSize );
+	if( !info )
+	{
+		::FreeLibrary( hVer );
+		return false;
+	}
+
+	bool ok = false;
+	if( fnInfo( filePath, 0, infoSize, info ) )
+	{
+		VS_FIXEDFILEINFO* ffi = NULL;
+		UINT ffiLen = 0;
+		if( fnQuery( info, TEXT("\\"), (LPVOID*)&ffi, &ffiLen ) && ffi && ffiLen >= sizeof(VS_FIXEDFILEINFO) )
+		{
+			::wsprintfW( buf, L"%u.%u.%u.%u",
+				HIWORD(ffi->dwFileVersionMS), LOWORD(ffi->dwFileVersionMS),
+				HIWORD(ffi->dwFileVersionLS), LOWORD(ffi->dwFileVersionLS) );
+			ok = true;
+		}
+	}
+
+	TS.freelast( info, infoSize );
+	::FreeLibrary( hVer );
+	return ok;
+}
+
+static const ChardetProbeResult& QueryChardetProbe()
+{
+	if( s_chardetProbe.tried )
+		return s_chardetProbe;
+
+	s_chardetProbe.tried = true;
+	Path chardetDllPath = GetChardetDllPath();
+	if( !chardetDllPath.exist() )
+		return s_chardetProbe;
+
+	HMODULE hIL = ::LoadLibrary( chardetDllPath.c_str() );
+	if( !hIL )
+		return s_chardetProbe;
+
+	typedef void* chardet_t;
+	int  (__cdecl*chardet_create)(chardet_t*) = (int (__cdecl*)(chardet_t*))::GetProcAddress(hIL, "chardet_create");
+	void (__cdecl*chardet_destroy)(chardet_t) = (void (__cdecl*)(chardet_t))::GetProcAddress(hIL, "chardet_destroy");
+	int  (__cdecl*chardet_handle_data)(chardet_t, const char*, unsigned int) = (int (__cdecl*)(chardet_t, const char*, unsigned int))::GetProcAddress(hIL, "chardet_handle_data");
+	int  (__cdecl*chardet_data_end)(chardet_t) = (int (__cdecl*)(chardet_t))::GetProcAddress(hIL, "chardet_data_end");
+	int  (__cdecl*chardet_get_charset)(chardet_t, char*, unsigned int) = (int (__cdecl*)(chardet_t, char*, unsigned int))::GetProcAddress(hIL, "chardet_get_charset");
+
+	if( chardet_create && chardet_destroy && chardet_handle_data && chardet_data_end && chardet_get_charset )
+	{
+		s_chardetProbe.available = true;
+		s_chardetProbe.hasVersion = GetFileVersionText( chardetDllPath.c_str(), s_chardetProbe.version, countof(s_chardetProbe.version) );
+	}
+
+	::FreeLibrary( hIL );
+	return s_chardetProbe;
+}
+
+} // namespace
+
+bool TextFileR::IsChardetAvailable()
+{
+	return QueryChardetProbe().available;
+}
+
+bool TextFileR::GetChardetVersionStr( wchar_t* buf, int bufSize )
+{
+	const ChardetProbeResult& info = QueryChardetProbe();
+	if( !info.available || !info.hasVersion || bufSize <= 0 )
+		return false;
+	::lstrcpynW( buf, info.version, bufSize );
+	return true;
+}
+
 //=========================================================================
 // テキストファイル読み出し共通インターフェイス
 //=========================================================================

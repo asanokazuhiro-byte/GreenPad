@@ -202,6 +202,8 @@ public:
 
 	static int neededCodepage(int cs) A_XPURE;
 	static bool isEBCDIC( int cs ) A_XPURE;
+	static bool IsChardetAvailable();
+	static bool GetChardetVersionStr( wchar_t* buf, int bufSize );
 
 	const uchar* rawData() const
 		{ return fp_.base(); }

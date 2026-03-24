@@ -388,8 +388,18 @@ bool OpenFileDlg::DoModal( HWND wnd, const TCHAR* fltr, const TCHAR* fnm )
 			IFileDialogCustomize* pfdc = NULL;
 			if( SUCCEEDED(pfd->QueryInterface( IID_PPV_ARGS(&pfdc) )) )
 			{
-				TCHAR szCap[64]; szCap[0] = TEXT('\0');
+				TCHAR szCap[128]; szCap[0] = TEXT('\0');
 				app().LoadString( IDS_CHARSET_CAPTION, szCap, countof(szCap) );
+				int capLen = ::lstrlen( szCap );
+				wchar_t chardetVer[64];
+				if( TextFileR::GetChardetVersionStr( chardetVer, countof(chardetVer) ) )
+				{
+					::wsprintfW( szCap + capLen, L" (chardet %s)", chardetVer );
+				}
+				else if( TextFileR::IsChardetAvailable() )
+				{
+					::lstrcpyn( szCap + capLen, TEXT(" (chardet loaded)"), countof(szCap) - capLen );
+				}
 				pfdc->StartVisualGroup( 200, szCap );
 				pfdc->AddComboBox( IDC_CODELIST );
 				for( size_t i = 0; i < csl_.size(); ++i )

@@ -35,3 +35,7 @@ release/*.pch
 # Dependencies
 libunicows*.a
 libunicows*.lib
+
+# Optional external source trees (prevent accidental commit)
+chardet/
+pcre2/
