@@ -177,6 +177,19 @@ CharSetList::CharSetList()
 	#undef Enroll
 	#undef EnrollS
 	#undef EnrollL
+
+	// chardet.dll が利用可能なら AutoDetect のラベルに (chardet) を付加する
+	if( TextFileR::IsChardetAvailable() )
+	{
+		static TCHAR s_label[64];
+		for( size_t k = 0; k < list_.size(); ++k )
+			if( list_[k].ID == AutoDetect )
+			{
+				::wsprintf( s_label, TEXT("%s(chardet)"), list_[k].longName );
+				list_[k].longName = s_label;
+				break;
+			}
+	}
 }
 
 void CharSetList::EnrollCs(int _id, uint nmtype)
@@ -392,25 +405,9 @@ bool OpenFileDlg::DoModal( HWND wnd, const TCHAR* fltr, const TCHAR* fnm )
 				app().LoadString( IDS_CHARSET_CAPTION, szCap, countof(szCap) );
 				pfdc->StartVisualGroup( 200, szCap );
 				pfdc->AddComboBox( IDC_CODELIST );
-				
-				// Check if chardet is available for modifying AutoDetect item label
-				bool chardetAvailable = TextFileR::IsChardetAvailable();
-				
 				for( size_t i = 0; i < csl_.size(); ++i )
 					if( csl_[i].type & 2 )
-					{
-						// Modify AutoDetect label with (chardet) if available
-						TCHAR itemLabel[256];
-						if( chardetAvailable && csl_[i].ID == AutoDetect )
-						{
-							::wsprintf( itemLabel, TEXT("%s(chardet)"), csl_[i].longName );
-							pfdc->AddControlItem( IDC_CODELIST, (DWORD)i, itemLabel );
-						}
-						else
-						{
-							pfdc->AddControlItem( IDC_CODELIST, (DWORD)i, csl_[i].longName );
-						}
-					}
+						pfdc->AddControlItem( IDC_CODELIST, (DWORD)i, csl_[i].longName );
 				pfdc->SetSelectedControlItem( IDC_CODELIST, (DWORD)csIndex_ );
 				pfdc->EndVisualGroup();
 				pfdc->Release();
