@@ -72,11 +72,6 @@ make clang64
 | `Ctrl+1/2/3` | Wrap: none / fixed width / window width |
 | `Ctrl+I` | Insert Unicode code point |
 | `Ctrl+B` | Go to matching brace |
-| `Alt+U/L/I` | Upper / Lower / Invert case |
-| `Alt+W` | Trim trailing spaces |
-| `Alt+R` | Reduce to ASCII |
-| `Alt+Z` | Strip first character of each line |
-| `Alt+N` | Unquote selection |
 
 ## Configuration
 
