@@ -1,0 +1,158 @@
+# GreenPad Language File
+# Language: Russian (Russia)
+# Encoding: UTF-8
+
+[Info]
+Language = Русский
+LangCode = ru-RU
+
+[Strings]
+IDS_ASKTOSAVE = Сохранить текущий файл?
+IDS_APPNAME = GreenPad
+IDS_SAVEERROR = Не удалось сохранить файл:
+IDS_ALLFILES = Все файлы (*.*)
+IDS_TXTFILES = Текстовые файлы
+IDS_OPENERROR = Не удалось открыть файл:
+IDS_DEFAULT = (по умолчанию)
+IDS_NOTFOUND = Строка не найдена.
+IDS_REPLACEALLDONE = Выполнено замен: %d.
+IDS_OKTODEL =  будет удалён. Продолжить?
+IDS_LOADING = Загрузка файла...
+IDS_NOTFOUNDDOWN = Строка не найдена.\nПродолжить поиск с начала?
+IDS_NOWRITEACESS = \nНет доступа для записи!\n\nОткрыть с правами администратора для редактирования файла?
+IDS_ERRORNUM = \n\nОшибка №
+IDS_CANTOPENDIR = \nНе удалось открыть папку!
+IDS_INVALIDCP = Выбрана недопустимая кодировка!
+IDS_MODIFIEDOUT = Файл был изменён вне GreenPad!\nПерезагрузить его?
+IDS_INSERTUNI = Вставить символ Unicode
+IDS_INSSERT = &Вставить
+IDS_ZOOMPC = Масштаб
+IDS_UNTITLED = без имени
+IDS_CHARSET_CAPTION = Кодировка:
+IDS_CRLF_CAPTION = Конец строки:
+
+[Menu]
+popup.0 = &Файл
+popup.1 = &Правка
+popup.2 = &Поиск
+popup.3 = &Вид
+popup.4 = &Справка
+popup.0.13 = &Недавние файлы
+popup.1.13 = &Изменить
+popup.1.14 = Unic&ode NF
+popup.3.9 = &Тип документа
+ID_CMD_NEWFILE = &Новый файл\tCtrl+N
+ID_CMD_OPENFILE = &Открыть...\tCtrl+O
+ID_CMD_REOPENFILE = &Переоткрыть...\tCtrl+R
+ID_CMD_REFRESHFILE = &Обновить\tF5
+ID_CMD_OPENELEVATED = Открыть от имени &администратора...\tCtrl+L
+ID_CMD_SAVEFILE = &Сохранить\tCtrl+S
+ID_CMD_SAVEFILEAS = Сохранить &как...\tCtrl+Shift+S
+ID_CMD_PRINT = &Печать...\tCtrl+P
+ID_CMD_PAGESETUP = Параметры с&траницы...
+ID_CMD_SAVEEXIT = Сохранить и &выйти\tCtrl+E
+ID_CMD_DISCARDEXIT = &Отменить изменения и выйти\tCtrl+Shift+E
+ID_CMD_EXIT = В&ыход
+ID_CMD_UNDO = &Отменить\tCtrl+Z
+ID_CMD_REDO = &Повторить\tCtrl+Y
+ID_CMD_CUT = &Вырезать\tCtrl+X
+ID_CMD_COPY = &Копировать\tCtrl+C
+ID_CMD_PASTE = В&ставить\tCtrl+V
+ID_CMD_DELETE = &Удалить\tDel
+ID_CMD_SELECTALL = Выделить &всё\tCtrl+A
+ID_CMD_DATETIME = Вставить дату &и время\tF6
+ID_CMD_INSERTUNI = Вставить &Unicode...\tCtrl+I
+ID_CMD_UPPERCASE = &Верхний регистр\tAlt+U
+ID_CMD_LOWERCASE = &Нижний регистр\tAlt+L
+ID_CMD_INVERTCASE = &Инвертировать регистр\tAlt+I
+ID_CMD_ASCIIFY = &Привести к ASCII\tAlt+R
+ID_CMD_TTSPACES = Удалить пробелы в конце &строки\tAlt+W
+ID_CMD_SFCHAR = Удалить &первые символы\tAlt+Z
+ID_CMD_SLCHAR = Удалить по&следние символы\tAlt+A
+ID_CMD_QUOTE = &Закавычить\tAlt+Q
+ID_CMD_UNQUOTE = &Раскавычить\tAlt+N
+ID_CMD_UNINORMC = NF&C (составная форма)
+ID_CMD_UNINORMD = NF&D (декомпозированная форма)
+ID_CMD_UNINORMKC = NF&KC (совместимая составная)
+ID_CMD_UNINORMKD = &NFKD (совместимая декомпозированная)
+ID_CMD_RECONV = Пре&образование
+ID_CMD_TOGGLEIME = &IME вкл/выкл
+ID_CMD_FIND = &Найти\tCtrl+F
+ID_CMD_FINDNEXT = Найти &далее\tF3
+ID_CMD_FINDPREV = Найти &назад\tShift+F3
+ID_CMD_JUMP = &Перейти к строке\tCtrl+J
+ID_CMD_GREP = &Grep...\tCtrl+G
+ID_CMD_OPENSELECTION = &Открыть выделенное...\tF7
+ID_CMD_NOWRAP = &Без переноса\tCtrl+1
+ID_CMD_WRAPWIDTH = &Перенос по позиции\tCtrl+2
+ID_CMD_WRAPWINDOW = Перенос по &правому краю\tCtrl+3
+ID_CMD_ZOOMDLG = &Установить масштаб...
+ID_CMD_ZOOMRZ = С&бросить масштаб
+ID_CMD_ZOOMUP = Увеличить &масштаб
+ID_CMD_ZOOMDN = Уменьшить масшта&б
+ID_CMD_CONFIG = &Настройки...
+ID_CMD_STATUSBAR = Строка &состояния
+ID_CMD_HELP = &Контекстная справка...\tF1
+ID_CMD_HELPABOUT = &О программе
+
+[Dialog.IDD_REOPENDLG]
+Caption = Переоткрыть файл
+IDOK = OK
+IDCANCEL = Отмена
+static.0 = &Кодировка:
+
+[Dialog.IDD_JUMP]
+Caption = Перейти к строке
+IDOK = &Перейти!
+IDC_LINLABEL = &Строка
+
+[Dialog.IDD_FINDREPLACE]
+Caption = Найти и заменить
+ID_FINDNEXT = &Найти
+ID_FINDPREV = Найти &назад
+ID_REPLACENEXT = &Заменить
+ID_REPLACEALL = Заменить &всё
+IDCANCEL = Закрыть
+IDC_IGNORECASE = &Игнорировать регистр
+IDC_REGEXP = &Регулярное выражение
+static.0 = &Найти:
+static.1 = &Заменить на:
+static.2 = &Параметры
+
+[Dialog.IDD_ABOUTDLG]
+Caption = О программе GreenPad
+IDCANCEL = Закрыть
+
+[Dialog.IDD_ADDDOCTYPE]
+Caption = Новый тип документа
+IDOK = OK
+IDCANCEL = Отмена
+static.0 = &Имя:
+static.1 = &Расширение:
+
+[Dialog.IDD_CONFIG]
+Caption = Настройки
+IDOK = OK
+IDCANCEL = Отмена
+IDC_UNDOLIM1 = Не ограничено
+IDC_COUNTBYLETTER = Символы
+IDC_COUNTBYLETTER2 = Позиции
+IDC_OPENSAME = Открывать в том же &окне
+IDC_REMSIZE = Запомнить &размер окна
+IDC_REMPLACE = Запомнить по&ложение окна
+IDC_NEWDOCTYPE = Добавить
+IDC_DELDOCTYPE = Удалить
+IDC_EDITKWD = изменить
+IDC_EDITLAY = изменить
+static.0 = Общие
+static.1 = &Отмена:
+static.2 = раз
+static.3 = &Столбец по:
+static.4 = Число &недавних файлов:
+static.5 = &Фильтр текстовых файлов:
+static.6 = Внешняя программа &Grep:
+static.7 = Режим &нового файла:
+static.8 = &Типы документов
+static.9 = &Шаблон:
+static.10 = &Ключевые слова:
+static.11 = &Разметка:

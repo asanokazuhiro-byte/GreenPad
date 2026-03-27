@@ -535,14 +535,23 @@ void LangManager::ApplyToDialog(HWND hDlg, UINT dialogId) const {
 }
 
 // ---------------------------------------------------------------------------
-// DetectLocale - returns BCP 47 locale name via GetLocaleInfoEx (e.g. "ja-JP")
+// DetectLocale - returns BCP 47 locale name based on the UI display language
+//   Uses GetUserDefaultUILanguage() (display language) so that users who have
+//   a non-English regional format but an English UI see English, not the
+//   regional-format language.
 // ---------------------------------------------------------------------------
 const wchar_t* LangManager::DetectLocale() {
     static wchar_t locBuf[LOCALE_NAME_MAX_LENGTH] = {};
     if (locBuf[0] == L'\0') {
-        if (GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME,
-                            locBuf, LOCALE_NAME_MAX_LENGTH) == 0)
-            return nullptr;
+        // Prefer UI language (display language) over regional-format locale
+        LANGID uiLang = GetUserDefaultUILanguage();
+        LCID   lcid   = MAKELCID(uiLang, SORT_DEFAULT);
+        if (LCIDToLocaleName(lcid, locBuf, LOCALE_NAME_MAX_LENGTH, 0) == 0) {
+            // Fallback: regional-format locale
+            if (GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME,
+                                locBuf, LOCALE_NAME_MAX_LENGTH) == 0)
+                return nullptr;
+        }
     }
     return locBuf[0] ? locBuf : nullptr;
 }

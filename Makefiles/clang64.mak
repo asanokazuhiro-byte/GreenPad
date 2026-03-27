@@ -108,6 +108,7 @@ CXXFLAGS = \
  -fno-stack-check \
  -fno-stack-protector \
  -fno-access-control \
+ -fno-threadsafe-statics \
  -fno-use-cxa-atexit \
  -fno-exceptions \
  -fno-dwarf2-cfi-asm \
