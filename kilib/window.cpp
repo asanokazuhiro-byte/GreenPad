@@ -792,8 +792,8 @@ INT_PTR CALLBACK DlgImpl::MainProc(
 
 		DlgImpl* ptr = reinterpret_cast<DlgImpl*>(lp);
 		ptr->SetHwnd( dlg );
-		ptr->on_init();
 		LangManager::Get().ApplyToDialog( dlg, ptr->rsrcID_ );
+		ptr->on_init();
 		return FALSE;
 	}
 

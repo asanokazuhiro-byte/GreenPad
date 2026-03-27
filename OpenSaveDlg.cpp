@@ -386,9 +386,8 @@ bool OpenFileDlg::DoModal( HWND wnd, const TCHAR* fltr, const TCHAR* fnm )
 			IFileDialogCustomize* pfdc = NULL;
 			if( SUCCEEDED(pfd->QueryInterface( IID_PPV_ARGS(&pfdc) )) )
 			{
-				TCHAR szCap[128]; szCap[0] = TEXT('\0');
-				app().LoadString( IDS_CHARSET_CAPTION, szCap, countof(szCap) );
-				pfdc->StartVisualGroup( 200, szCap );
+				RzsString szCap(IDS_CHARSET_CAPTION);
+				pfdc->StartVisualGroup( 200, szCap.c_str() );
 				pfdc->AddComboBox( IDC_CODELIST );
 				for( size_t i = 0; i < csl_.size(); ++i )
 					if( csl_[i].type & 2 )
@@ -465,18 +464,16 @@ bool SaveFileDlg::DoModal( HWND wnd, const TCHAR* fltr, const TCHAR* fnm )
 			IFileDialogCustomize* pfdc = NULL;
 			if( SUCCEEDED(pfd->QueryInterface( IID_PPV_ARGS(&pfdc) )) )
 			{
-				TCHAR szCap[64]; szCap[0] = TEXT('\0');
-				app().LoadString( IDS_CHARSET_CAPTION, szCap, countof(szCap) );
-				pfdc->StartVisualGroup( 200, szCap );
+				RzsString szCap(IDS_CHARSET_CAPTION);
+				pfdc->StartVisualGroup( 200, szCap.c_str() );
 				pfdc->AddComboBox( IDC_CODELIST );
 				for( size_t i = 0; i < csl_.size(); ++i )
 					if( csl_[i].type & 1 )
 						pfdc->AddControlItem( IDC_CODELIST, (DWORD)i, csl_[i].longName );
 				pfdc->SetSelectedControlItem( IDC_CODELIST, (DWORD)csIndex_ );
 				pfdc->EndVisualGroup();
-				TCHAR szCap2[64]; szCap2[0] = TEXT('\0');
-				app().LoadString( IDS_CRLF_CAPTION, szCap2, countof(szCap2) );
-				pfdc->StartVisualGroup( 202, szCap2 );
+				RzsString szCap2(IDS_CRLF_CAPTION);
+				pfdc->StartVisualGroup( 202, szCap2.c_str() );
 				pfdc->AddComboBox( IDC_CRLFLIST );
 				static const TCHAR* const lbNames[] = { TEXT("CR"), TEXT("LF"), TEXT("CRLF") };
 				for( DWORD li = 0; li < 3; ++li )

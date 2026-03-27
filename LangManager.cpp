@@ -560,6 +560,15 @@ bool LangManager::AutoLoad(const wchar_t* langDir, const wchar_t* locale)
     const wchar_t* loc = (locale && locale[0]) ? locale : DetectLocale();
     if (!loc || !loc[0]) return false;
 
+    // Normalize underscore separator to hyphen (ja_JP -> ja-JP) so that
+    // both forms work for -lang / ini Language= values.
+    wchar_t normalized[LOCALE_NAME_MAX_LENGTH];
+    wcsncpy(normalized, loc, LOCALE_NAME_MAX_LENGTH - 1);
+    normalized[LOCALE_NAME_MAX_LENGTH - 1] = L'\0';
+    for (wchar_t* p = normalized; *p; ++p)
+        if (*p == L'_') *p = L'-';
+    loc = normalized;
+
     wchar_t path[MAX_PATH];
 
     // Try exact match: lang\ja-JP.lng

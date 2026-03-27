@@ -1320,14 +1320,13 @@ void GreenPadWnd::SetupSubMenu()
 void GreenPadWnd::GetTitleText( TCHAR *name )
 {
 	TCHAR *end = name+1;
-	TCHAR untitled[32];
+	RzsString untitled(IDS_UNTITLED);
 	name[0] = TEXT('[');
-	app().LoadString( IDS_UNTITLED, untitled, countof(untitled) );
 	end = my_lstrkpy( end, isUntitled() ? untitled : filename_.name() );
 	if( edit_.getDoc().isModified() )
 		end = my_lstrkpy( end, TEXT(" *") );
 	end = my_lstrkpy( end, TEXT("] - ") );
-	app().LoadString(IDS_APPNAME, end, 32);
+	end = my_lstrkpy( end, RzsString(IDS_APPNAME).c_str() );
 }
 
 void GreenPadWnd::UpdateWindowName()
@@ -1883,7 +1882,7 @@ int kmain()
 		wchar_t langDir[MAX_PATH];
 		wsprintfW(langDir, L"%s\\lang", exePath);
 
-		// 1. Check command-line: GreenPad.exe -lang ja_JP ...
+		// 1. Check command-line: GreenPad.exe -lang ja-JP (or ja_JP) ...
 		wchar_t langFromCmdLine[32] = L"";
 		{
 			int argc = 0;
@@ -1899,7 +1898,7 @@ int kmain()
 			}
 		}
 
-		// 2. Check ini file: Language=ja_JP
+		// 2. Check ini file: Language=ja-JP (or ja_JP)
 		// ConfigManager uses either the current username or "SharedConfig" as section.
 		wchar_t langFromIni[32] = L"";
 		{
