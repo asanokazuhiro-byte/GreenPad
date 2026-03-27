@@ -1945,7 +1945,10 @@ int kmain()
 				optC = String::GetInt( arg[i]+2 );
 				break;
 			case TEXT('l'):
-				optL = String::GetInt( arg[i]+2 );
+				if( lstrcmpiW(arg[i], TEXT("-lang")) == 0 )
+					++i; // consume locale value; already handled by language block above
+				else
+					optL = String::GetInt( arg[i]+2 );
 				break;
 			}
 
