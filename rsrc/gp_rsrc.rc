@@ -70,14 +70,8 @@ END
 // remains consistent on all systems.
 IDR_MAIN                ICON                    "exefile.ico"
 
-#if !defined(TARGET_VER) || (defined(TARGET_VER) && TARGET_VER>310)
-
-#include <jp_jp.rc>
-#include <zh_cn.rc>
-#include <zh_tw.rc>
-#include <ko_kr.rc>
-
-#endif //TARGET_VER (Japaneese resources off on NT3.1)
+// Non-English language resources have been moved to external .lng files.
+// See lang/ja_JP.lng, lang/zh_CN.lng, lang/zh_TW.lng, lang/ko_KR.lng
 
 
 /////////////////////////////////////////////////////////////////////////////
