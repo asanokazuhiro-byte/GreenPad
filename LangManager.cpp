@@ -504,7 +504,9 @@ void LangManager::ApplyToDialog(HWND hDlg, UINT dialogId) const {
     const wchar_t* cap = dlgMap->get(L"Caption");
     if (cap) SetWindowTextW(hDlg, cap);
 
-    // Collect children (GW_CHILD = topmost Z-order = last created), then reverse
+    // Collect children in dialog-template order.
+    // For dialog boxes, GetWindow(hDlg, GW_CHILD)/GW_HWNDNEXT enumerates
+    // children in template order (first control first), so no reversal needed.
     HWND children[256];
     int childCount = 0;
     for (HWND child = GetWindow(hDlg, GW_CHILD);
@@ -512,12 +514,6 @@ void LangManager::ApplyToDialog(HWND hDlg, UINT dialogId) const {
          child = GetWindow(child, GW_HWNDNEXT))
     {
         children[childCount++] = child;
-    }
-    // Reverse to get template (creation) order
-    for (int i = 0; i < childCount / 2; ++i) {
-        HWND tmp = children[i];
-        children[i] = children[childCount - 1 - i];
-        children[childCount - 1 - i] = tmp;
     }
 
     int staticIdx = 0;
