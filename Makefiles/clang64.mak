@@ -42,7 +42,7 @@ LIBS = \
 -lkernel32 \
 -nostdlib \
 -lmsvcrt \
--Wl,-Bstatic,-lstdc++,-Bdynamic \
+-lc++ \
 -Wl,-eentryp \
 -flto \
 -fuse-linker-plugin \
