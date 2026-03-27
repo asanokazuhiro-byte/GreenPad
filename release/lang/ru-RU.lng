@@ -34,7 +34,7 @@ IDS_CRLF_CAPTION = Конец строки:
 [Menu]
 popup.0 = &Файл
 popup.1 = &Правка
-popup.2 = &Поиск
+popup.2 = По&иск
 popup.3 = &Вид
 popup.4 = &Справка
 popup.0.13 = &Недавние файлы
