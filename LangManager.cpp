@@ -451,6 +451,10 @@ bool LangManager::AutoLoad(const wchar_t* langDir, const wchar_t* locale) {
     std::wstring base = std::wstring(langDir) + L"\\";
     std::wstring locStr = loc;
 
+    // Normalize: accept both "ja_JP" and "ja-JP" (replace '_' with '-')
+    for (auto& ch : locStr)
+        if (ch == L'_') ch = L'-';
+
     // Try exact match: lang/ja-JP.lng
     if (Get().Load((base + locStr + L".lng").c_str()))
         return true;
