@@ -35,6 +35,7 @@ OBJS = \
  $(INTDIR)/RSearch.$(OBJ_SUFFIX)      \
  $(INTDIR)/ConfigManager.$(OBJ_SUFFIX) \
  $(INTDIR)/PcreSearch.$(OBJ_SUFFIX)   \
+ $(INTDIR)/LangManager.$(OBJ_SUFFIX)  \
  $(INTDIR)/app.$(OBJ_SUFFIX)
 
 LIBS = \

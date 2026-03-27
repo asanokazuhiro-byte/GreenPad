@@ -2,6 +2,7 @@
 #include "app.h"
 #include "memory.h"
 #include "kstring.h"
+#include "../LangManager.h"
 using namespace ki;
 
 static wchar_t SingleCharUpperW_nonNT(wchar_t c)
@@ -475,6 +476,12 @@ String& String::operator+=( const wchar_t* s )
 RzsString::RzsString( UINT rsrcID )
 {
 	str_[0] = TEXT('\0');
-	app().LoadString( rsrcID, str_, countof(str_) );
+	const wchar_t* lng = LangManager::Get().GetString(rsrcID);
+	if (lng) {
+		wcsncpy(str_, lng, countof(str_) - 1);
+		str_[countof(str_) - 1] = TEXT('\0');
+	} else {
+		app().LoadString( rsrcID, str_, countof(str_) );
+	}
 }
 

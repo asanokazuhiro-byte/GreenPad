@@ -722,6 +722,8 @@ void ConfigManager::LoadIni()
 	mrus_ = ini_.GetInt( TEXT("MRU"), 0 );
 	mrus_ = Min(Max(0, mrus_), 20);
 
+	language_ = ini_.GetStr( TEXT("Language"), TEXT("") );
+
 	// 新規ファイル関係
 	newfileCharset_ = ini_.GetInt( TEXT("NewfileCharset"), charSets_.defaultCs() );
 	if(newfileCharset_ == -1) newfileCharset_ = 1252; // 1.07.4 bugfix
@@ -892,6 +894,8 @@ void ConfigManager::SaveIni()
 	}
 	// Exit with the ESC key? (Cannot Not yet be modified from GUI)
 	// ini_.PutBool(TEXT("QuickExit"), useQuickExit_);
+
+	ini_.PutStr( TEXT("Language"), language_.c_str() );
 
 	// 新規ファイル関係
 	ini_.PutInt( TEXT("NewfileCharset"), newfileCharset_ );

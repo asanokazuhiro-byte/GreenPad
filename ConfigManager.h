@@ -148,6 +148,9 @@ public:
 	inline short GetZoom() const { return zoom_; };
 	inline void SetZoom(short zoom) { zoom_ = zoom; inichanged_ = true; };
 
+	inline const ki::String& GetLanguage() const { return language_; }
+	inline void SetLanguage(const ki::String& lang) { language_ = lang; inichanged_ = 1; }
+
 private:
 
 	CharSetList charSets_;
@@ -162,6 +165,7 @@ private:
 //	bool datePrior_;
 
 	short      zoom_;
+	ki::String language_;
 	bool       sharedConfigMode_;
 	bool       inichanged_; // keep track of save to ini.
 

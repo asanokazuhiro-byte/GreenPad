@@ -1,0 +1,158 @@
+# GreenPad Language File
+# Language: Korean (Korea)
+# Encoding: UTF-8
+
+[Info]
+Language = Korean
+LangCode = ko_KR
+
+[Strings]
+IDS_ASKTOSAVE = 현재 파일을 저장하시겠습니까?
+IDS_APPNAME = GreenPad
+IDS_SAVEERROR = 파일 저장 실패
+IDS_ALLFILES = 모든 파일(*.*)
+IDS_TXTFILES = 텍스트 파일
+IDS_OPENERROR = 파일 열기 실패
+IDS_DEFAULT = (기본값)
+IDS_NOTFOUND = 문자열을 찾지 못했습니다
+IDS_REPLACEALLDONE = %d개 항목이 바뀌었습니다
+IDS_OKTODEL = 삭제하시겠습니까?
+IDS_LOADING = 파일 로드 중...
+IDS_NOTFOUNDDOWN = 문자열을 찾지 못했습니다.\n처음부터 계속 검색하시겠습니까?
+IDS_NOWRITEACESS = \n쓰기 권한 없음!\n\n파일을 수정할 수 있도록 관리자 권한으로 열까요?
+IDS_ERRORNUM = \n\n오류 #
+IDS_CANTOPENDIR = \n디렉터리를 열 수 없습니다!
+IDS_INVALIDCP = 잘못된 코드 페이지가 선택되었습니다!
+IDS_MODIFIEDOUT = 파일이 GreenPad 외부에서 변경되었습니다!\n다시 로드하시겠습니까?
+IDS_INSERTUNI = 유니코드 삽입
+IDS_INSSERT = 삽입(&I)
+IDS_ZOOMPC = Zoom
+IDS_UNTITLED = 제목 없음
+IDS_CHARSET_CAPTION = 문자 인코딩:
+IDS_CRLF_CAPTION = 줄 끝:
+
+[Menu]
+popup.0 = 파일(&F)
+popup.1 = 편집(&E)
+popup.2 = 찾기(&S)
+popup.3 = 보기(&V)
+popup.4 = 도움말(&H)
+popup.0.13 = 최근 파일(&M)
+popup.1.13 = 변경(&M)
+popup.1.14 = Unic&ode NF
+popup.3.9 = 파일 형식(&T)
+ID_CMD_NEWFILE = 새 파일(&N)\tCtrl+N
+ID_CMD_OPENFILE = 열기(&O)...\tCtrl+O
+ID_CMD_REOPENFILE = 다시 열기(&R)...\tCtrl+R
+ID_CMD_REFRESHFILE = 새로 고침(&F)\tF5
+ID_CMD_OPENELEVATED = 관리자 권한으로 열기(&L)...\tCtrl+L
+ID_CMD_SAVEFILE = 저장(&S)\tCtrl+S
+ID_CMD_SAVEFILEAS = 다른 이름으로 저장(&A)...\tCtrl+Shift+S
+ID_CMD_PRINT = 인쇄(&P)...\tCtrl+P
+ID_CMD_PAGESETUP = 인쇄 설정(&U)...
+ID_CMD_SAVEEXIT = 저장하고 종료(&I)\tCtrl+E
+ID_CMD_DISCARDEXIT = 저장하지 않고 종료(&D)\tCtrl+Shift+E
+ID_CMD_EXIT = 종료(&X)
+ID_CMD_UNDO = 실행 취소(&U)\tCtrl+Z
+ID_CMD_REDO = 다시 실행(&R)\tCtrl+Y
+ID_CMD_CUT = 잘라내기(&X)\tCtrl+X
+ID_CMD_COPY = 복사(&C)\tCtrl+C
+ID_CMD_PASTE = 붙여넣기(&P)\tCtrl+V
+ID_CMD_DELETE = 삭제(&D)\tDel
+ID_CMD_SELECTALL = 모두 선택(&A)\tCtrl+A
+ID_CMD_DATETIME = 날짜/시간 삽입(&T)\tF6
+ID_CMD_INSERTUNI = 유니코드 삽입(&N)...\tCtrl+I
+ID_CMD_UPPERCASE = 대문자(&U)\tAlt+U
+ID_CMD_LOWERCASE = 소문자(&L)\tAlt+L
+ID_CMD_INVERTCASE = 대소문자 반전(&I)\tAlt+I
+ID_CMD_ASCIIFY = ASCII로 변환(&R)\tAlt+R
+ID_CMD_TTSPACES = 줄 끝 공백 제거(&T)\tAlt+W
+ID_CMD_SFCHAR = 첫 글자 제거(&F)\tAlt+Z
+ID_CMD_SLCHAR = 마지막 글자 제거(&A)\tAlt+A
+ID_CMD_QUOTE = 따옴표 추가(&Q)\tAlt+Q
+ID_CMD_UNQUOTE = 따옴표 제거(&N)\tAlt+N
+ID_CMD_UNINORMC = NF&C (composed)
+ID_CMD_UNINORMD = NF&D (decomposed)
+ID_CMD_UNINORMKC = NF&KC (compatibility composed)
+ID_CMD_UNINORMKD = &NFKD (compatibility decomposed)
+ID_CMD_RECONV = 재변환(&V)
+ID_CMD_TOGGLEIME = IME 켜기/끄기(&I)
+ID_CMD_FIND = 찾기 및 바꾸기(&F)\tCtrl+F
+ID_CMD_FINDNEXT = 다음 찾기(&N)\tF3
+ID_CMD_FINDPREV = 이전 찾기(&P)\tShift+F3
+ID_CMD_JUMP = 줄로 이동(&J)\tCtrl+J
+ID_CMD_GREP = Grep(&G)...\tCtrl+G
+ID_CMD_OPENSELECTION = 선택한 파일 열기(&O)...\tF7
+ID_CMD_NOWRAP = 줄 바꿈 안 함(&N)\tCtrl+1
+ID_CMD_WRAPWIDTH = 지정된 너비로 줄 바꿈(&W)\tCtrl+2
+ID_CMD_WRAPWINDOW = 창 끝에서 줄 바꿈(&R)\tCtrl+3
+ID_CMD_ZOOMDLG = 확대/축소 설정(&S)...
+ID_CMD_ZOOMRZ = 확대/축소 초기화(&E)
+ID_CMD_ZOOMUP = 확대(&U)
+ID_CMD_ZOOMDN = 축소(&W)
+ID_CMD_CONFIG = 설정(&S)...
+ID_CMD_STATUSBAR = 상태 표시줄(&B)
+ID_CMD_HELP = 도움말(&C)...\tF1
+ID_CMD_HELPABOUT = 정보(&A)
+
+[Dialog.IDD_REOPENDLG]
+Caption = 다시 열기
+IDOK = 확인
+IDCANCEL = 취소
+static.0 = 문자 인코딩(&C):
+
+[Dialog.IDD_JUMP]
+Caption = 줄로 이동
+IDOK = 이동(&G)
+IDC_LINLABEL = 줄 번호
+
+[Dialog.IDD_FINDREPLACE]
+Caption = 찾기 및 바꾸기
+ID_FINDNEXT = 다음 찾기(&F)
+ID_FINDPREV = 이전 찾기(&E)
+ID_REPLACENEXT = 바꾸기(&R)
+ID_REPLACEALL = 모두 바꾸기(&A)
+IDCANCEL = 닫기
+IDC_IGNORECASE = 대소문자 구분 안 함(&I)
+IDC_REGEXP = 정규식(&X)
+static.0 = 검색 문자열(&T):
+static.1 = 바꿀 문자열(&W):
+static.2 = 옵션(&O)
+
+[Dialog.IDD_ABOUTDLG]
+Caption = 정보
+IDCANCEL = 닫기
+
+[Dialog.IDD_ADDDOCTYPE]
+Caption = 새 파일 형식 추가
+IDOK = 확인
+IDCANCEL = 취소
+static.0 = 이름(&N):
+static.1 = 확장명(&E):
+
+[Dialog.IDD_CONFIG]
+Caption = 설정
+IDOK = 확인
+IDCANCEL = 취소
+IDC_UNDOLIM1 = 제한 없음
+IDC_COUNTBYLETTER = 문자
+IDC_COUNTBYLETTER2 = 위치
+IDC_OPENSAME = 같은 창에서 열기(&R)
+IDC_REMSIZE = 창 크기 기억(&S)
+IDC_REMPLACE = 창 위치 기억(&P)
+IDC_NEWDOCTYPE = 추가
+IDC_DELDOCTYPE = 제거
+IDC_EDITKWD = 편집
+IDC_EDITLAY = 편집
+static.0 = 일반
+static.1 = 실행 취소 제한(&U):
+static.2 = 회
+static.3 = 열 위치 표시(&L):
+static.4 = MRU 파일 수(&H):
+static.5 = 텍스트 파일 필터(&F):
+static.6 = 외부 Grep 프로그램(&G):
+static.7 = 새 파일 모드(&N):
+static.8 = 파일 형식 설정
+static.9 = 패턴:
+static.10 = 키워드:
+static.11 = 레이아웃:

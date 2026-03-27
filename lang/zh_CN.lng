@@ -1,0 +1,158 @@
+# GreenPad Language File
+# Language: Simplified Chinese (China)
+# Encoding: UTF-8
+
+[Info]
+Language = Simplified Chinese
+LangCode = zh_CN
+
+[Strings]
+IDS_ASKTOSAVE = 想要保存当前的文件吗？
+IDS_APPNAME = GreenPad
+IDS_SAVEERROR = 保存文件失败
+IDS_ALLFILES = 全部文件(*.*)
+IDS_TXTFILES = 文本文件
+IDS_OPENERROR = 打开文件失败
+IDS_DEFAULT = (默认)
+IDS_NOTFOUND = 没有找到字符串
+IDS_REPLACEALLDONE = %d次替换
+IDS_OKTODEL = 将要移除，确定？
+IDS_LOADING = 载入文件...
+IDS_NOTFOUNDDOWN = 没有找到字符串\n继续从头搜索？
+IDS_NOWRITEACESS = \n写入被拒绝！\n\n是否提升权限以方便修改文件？
+IDS_ERRORNUM = \n\n错误 #
+IDS_CANTOPENDIR = \n无法打开目录！
+IDS_INVALIDCP = 选择的代码页无效！
+IDS_MODIFIEDOUT = 文件已在GreenPad外部被修改！\n重新载入？
+IDS_INSERTUNI = 插入Unicode字符
+IDS_INSSERT = 插入(&I)
+IDS_ZOOMPC = Zoom
+IDS_UNTITLED = 无标题
+IDS_CHARSET_CAPTION = 字符编码:
+IDS_CRLF_CAPTION = 换行符:
+
+[Menu]
+popup.0 = 文件(&F)
+popup.1 = 编辑(&E)
+popup.2 = 查找(&S)
+popup.3 = 查看(&V)
+popup.4 = 帮助(&H)
+popup.0.13 = 最近打开的文件(&M)
+popup.1.13 = 修改(&M)
+popup.1.14 = Unic&ode NF
+popup.3.9 = 文档类型(&T)
+ID_CMD_NEWFILE = 新建(&N)\tCtrl+N
+ID_CMD_OPENFILE = 打开(&O)...\tCtrl+O
+ID_CMD_REOPENFILE = 重新载入(&R)...\tCtrl+R
+ID_CMD_REFRESHFILE = 刷新(&F)\tF5
+ID_CMD_OPENELEVATED = 用管理员权限打开 (&L)...\tCtrl+L
+ID_CMD_SAVEFILE = 保存(&S)\tCtrl+S
+ID_CMD_SAVEFILEAS = 另存为(&A)...\tCtrl+Shift+S
+ID_CMD_PRINT = 打印(&P)...\tCtrl+P
+ID_CMD_PAGESETUP = 打印设置(&U)...
+ID_CMD_SAVEEXIT = 保存并退出(&I)\tCtrl+E
+ID_CMD_DISCARDEXIT = 放弃并退出(&D)\tCtrl+Shift+E
+ID_CMD_EXIT = 退出(&X)
+ID_CMD_UNDO = 撤销(&U)\tCtrl+Z
+ID_CMD_REDO = 重做(&R)\tCtrl+Y
+ID_CMD_CUT = 剪切(&X)\tCtrl+X
+ID_CMD_COPY = 复制(&C)\tCtrl+C
+ID_CMD_PASTE = 粘贴(&P)\tCtrl+V
+ID_CMD_DELETE = 删除(&D)\tDel
+ID_CMD_SELECTALL = 全选(&A)\tCtrl+A
+ID_CMD_DATETIME = 插入日期/时间(&T)\tF6
+ID_CMD_INSERTUNI = 插入Unicode字符(&N)...\tCtrl+I
+ID_CMD_UPPERCASE = 全部大写(&U)\tAlt+U
+ID_CMD_LOWERCASE = 全部小写(&L)\tAlt+L
+ID_CMD_INVERTCASE = 反转大小写(&I)\tAlt+I
+ID_CMD_ASCIIFY = 还原为ASCII码(&R)\tAlt+R
+ID_CMD_TTSPACES = 修剪行尾空白(&T)\tAlt+W
+ID_CMD_SFCHAR = 移除首个字符(&F)\tAlt+Z
+ID_CMD_SLCHAR = 移除末尾字符(&A)\tAlt+A
+ID_CMD_QUOTE = 插入引用符号(&Q)\tAlt+Q
+ID_CMD_UNQUOTE = 移除引用符号(&N)\tAlt+N
+ID_CMD_UNINORMC = NF&C (composed)
+ID_CMD_UNINORMD = NF&D (decomposed)
+ID_CMD_UNINORMKC = NF&KC (compatibility composed)
+ID_CMD_UNINORMKD = &NFKD (compatibility decomposed)
+ID_CMD_RECONV = 重新转换(&V)
+ID_CMD_TOGGLEIME = 输入法 开/关(&I)
+ID_CMD_FIND = 查找和替换(&F)\tCtrl+F
+ID_CMD_FINDNEXT = 查找下一个(&N)\tF3
+ID_CMD_FINDPREV = 查找上一个(&P)\tShift+F3
+ID_CMD_JUMP = 跳到指定行(&J)\tCtrl+J
+ID_CMD_GREP = Grep工具(&G)...\tCtrl+G
+ID_CMD_OPENSELECTION = 打开所选文件(&O)...\tF7
+ID_CMD_NOWRAP = 不换行(&N)\tCtrl+1
+ID_CMD_WRAPWIDTH = 按字符换行(&W)\tCtrl+2
+ID_CMD_WRAPWINDOW = 按窗口换行(&R)\tCtrl+3
+ID_CMD_ZOOMDLG = 缩放设置(&S)...
+ID_CMD_ZOOMRZ = 重置缩放(&E)
+ID_CMD_ZOOMUP = 放大(&U)
+ID_CMD_ZOOMDN = 缩小(&W)
+ID_CMD_CONFIG = 设置(&S)...
+ID_CMD_STATUSBAR = 状态栏(&B)
+ID_CMD_HELP = 关联帮助(&C)...\tF1
+ID_CMD_HELPABOUT = 关于(&A)
+
+[Dialog.IDD_REOPENDLG]
+Caption = 重新载入
+IDOK = 确定
+IDCANCEL = 取消
+static.0 = 字符编码(&C):
+
+[Dialog.IDD_JUMP]
+Caption = 跳到指定行
+IDOK = 确定(&G)
+IDC_LINLABEL = 行号
+
+[Dialog.IDD_FINDREPLACE]
+Caption = 查找和替换
+ID_FINDNEXT = 查找下一个(&F)
+ID_FINDPREV = 查找上一个(&E)
+ID_REPLACENEXT = 替换(&R)
+ID_REPLACEALL = 全部替换(&A)
+IDCANCEL = 关闭
+IDC_IGNORECASE = 忽略大小写(&I)
+IDC_REGEXP = 正则表达式(&X)
+static.0 = 搜索字符串(&T):
+static.1 = 替换字符串(&W):
+static.2 = 选项(&O)
+
+[Dialog.IDD_ABOUTDLG]
+Caption = 关于
+IDCANCEL = 关闭
+
+[Dialog.IDD_ADDDOCTYPE]
+Caption = 新增文档类型
+IDOK = 确定
+IDCANCEL = 取消
+static.0 = 名称(&N):
+static.1 = 后缀名(&E):
+
+[Dialog.IDD_CONFIG]
+Caption = 设置
+IDOK = 确定
+IDCANCEL = 取消
+IDC_UNDOLIM1 = 无限
+IDC_COUNTBYLETTER = 字数
+IDC_COUNTBYLETTER2 = 位置
+IDC_OPENSAME = 在同一窗口打开(&R)
+IDC_REMSIZE = 记忆窗口大小(&S)
+IDC_REMPLACE = 记忆窗口位置(&P)
+IDC_NEWDOCTYPE = 新增
+IDC_DELDOCTYPE = 删除
+IDC_EDITKWD = 编辑
+IDC_EDITLAY = 编辑
+static.0 = 通用
+static.1 = 撤销限制(&U):
+static.2 = 次
+static.3 = 光标位置显示(&L):
+static.4 = 历史文件数量(&H):
+static.5 = 文件过滤器(&F):
+static.6 = 外部Grep工具(&G):
+static.7 = 新建文件模式(&N):
+static.8 = 文档类型设置
+static.9 = 后缀名:
+static.10 = 关键词:
+static.11 = 布局:

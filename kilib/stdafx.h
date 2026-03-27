@@ -55,7 +55,7 @@
 
 #endif
 
-#if defined (__cplusplus) && __cplusplus >= 201103L
+#if (defined(__cplusplus) && __cplusplus >= 201103L) || (defined(_MSC_VER) && _MSC_VER >= 1900)
 	// Define the cool new 'final' class attribute
 	// Introduced in C++11
 	#define A_FINAL final

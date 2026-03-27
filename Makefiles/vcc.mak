@@ -34,7 +34,8 @@ OBJS = \
  $(INTDIR)\Search.$(OBJ_SUFFIX)      \
  $(INTDIR)\RSearch.$(OBJ_SUFFIX)     \
  $(INTDIR)\ConfigManager.$(OBJ_SUFFIX) \
- $(INTDIR)\PcreSearch.$(OBJ_SUFFIX)
+ $(INTDIR)\PcreSearch.$(OBJ_SUFFIX) \
+ $(INTDIR)\LangManager.$(OBJ_SUFFIX)
 
 LIBS = \
  kernel32.lib \

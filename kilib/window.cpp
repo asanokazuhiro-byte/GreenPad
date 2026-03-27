@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "app.h"
 #include "window.h"
+#include "../LangManager.h"
 #ifndef SCS_CAP_SETRECONVERTSTRING
 #define SCS_CAP_SETRECONVERTSTRING 0x00000004
 #endif
@@ -792,6 +793,7 @@ INT_PTR CALLBACK DlgImpl::MainProc(
 		DlgImpl* ptr = reinterpret_cast<DlgImpl*>(lp);
 		ptr->SetHwnd( dlg );
 		ptr->on_init();
+		LangManager::Get().ApplyToDialog( dlg, ptr->rsrcID_ );
 		return FALSE;
 	}
 

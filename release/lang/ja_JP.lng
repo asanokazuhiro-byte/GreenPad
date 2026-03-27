@@ -1,0 +1,158 @@
+# GreenPad Language File
+# Language: Japanese (Japan)
+# Encoding: UTF-8
+
+[Info]
+Language = Japanese
+LangCode = ja_JP
+
+[Strings]
+IDS_ASKTOSAVE = 現在の文書を保存しますか？
+IDS_APPNAME = GreenPad
+IDS_SAVEERROR = ファイルの保存に失敗しました。
+IDS_ALLFILES = 全てのファイル(*.*)
+IDS_TXTFILES = テキスト形式のファイル
+IDS_OPENERROR = ファイルを開くのに失敗しました。
+IDS_DEFAULT = (標準)
+IDS_NOTFOUND = 見つかりませんでした。
+IDS_REPLACEALLDONE = %d箇所置換しました。
+IDS_OKTODEL = を削除してよろしいですか？
+IDS_LOADING = ファイルを読み込んでいます...
+IDS_NOTFOUNDDOWN = 見つかりませんでした。\n先頭から再検索しますか？
+IDS_NOWRITEACESS = \n書き込みアクセスが拒否されました。\n\n管理者で開きますか?
+IDS_ERRORNUM = \n\nエラー #
+IDS_CANTOPENDIR = \nディレクトリを開けません。
+IDS_INVALIDCP = 不正なコードページが選択されました。
+IDS_MODIFIEDOUT = ファイルがGreenPad外で変更されました。\n開き直しますか？
+IDS_INSERTUNI = Unicode挿入
+IDS_INSSERT = 挿入(&I)
+IDS_ZOOMPC = Zoom
+IDS_UNTITLED = 無題
+IDS_CHARSET_CAPTION = 文字コード:
+IDS_CRLF_CAPTION = 改行コード:
+
+[Menu]
+popup.0 = ファイル(&F)
+popup.1 = 編集(&E)
+popup.2 = 検索(&S)
+popup.3 = 表示(&V)
+popup.4 = ヘルプ(&H)
+popup.0.13 = 最近のファイル(&M)
+popup.1.13 = 変換(&M)
+popup.1.14 = Unic&ode NF
+popup.3.9 = 文書タイプ(&T)
+ID_CMD_NEWFILE = 新規作成(&N)\tCtrl+N
+ID_CMD_OPENFILE = 開く(&O)...\tCtrl+O
+ID_CMD_REOPENFILE = 開き直す(&R)...\tCtrl+R
+ID_CMD_REFRESHFILE = 再表示(&F)\tF5
+ID_CMD_OPENELEVATED = 管理者で開く(&L)...\tCtrl+L
+ID_CMD_SAVEFILE = 保存(&S)\tCtrl+S
+ID_CMD_SAVEFILEAS = 別名で保存(&A)...\tCtrl+Shift+S
+ID_CMD_PRINT = 印刷(&P)...\tCtrl+P
+ID_CMD_PAGESETUP = ページ設定(&U)...
+ID_CMD_SAVEEXIT = 保存して終了(&I)\tCtrl+E
+ID_CMD_DISCARDEXIT = 保存せずに終了(&D)\tCtrl+Shift+E
+ID_CMD_EXIT = 終了(&X)
+ID_CMD_UNDO = 元に戻す(&U)\tCtrl+Z
+ID_CMD_REDO = やり直す(&R)\tCtrl+Y
+ID_CMD_CUT = 切り取り(&X)\tCtrl+X
+ID_CMD_COPY = コピー(&C)\tCtrl+C
+ID_CMD_PASTE = 貼り付け(&P)\tCtrl+V
+ID_CMD_DELETE = 削除(&D)\tDel
+ID_CMD_SELECTALL = 全てを選択(&A)\tCtrl+A
+ID_CMD_DATETIME = 日時の挿入(&T)\tF6
+ID_CMD_INSERTUNI = Unicode挿入(&N)...\tCtrl+I
+ID_CMD_UPPERCASE = 大文字変換(&U)\tAlt+U
+ID_CMD_LOWERCASE = 小文字変換(&L)\tAlt+L
+ID_CMD_INVERTCASE = 大文字小文字反転(&I)\tAlt+I
+ID_CMD_ASCIIFY = ASCII変換(&R)\tAlt+R
+ID_CMD_TTSPACES = 行末空白削除(&T)\tAlt+W
+ID_CMD_SFCHAR = 行頭1文字削除(&F)\tAlt+Z
+ID_CMD_SLCHAR = 行末1文字削除(&A)\tAlt+A
+ID_CMD_QUOTE = 引用符付加(&Q)\tAlt+Q
+ID_CMD_UNQUOTE = 引用符削除(&n)\tAlt+N
+ID_CMD_UNINORMC = NF&C (composed)
+ID_CMD_UNINORMD = NF&D (decomposed)
+ID_CMD_UNINORMKC = NF&KC (compatibility composed)
+ID_CMD_UNINORMKD = &NFKD (compatibility decomposed)
+ID_CMD_RECONV = 再変換(&V)
+ID_CMD_TOGGLEIME = IME On/Off(&I)
+ID_CMD_FIND = 検索・置換(&F)\tCtrl+F
+ID_CMD_FINDNEXT = 次を検索(&N)\tF3
+ID_CMD_FINDPREV = 前を検索(&P)\tShift+F3
+ID_CMD_JUMP = 指定行へジャンプ(&J)\tCtrl+J
+ID_CMD_GREP = Grep(&G)...\tCtrl+G
+ID_CMD_OPENSELECTION = 選択範囲のファイルを開く(&O)...\tF7
+ID_CMD_NOWRAP = 折り返さない(&N)\tCtrl+1
+ID_CMD_WRAPWIDTH = 指定幅で折り返し(&W)\tCtrl+2
+ID_CMD_WRAPWINDOW = 右端で折り返し(&R)\tCtrl+3
+ID_CMD_ZOOMDLG = ズーム設定(&S)...
+ID_CMD_ZOOMRZ = ズームリセット(&E)
+ID_CMD_ZOOMUP = ズームアップ(&U)
+ID_CMD_ZOOMDN = ズームダウン(&W)
+ID_CMD_CONFIG = 設定(&S)...
+ID_CMD_STATUSBAR = ステータス バー(&B)
+ID_CMD_HELP = ヘルプ(&C)...\tF1
+ID_CMD_HELPABOUT = バージョン情報(&A)
+
+[Dialog.IDD_REOPENDLG]
+Caption = 開き直す
+IDOK = OK
+IDCANCEL = キャンセル
+static.0 = 文字コード(&C):
+
+[Dialog.IDD_JUMP]
+Caption = 指定行へジャンプ
+IDOK = &Go!
+IDC_LINLABEL = 行目へ
+
+[Dialog.IDD_FINDREPLACE]
+Caption = 検索・置換
+ID_FINDNEXT = 次を検索(&F)
+ID_FINDPREV = 前を検索(&E)
+ID_REPLACENEXT = 置換(&R)
+ID_REPLACEALL = 全置換(&A)
+IDCANCEL = 閉じる
+IDC_IGNORECASE = 大文字小文字を区別しない(&I)
+IDC_REGEXP = 正規表現(&X)
+static.0 = 検索文字列(&T):
+static.1 = 置換文字列(&W):
+static.2 = オプション(&O)
+
+[Dialog.IDD_ABOUTDLG]
+Caption = バージョン情報
+IDCANCEL = 閉じる
+
+[Dialog.IDD_ADDDOCTYPE]
+Caption = 文書タイプの追加
+IDOK = OK
+IDCANCEL = キャンセル
+static.0 = 名前(&N):
+static.1 = 拡張子(&E):
+
+[Dialog.IDD_CONFIG]
+Caption = エディタ設定
+IDOK = OK
+IDCANCEL = キャンセル
+IDC_UNDOLIM1 = 無限
+IDC_COUNTBYLETTER = 文字数
+IDC_COUNTBYLETTER2 = 表示位置
+IDC_OPENSAME = 同じウィンドウで開く(&R)
+IDC_REMSIZE = ウィンドウサイズを記憶(&S)
+IDC_REMPLACE = ウィンドウ位置を記憶(&P)
+IDC_NEWDOCTYPE = 追加
+IDC_DELDOCTYPE = 削除
+IDC_EDITKWD = 編集
+IDC_EDITLAY = 編集
+static.0 = 共通設定
+static.1 = [元に戻す]上限(&U):
+static.2 = 回
+static.3 = 横位置の表示(&L):
+static.4 = ファイル履歴件数(&H):
+static.5 = ファイル・フィルタ(&F):
+static.6 = 外部Grep(&G):
+static.7 = 新規ファイルのモード(&N):
+static.8 = 文書タイプ別設定
+static.9 = パターン:
+static.10 = キーワード:
+static.11 = レイアウト:

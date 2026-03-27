@@ -2,6 +2,7 @@
 #include "kilib/stdafx.h"
 #include "rsrc/resource.h"
 #include "GpMain.h"
+#include "LangManager.h"
 using namespace ki;
 using namespace editwing;
 
@@ -29,45 +30,12 @@ void BootNewProcess( const TCHAR* cmd = TEXT("") )
 	}
 }
 
-static LANGID ResolveMenuLangId(LANGID uiLang)
-{
-	WORD primary = PRIMARYLANGID(uiLang);
-	WORD sublang = SUBLANGID(uiLang);
-
-	switch (primary)
-	{
-	case LANG_JAPANESE:
-		return MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT);
-	case LANG_KOREAN:
-		return MAKELANGID(LANG_KOREAN, SUBLANG_DEFAULT);
-	case LANG_CHINESE:
-		if (sublang == SUBLANG_CHINESE_TRADITIONAL ||
-			sublang == SUBLANG_CHINESE_HONGKONG ||
-			sublang == SUBLANG_CHINESE_MACAU)
-			return MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL);
-		return MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED);
-	default:
-		return MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
-	}
-}
-
 static HMENU LoadLocalizedMainMenu(HINSTANCE hInst)
 {
-	LANGID langId = ResolveMenuLangId(::GetUserDefaultUILanguage());
-	HRSRC hRsrc = ::FindResourceEx(hInst, RT_MENU, MAKEINTRESOURCE(IDR_MAIN), langId);
-	if (!hRsrc)
-		return ::LoadMenu(hInst, MAKEINTRESOURCE(IDR_MAIN));
-
-	HGLOBAL hMem = ::LoadResource(hInst, hRsrc);
-	if (!hMem)
-		return ::LoadMenu(hInst, MAKEINTRESOURCE(IDR_MAIN));
-
-	const void* pMenu = ::LockResource(hMem);
-	if (!pMenu)
-		return ::LoadMenu(hInst, MAKEINTRESOURCE(IDR_MAIN));
-
-	HMENU hMenu = ::LoadMenuIndirect(reinterpret_cast<const MENUTEMPLATE*>(pMenu));
-	return hMenu ? hMenu : ::LoadMenu(hInst, MAKEINTRESOURCE(IDR_MAIN));
+	HMENU hMenu = ::LoadMenu(hInst, MAKEINTRESOURCE(IDR_MAIN));
+	if (hMenu)
+		LangManager::Get().ApplyToMenu(hMenu);
+	return hMenu;
 }
 
 static HMENU getDocTypeSubMenu(HWND hwnd) { return GetSubMenu( ::GetSubMenu(::GetMenu(hwnd),3),9 ); }
@@ -1903,6 +1871,20 @@ int kmain()
 {
 	// MsgBox(GetCommandLine(), TEXT("Command Line"), MB_OK);
 	LOGGER( "kmain() begin" );
+
+	// Load runtime language file from lang/ directory next to the exe.
+	{
+		wchar_t exePath[MAX_PATH];
+		GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+		// Trim to directory part
+		wchar_t* lastSlash = wcsrchr(exePath, L'\\');
+		if (lastSlash)
+			*lastSlash = L'\0';
+		wchar_t langDir[MAX_PATH];
+		wsprintfW(langDir, L"%s\\lang", exePath);
+		LangManager::AutoLoad(langDir);
+	}
+
 	GreenPadWnd wnd;
 	{
 		Argv  arg;
