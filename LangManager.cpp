@@ -429,24 +429,16 @@ void LangManager::ApplyToDialog(HWND hDlg, UINT dialogId) const {
 }
 
 // ---------------------------------------------------------------------------
-// DetectLocale - returns static string literals
+// DetectLocale - returns BCP 47 locale name via GetLocaleInfoEx (e.g. "ja-JP")
 // ---------------------------------------------------------------------------
 const wchar_t* LangManager::DetectLocale() {
-    LANGID langId = GetUserDefaultUILanguage();
-    WORD lang = PRIMARYLANGID(langId);
-    WORD sublang = SUBLANGID(langId);
-    switch (lang) {
-    case LANG_JAPANESE: return L"ja_JP";
-    case LANG_KOREAN:   return L"ko_KR";
-    case LANG_CHINESE:
-        if (sublang == SUBLANG_CHINESE_TRADITIONAL ||
-            sublang == SUBLANG_CHINESE_HONGKONG    ||
-            sublang == SUBLANG_CHINESE_MACAU)
-            return L"zh_TW";
-        return L"zh_CN";
-    default:
-        return nullptr;
+    static wchar_t locBuf[LOCALE_NAME_MAX_LENGTH] = {};
+    if (locBuf[0] == L'\0') {
+        if (GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME,
+                            locBuf, LOCALE_NAME_MAX_LENGTH) == 0)
+            return nullptr;
     }
+    return locBuf[0] ? locBuf : nullptr;
 }
 
 // ---------------------------------------------------------------------------
@@ -454,19 +446,27 @@ const wchar_t* LangManager::DetectLocale() {
 // ---------------------------------------------------------------------------
 bool LangManager::AutoLoad(const wchar_t* langDir, const wchar_t* locale) {
     const wchar_t* loc = (locale && locale[0]) ? locale : DetectLocale();
-    if (!loc) return false; // English - no lng file needed
+    if (!loc || !loc[0]) return false;
 
-    // Try exact match: lang/ja_JP.lng
-    std::wstring path = std::wstring(langDir) + L"\\" + loc + L".lng";
-    if (Get().Load(path.c_str()))
+    std::wstring base = std::wstring(langDir) + L"\\";
+    std::wstring locStr = loc;
+
+    // Try exact match: lang/ja-JP.lng
+    if (Get().Load((base + locStr + L".lng").c_str()))
         return true;
 
-    // Try language-only fallback: lang/ja.lng
-    const wchar_t* under = wcschr(loc, L'_');
-    if (under) {
-        std::wstring langOnly(loc, under);
-        path = std::wstring(langDir) + L"\\" + langOnly + L".lng";
-        if (Get().Load(path.c_str()))
+    // For 3-part BCP 47 (e.g. zh-Hans-CN), strip script subtag -> zh-CN.lng
+    size_t first = locStr.find(L'-');
+    if (first != std::wstring::npos) {
+        size_t second = locStr.find(L'-', first + 1);
+        if (second != std::wstring::npos) {
+            std::wstring reduced = locStr.substr(0, first) + locStr.substr(second);
+            if (Get().Load((base + reduced + L".lng").c_str()))
+                return true;
+        }
+        // Language-only fallback: lang/ja.lng
+        std::wstring langOnly = locStr.substr(0, first);
+        if (Get().Load((base + langOnly + L".lng").c_str()))
             return true;
     }
 

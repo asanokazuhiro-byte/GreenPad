@@ -4,7 +4,7 @@
 
 [Info]
 Language = Korean
-LangCode = ko_KR
+LangCode = ko-KR
 
 [Strings]
 IDS_ASKTOSAVE = 현재 파일을 저장하시겠습니까?

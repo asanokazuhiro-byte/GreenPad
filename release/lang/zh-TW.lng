@@ -4,7 +4,7 @@
 
 [Info]
 Language = Traditional Chinese
-LangCode = zh_TW
+LangCode = zh-TW
 
 [Strings]
 IDS_ASKTOSAVE = 要儲存目前檔案嗎？

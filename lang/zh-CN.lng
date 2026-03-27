@@ -4,7 +4,7 @@
 
 [Info]
 Language = Simplified Chinese
-LangCode = zh_CN
+LangCode = zh-CN
 
 [Strings]
 IDS_ASKTOSAVE = 想要保存当前的文件吗？

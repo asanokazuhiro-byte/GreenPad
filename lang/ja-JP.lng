@@ -4,7 +4,7 @@
 
 [Info]
 Language = Japanese
-LangCode = ja_JP
+LangCode = ja-JP
 
 [Strings]
 IDS_ASKTOSAVE = 現在の文書を保存しますか？
