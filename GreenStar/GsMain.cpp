@@ -402,6 +402,8 @@ bool GreenStarWnd::HandleWsKey( MSG* msg )
 	{
 		const int prevState = wsKeyState_;
 		wsKeyState_ = 0;
+		// Restore cursor-position display in MAIN_PART
+		{ DPos c = old_cur_, s = old_sel_; old_cur_.tl = (ulong)-1; on_move(c, s); }
 
 		if( prevState == 'K' )
 		{
@@ -478,8 +480,8 @@ bool GreenStarWnd::HandleWsKey( MSG* msg )
 	case 'W': edit_.getDoc().Redo();                 return true;
 
 	// Two-stroke prefixes
-	case 'K': wsKeyState_ = 'K';                     return true;
-	case 'Q': wsKeyState_ = 'Q';                     return true;
+	case 'K': wsKeyState_ = 'K'; stb_.SetText(TEXT("^K")); return true;
+	case 'Q': wsKeyState_ = 'Q'; stb_.SetText(TEXT("^Q")); return true;
 	}
 
 	return false;
