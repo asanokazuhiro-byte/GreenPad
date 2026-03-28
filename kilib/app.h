@@ -47,13 +47,13 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.Core //@}
 //@{
-//	アプリケーション全体の統括
+//	Overall application management
 //
-//	アプリ起動/終了用処理を担当します。
-//	旧kilibと違って、ユーザー側のアプリケーションクラスを
-//	ここから派生させることは出来ません。ユーザーのコードは、
-//	必ず kmain() というグローバル関数から実行開始されます。
-//	このAppクラス自体は、主にHINSTANCEの管理を行うだけ。
+//	Responsible for application startup/termination processing.
+//	Unlike the old kilib, the application class on the user side
+//	It cannot be derived from here. The user's code is
+//	Execution always starts from the global function kmain().
+//	This App class itself mainly manages HINSTANCE.
 //@}
 //=========================================================================
 
@@ -64,80 +64,80 @@ public:
 	enum imflag { CTL=1, COM=2, OLE=4, OLEDLL=8 };
 
 	//@{
-	//	種々のモジュールを初期化する
+	//	Initialize various modules
 	//
-	//	これで初期化しておくと、App終了時に自動で
-	//	終了処理が行われるので簡単便利でございます。
-	//	@param what CTL(コモンコントロール)、COM、OLE
+	//	If you initialize it with this, it will be automatically activated when the app closes.
+	//	It is easy and convenient because the termination process is done.
+	//	@param what CTL (common control), COM, OLE
 	//@}
 	void InitModule( imflag what );
 
-	//@{ プロセス強制終了 //@}
+	//@{ Force termination of process //@}
 	void Exit( int code );
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HACCEL LoadAccel( LPCTSTR name )
 		{ return ::LoadAccelerators( hInst_, name ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HACCEL LoadAccel( UINT id )
 		{ return ::LoadAccelerators( hInst_, MAKEINTRESOURCE(id) ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HBITMAP LoadBitmap( LPCTSTR name )
 		{ return ::LoadBitmap( hInst_, name ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HBITMAP LoadBitmap( UINT id )
 		{ return ::LoadBitmap( hInst_, MAKEINTRESOURCE(id) ); }
 
-	//@{ リソース(OBM_XXXX) //@}
+	//@{ Resource(OBM_XXXX) //@}
 	inline HBITMAP LoadOemBitmap( LPCTSTR obm )
 		{ return ::LoadBitmap( NULL, obm ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HCURSOR LoadCursor( LPCTSTR name )
 		{ return ::LoadCursor( hInst_, name ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HCURSOR LoadCursor( UINT id )
 		{ return ::LoadCursor( hInst_, MAKEINTRESOURCE(id) ); }
 
-	//@{ リソース(IDC_XXXX) //@}
+	//@{ Resource(IDC_XXXX) //@}
 	inline HCURSOR LoadOemCursor( LPCTSTR idc )
 		{ return ::LoadCursor( NULL, idc ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HICON LoadIcon( LPCTSTR name )
 		{ return ::LoadIcon( hInst_, name ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HICON LoadIcon( UINT id )
 		{ return ::LoadIcon( hInst_, MAKEINTRESOURCE(id) ); }
 
-	//@{ リソース(IDI_XXXX) //@}
+	//@{ Resource(IDI_XXXX) //@}
 	inline HICON LoadOemIcon( LPCTSTR idi )
 		{ return ::LoadIcon( NULL, idi ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HMENU LoadMenu( LPCTSTR name )
 		{ return ::LoadMenu( hInst_, name ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline HMENU LoadMenu( UINT id )
 		{ return ::LoadMenu( hInst_, MAKEINTRESOURCE(id) ); }
 
-	//@{ リソース //@}
+	//@{ resource //@}
 	inline int LoadString( UINT id, LPTSTR buf, int siz )
 		{ return ::LoadString( hInst_, id, buf, siz ); }
 
 public:
 
-	//@{ インスタンスハンドル //@}
+	//@{ instance handle //@}
 	HINSTANCE hinst() const { return hInst_; }
 	HINSTANCE hOle32() const { return hOle32_; }
 	bool hasSysDLL(const TCHAR *dllname) const;
-	//@{ Windowsのバージョン //@}
+	//@{ Windows version //@}
 
 	DWORD getOOSVer() const A_PURE;
 	WORD getOSVer() const A_PURE;
@@ -163,7 +163,7 @@ private:
 
 	friend void APIENTRY Startup();
 
-	//@{ 唯一のアプリ情報オブジェクトを返す //@}
+	//@{ Return only one app information object //@}
 	friend inline App& app();
 
 	NOCOPY(App);

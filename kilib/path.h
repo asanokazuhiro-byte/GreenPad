@@ -23,11 +23,11 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.StdLib //@}
 //@{
-//	ファイル名処理
+//	File name processing
 //
-//	基本的には文字列ですが、特にファイル名として扱うときに便利な
-//	クラスです。名前部分のみ取り出しとか拡張子のみ取り出しとか、
-//	属性を取ってくるとか色々。
+//	Basically it is a string, but it is especially useful when treating it as a file name.
+//	It's a class. Extract only the name part, extract only the extension, etc.
+//	Retrieving attributes and various other things.
 //@}
 //=========================================================================
 
@@ -37,12 +37,12 @@ public:
 
 	Path() {}
 
-	//@{ 別のPathのコピー //@}
+	//@{ Copy another Path //@}
 	Path( const Path&   s )              : String( s ){}
 	Path( const String& s )              : String( s ){}
 	Path( const TCHAR*  s, long siz=-1 ) : String( s, siz ){}
 
-	//@{ 単純代入 //@}
+	//@{simple assignment //@}
 	Path& operator=( const Path&   s )
 		{ return static_cast<Path&>(String::operator=(s)); }
 	Path& operator=( const String& s )
@@ -50,7 +50,7 @@ public:
 	Path& operator=( const TCHAR*  s )
 		{ return static_cast<Path&>(String::operator=(s)); }
 
-	//@{ 加算代入 //@}
+	//@{ addition assignment //@}
 	Path& operator+=( const Path&   s )
 		{ return static_cast<Path&>(String::operator+=(s)); }
 	Path& operator+=( const String& s )
@@ -60,71 +60,71 @@ public:
 	Path& operator+=( TCHAR c )
 		{ return static_cast<Path&>(String::operator+=(c)); }
 
-	//@{ 特殊パス取得して初期化 //@}
+	//@{ Get special path and initialize //@}
 	explicit Path( int nPATH, bool bs=true )
 		{ BeSpecialPath( nPATH, bs ); }
 
-	//@{ 特殊パス取得 //@}
+	//@{ Get special path //@}
 	Path& BeSpecialPath( int nPATH, bool bs=true );
 
-	//@{ 特殊パス指定用定数 //@}
+	//@{ Constant for special path specification //@}
 	enum { Win=0x1787, Sys, Tmp, Exe, Cur, ExeName,
 			Snd=CSIDL_SENDTO, Dsk=CSIDL_DESKTOPDIRECTORY };
 
-	//@{ 最後にバックスラッシュを入れる(true)/入れない(false) //@}
+	//@{ Add a backslash at the end (true)/Do not add a backslash (false) //@}
 	Path& BeBackSlash( bool add );
 
-	//@{ ドライブ名ないしルートのみ //@}
+	//@{ Drive name or root only //@}
 	Path& BeDriveOnly();
 
-	//@{ ディレクトリ名のみ //@}
+	//@{ directory name only //@}
 	Path& BeDirOnly();
 
-	//@{ 短いパス名 //@}
+	//@{ short path name //@}
 	Path& BeShortStyle();
 
-	//@{ ファイル名だけは確実に長く //@}
+	//@{ Make sure the file name is long //@}
 	Path& BeShortLongStyle();
 
-	//@{ ...とかを入れて短く //@}
+	//@{ ... to make it shorter //@}
 	void CompactIfPossible(TCHAR *buf, size_t Mx) A_NONNULL;
 
-	//@{ ディレクトリ情報以外 //@}
+	//@{ Other than directory information //@}
 	inline const TCHAR* name() const { return name(c_str()); }
 
-	//@{ 最後の拡張子 //@}
+	//@{ last extension //@}
 	inline const TCHAR* ext() const { return ext(c_str()); }
 
-	//@{ 最初の.以降全部と見なした拡張子 //@}
+	//@{ All extensions after the first . //@}
 	inline const TCHAR* ext_all() const { return ext_all(c_str()); }
 
-	//@{ ディレクトリ情報と最後の拡張子を除いた名前部分 //@}
+	//@{ Name part excluding directory information and final extension //@}
 	Path body() const;
 
-	//@{ ディレクトリ情報と最初の.以降全部を除いた名前部分 //@}
+	//@{ Name part excluding directory information and everything after the first . //@}
 	Path body_all() const;
 
 public:
 
-	//@{ ファイルかどうか //@}
+	//@{ File or not //@}
 	inline bool isFile() const
 		{ return c_str()[len()-1] != TEXT('\\') && c_str()[len()-1] != TEXT('/')
 	      && 0==(GetFileAttributesUNC(c_str())&FILE_ATTRIBUTE_DIRECTORY); }
 
 
-	//@{ ディレクトリかどうか //@}
+	//@{ Directory or not //@}
 	inline bool isDirectory() const { return isDirectory( c_str() ); }
 	inline static bool isDirectory( const TCHAR *fn ) A_NONNULL
 		{ DWORD x=GetFileAttributesUNC( fn );
 		  return x!=0xffffffff && (x&FILE_ATTRIBUTE_DIRECTORY)!=0; }
 
 
-	//@{ 存在するかどうか。isFile() || isDirectory() //@}
+	//@{ Exists or not. isFile() || isDirectory() //@}
 	inline bool exist() const { return exist( c_str() ); }
 	inline static bool exist( const TCHAR *fn ) A_NONNULL
 		{ return 0xffffffff != GetFileAttributesUNC(fn); }
 
-	//@{ 読み取り専用かどうか //@}
+	//@{ Read-only or not //@}
 	inline bool isReadOnly() const { return isReadOnly( c_str() ); }
 	inline static bool isReadOnly( const TCHAR *fn )
 		{ DWORD x = GetFileAttributesUNC( fn );

@@ -21,9 +21,9 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.WinUtil //@}
 //@{
-//	クリップボード管理
+//	clipboard management
 //
-//	OpenClipboard や CloseClipboard 辺りの呼び出しを適当に自動化します。
+//	Automate calls around OpenClipboard and CloseClipboard as appropriate.
 //@}
 //=========================================================================
 
@@ -31,26 +31,26 @@ class Clipboard
 {
 public:
 
-	//@{ 開く //@}
+	//@{ open //@}
 	Clipboard( HWND owner, bool read=true );
 
-	//@{ 閉じる //@}
+	//@{ close //@}
 	~Clipboard()
 		{ if( opened_ ) ::CloseClipboard(); }
 
-	//@{ データ読み込み //@}
+	//@{ Load data //@}
 	static HANDLE GetData( UINT uFormat )
 		{ return ::GetClipboardData( uFormat ); }
 
-	//@{ 指定フォーマットのデータがクリップボード上にあるか？ //@}
+	//@{ Is there data in the specified format on the clipboard? //@}
 	static bool IsAvail( UINT uFormat )
 		{ return FALSE != ::IsClipboardFormatAvailable(uFormat); }
 
-	//@{ 指定フォーマットのデータがクリップボード上にあるか？(複数) //@}
+	//@{ Is there data in the specified format on the clipboard? (multiple) //@}
 	static bool IsAvail( UINT uFormats[], int num )
 		{ return -1 != ::GetPriorityClipboardFormat(uFormats,num); }
 
-	//@{ テキスト情報保持クラス //@}
+	//@{Text information retention class //@}
 	class Text {
 		friend class Clipboard;
 
@@ -74,20 +74,20 @@ public:
 		const unicode* data() const { return str_; }
 	};
 
-	//@{ テキスト読み込み //@}
+	//@{Read text //@}
 	Text GetUnicodeText() const;
 
-	//@{ データ書き込み //@}
+	//@{ Write data //@}
 	static bool SetData( UINT uFormat, HANDLE hData )
 		{ return NULL != ::SetClipboardData( uFormat, hData ); }
 
-	//@{ 独自フォーマットの登録 //@}
+	//@{Register your own format //@}
 	static UINT RegisterFormat( const TCHAR* name )
 		{ return ::RegisterClipboardFormat(name); }
 
 public:
 
-	//@{ 正常に開かれているかチェック //@}
+	//@{ Check if it is opened correctly //@}
 	inline bool isOpened() const { return opened_; }
 
 private:
@@ -427,9 +427,9 @@ private:
 
 //=========================================================================
 //@{
-//	排他制御
+//	exclusive control
 //
-//	名前付きMutexを扱います
+//	Handles named mutexes
 //@}
 //=========================================================================
 

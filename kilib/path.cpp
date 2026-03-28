@@ -69,7 +69,7 @@ Path& Path::BeSpecialPath( int nPATH, bool bs )
 
 Path& Path::BeBackSlash( bool add )
 {
-	// 最後の一文字を得る
+	// get the last character
 	const TCHAR* last=c_str();
 	for( const TCHAR *p=last; *p!=TEXT('\0'); p=next(p) )
 		last = p;

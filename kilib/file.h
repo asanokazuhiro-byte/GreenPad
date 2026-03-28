@@ -11,10 +11,10 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.StdLib //@}
 //@{
-//	簡易ファイル読込
+//	Simple file reading
 //
-//	ファイルマッピングを用いるので、扱いが簡単でわりと高速です。
-//	ただし困ったことに、4GBまでしか開けません。
+//	Since it uses file mapping, it is easy to handle and relatively fast.
+//	However, the problem is that you can only open up to 4GB.
 //@}
 //=========================================================================
 
@@ -30,24 +30,24 @@ public:
 	~FileR() { Close(); }
 
 	//@{
-	//	開く
-	//	@param fname ファイル名
-	//	@return 開けたかどうか
+	//	open
+	//	@param fname file name
+	//	@return Opened or not?
 	//@}
 	bool Open( const TCHAR* fname, bool always=false );
 
 	//@{
-	//	閉じる
+	//	close
 	//@}
 	void Close();
 
 public:
 
-	//@{ ファイルサイズ //@}
+	//@{ file size //@}
 	size_t size() const
 		{ return size_; };
 
-	//@{ ファイル内容をマップしたアドレス取得 //@}
+	//@{ Get address mapped with file contents //@}
 	const uchar* base() const
 		{ return static_cast<const uchar*>(basePtr_); }
 
@@ -67,9 +67,9 @@ private:
 
 //=========================================================================
 //@{
-//	簡易ファイル書き込み
+//	Simple file writing
 //
-//	てきとーにバッファリングしつつ。
+//	While buffering a lot.
 //@}
 //=========================================================================
 
@@ -80,16 +80,16 @@ public:
 	FileW();
 	~FileW();
 
-	//@{ 開く //@}
+	//@{ open //@}
 	bool Open( const TCHAR* fname, bool creat=true );
 
-	//@{ 閉じる //@}
+	//@{ close //@}
 	void Close();
 
-	//@{ 書く //@}
+	//@{ write //@}
 	void Write( const void* buf, size_t siz );
 
-	//@{ 一文字書く //@}
+	//@{Write one character //@}
 	void WriteC( const uchar ch );
 
 	//@{ Write a character without checking bufer //@}

@@ -12,9 +12,9 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.StdLib //@}
 //@{
-//	コマンドライン文字列の分割
+//	Splitting command line strings
 //
-//	ただ単にスペースと二重引用符を考慮して区切るだけです。
+//	Just delimit them with spaces and double quotes in mind.
 //@}
 //=========================================================================
 
@@ -22,14 +22,14 @@ class A_WUNUSED Argv
 {
 public:
 
-	//@{ 指定された文字列を分割する //@}
+	//@{ Split the specified string //@}
 	explicit Argv( const TCHAR* cmd = GetCommandLine() );
 	~Argv() { free( buf_ ); }
 
-	//@{ 引数Get //@}
+	//@{ Argument Get //@}
 	const TCHAR* operator[]( size_t i ) const { return arg_[i]; }
 
-	//@{ 引数の個数 //@}
+	//@{ Number of arguments //@}
 	size_t size() const { return argNum_; }
 
 private:

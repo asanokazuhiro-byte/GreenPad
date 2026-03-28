@@ -23,15 +23,15 @@ void* operator new[](size_t sz)            { return ::operator new(sz); }
 
 #ifdef USE_ORIGINAL_MEMMAN
 //=========================================================================
-//	効率的なメモリ管理を目指すアロケータ
+//	Allocator for efficient memory management
 //=========================================================================
 
 //
-// メモリブロック
-// 「sizバイト * num個」分の領域を一括確保するのが仕事
+// memory block
+// My job is to allocate space for "siz bytes * num" at once.
 //
-// 空きブロックには、先頭バイトに [次の空きブロックのindex] を格納。
-// これを用いて、先頭への出し入れのみが可能な単方向リストとして扱う。
+// [Next free block index] is stored in the first byte of a free block.
+// Using this, it is treated as a unidirectional list that can only be moved in and out of the beginning.
 //
 
 struct ki::MemBlock
@@ -39,14 +39,14 @@ struct ki::MemBlock
 public:
 	bool  Construct( ushort siz, ushort num )
 	{
-		// 確保
+		// Secure
 		buf_   = (byte *)malloc( siz*num );
 		if( !buf_ )
 			return false;
 		first_ = 0;
 		avail_ = num;
 
-		// 連結リスト初期化
+		// Linked list initialization
 		ushort i=0;
 		for( byte *p=buf_; i<num; p+=siz )
 			*((ushort*)p) = ++i;
@@ -54,12 +54,12 @@ public:
 	}
 
 	inline void  Destruct()
-		{ ::free( buf_ ); /* 解放 */ }
+		{ ::free( buf_ ); /* release */ }
 
 	void* Alloc( ushort siz )
 	{
-		// メモリ切り出し
-		//   ( avail==0 等のチェックは上位層に任せる )
+		// memory extraction
+		//   (Leave checks such as avail==0 to the upper layer)
 		byte* blk = buf_ + siz*first_;
 		first_    = *(ushort*)blk;
 		--avail_;
@@ -68,8 +68,8 @@ public:
 
 	void  DeAlloc( void* ptr, ushort siz )
 	{
-		// メモリ戻す
-		//   ( 変なポインタ渡されたらだ～め～ )
+		// restore memory
+		//   (What if a strange pointer was passed to me?)
 		byte* blk = static_cast<byte*>(ptr);
 		*(ushort*)blk      = first_;
 		first_    = static_cast<ushort>((blk-buf_)/siz);
@@ -77,10 +77,10 @@ public:
 	}
 
 	inline bool  isAvail()
-		{ return (avail_ != 0); } // 空きがある？
+		{ return (avail_ != 0); } // Is there any space available?
 	inline bool  isEmpty( ushort num )
-		{ return (avail_ == num); } // 完全に空？
-	bool hasThisPtr( const void* ptr, size_t len ) // このブロックのポインタ？
+		{ return (avail_ == num); } // Completely empty?
+	bool hasThisPtr( const void* ptr, size_t len ) // Pointer to this block?
 		{ return ( buf_<=ptr && ptr<buf_+len ); }
 
 private:
@@ -91,29 +91,29 @@ private:
 //-------------------------------------------------------------------------
 
 //
-// 固定サイズ確保人
-// 「sizバイト」の領域を毎回確保するのが仕事
+// Fixed size ensure person
+// My job is to secure an area of ​​``siz bytes'' each time.
 //
-// メモリブロックのリストを保持し、空いているブロックを使って
-// メモリ要求に応えていく。空きがなくなったら新しくMemBlockを
-// 作ってリストに加える。
+// Keep a list of memory blocks and use free blocks
+// Respond to memory demands. If there is no space left, create a new MemBlock.
+// Make one and add it to the list.
 //
-// 最後にメモリ割り当て/解放を行ったBlockをそれぞれ記憶しておき、
-// 最初にそこを調べることで高速化を図る。
+// Remember each block that was last memory allocated/released,
+// Try to speed up the process by checking that first.
 //
 
 bool MemoryManager::FixedSizeMemBlockPool::Construct( ushort siz )
 {
-	// メモリブロック情報域をちょこっと確保
+	// Secure a little memory block information area
 	blocks_ = (MemBlock *)malloc( sizeof(MemBlock) * 4 );
 	if( !blocks_ ) return false;
 
-	// ブロックサイズ等計算
+	// Calculate block size etc.
 	int npb = BLOCK_SIZ/siz;
 	numPerBlock_ = static_cast<ushort>( Min( npb, 65535 ) );
 	fixedSize_   = siz;
 
-	// 一個だけブロック作成
+	// Create only one block
 	bool ok = blocks_[0].Construct( fixedSize_, numPerBlock_ );
 	if( !ok )
 	{
@@ -130,39 +130,39 @@ bool MemoryManager::FixedSizeMemBlockPool::Construct( ushort siz )
 
 void MemoryManager::FixedSizeMemBlockPool::Destruct()
 {
-	// 各ブロックを解放
+	// free each block
 	for( int i=0; i<blockNum_; ++i )
 		blocks_[i].Destruct();
 
-	// ブロック情報保持領域のメモリも解放
+	// The memory of the block information holding area is also released.
 	free( blocks_ );
 	blockNum_ = 0;
 }
 
 void* MemoryManager::FixedSizeMemBlockPool::Alloc()
 {
-	// ここでlastA_がValidかどうかチェックしないとまずい。
-	// DeAllocされてなくなってるかもしらないので。
+	// It would be bad if we didn't check whether lastA_ is Valid here.
+	// It might be DeAlloced and gone.
 
-	// 前回メモリを切り出したブロックに
-	// まだ空きがあるかどうかチェック
+	// To the block from which memory was previously extracted
+	// Check if there are still spaces available
 	if( !blocks_[lastA_].isAvail() )
 	{
-		// 無かった場合、リストの末尾から順に線形探索
+		// If not found, perform a linear search starting from the end of the list.
 		for( int i=blockNum_;; )
 		{
 			if( blocks_[--i].isAvail() )
 			{
-				// 空きブロック発見～！
+				// Found an empty block!
 				lastA_ = i;
 				break;
 			}
 			if( i == 0 )
 			{
-				// 全部埋まってた...
+				// They were all full...
 				if( blockNum_ == blockNumReserved_ )
 				{
-					// しかも作業領域も満杯なので拡張
+					// Moreover, the work area is full, so expand it.
 					MemBlock* nb = (MemBlock *)malloc( sizeof(MemBlock) * blockNum_*2 );
 					if( !nb )
 						return NULL;
@@ -172,7 +172,7 @@ void* MemoryManager::FixedSizeMemBlockPool::Alloc()
 					blockNumReserved_ *= 2;
 				}
 
-				// 新しくブロック構築
+				// Build a new block
 				bool ok = blocks_[ blockNum_ ].Construct( fixedSize_, numPerBlock_ );
 				if( !ok ) return NULL;
 				lastA_ = blockNum_++;
@@ -181,13 +181,13 @@ void* MemoryManager::FixedSizeMemBlockPool::Alloc()
 		}
 	}
 	void *ret = blocks_[lastA_].Alloc( fixedSize_ );
-	// ブロックから切り出し割り当て
+	// Cut out and allocate from block
 	return ret;
 }
 
 void MemoryManager::FixedSizeMemBlockPool::DeAlloc( void* ptr )
 {
-	// 該当ブロックを探索
+	// Search for the corresponding block
 	const INT_PTR mx=blockNum_-1, ln=fixedSize_*numPerBlock_;
 	for( INT_PTR u=lastDA_, d=lastDA_-1;; )
 	{
@@ -217,17 +217,17 @@ void MemoryManager::FixedSizeMemBlockPool::DeAlloc( void* ptr )
 			}
 	}
 
-	// 解放を実行
+	// execute release
 	blocks_[lastDA_].DeAlloc( ptr, fixedSize_ );
 
-	// この削除でブロックが完全に空になった場合
+	// If this deletion leaves the block completely empty
 	if( blocks_[lastDA_].isEmpty( numPerBlock_ ) )
 	{
-		// しかも一番後ろのブロックでなかったら
+		// And if it wasn't the last block
 		INT_PTR end = blockNum_-1;
 		if( lastDA_ != end )
 		{
-			// 一番後ろが空だったら解放
+			// If the backmost one is empty, release it.
 			if( blocks_[end].isEmpty( numPerBlock_ ) )
 			{
 				blocks_[end].Destruct();
@@ -236,7 +236,7 @@ void MemoryManager::FixedSizeMemBlockPool::DeAlloc( void* ptr )
 					lastA_ = end;
 			}
 
-			// 後ろと交換
+			// replace with the back
 			MemBlock tmp( blocks_[lastDA_] );
 			blocks_[lastDA_] = blocks_[end];
 			blocks_[end]     = tmp;
@@ -259,24 +259,24 @@ void MemoryManager::FixedSizeMemBlockPool::DeAlloc( void* ptr )
 
 inline bool MemoryManager::FixedSizeMemBlockPool::isValid()
 {
-	// 既に使用開始されているか？
+	// Has it already been used?
 	return (blockNum_ != 0);
 }
 
 //-------------------------------------------------------------------------
 
 //
-// 最上位層
-// 指定サイズにあった FixedSizeMemBlockPool に処理をまわす
+// top layer
+// Transfer processing to FixedSizeMemBlockPool that matches the specified size
 //
-// lokiの実装では固定サイズアロケータも、必要に応じて
-// 動的確保していたが、それは面倒なのでやめました。(^^;
-// 最初に64個確保したからと言って、そんなにメモリも喰わないし…。
+// The loki implementation also uses a fixed size allocator, if needed.
+// I used to dynamically allocate it, but I stopped doing that because it was troublesome. (^^;
+// Even if you allocate 64 at the beginning, it doesn't take up that much memory...
 //
 MemoryManager* MemoryManager::pUniqueInstance_;
 MemoryManager::MemoryManager()
 {
-	// メモリプールをZEROクリア
+	// Clear memory pool to ZERO
 	#ifndef STACK_MEM_POOLS
 	static MemoryManager::FixedSizeMemBlockPool staticpools[ SMALL_MAX/2 ];
 	pools_ = staticpools;
@@ -285,13 +285,13 @@ MemoryManager::MemoryManager()
 	mem00( pools_, /*sizeof(pools_)*/ sizeof(FixedSizeMemBlockPool) * (SMALL_MAX/2) );
 	#endif
 
-	// 唯一のインスタンスは私です
+	// the only instance is me
 	pUniqueInstance_ = this;
 }
 
 MemoryManager::~MemoryManager()
 {
-	// 構築済みメモリプールを全て解放, Release all built memory pools
+	// Release all built memory pools, Release all built memory pools
 	for( int i=0; i<SMALL_MAX/2; ++i )
 		if( pools_[i].isValid() )
 			pools_[i].Destruct();
@@ -303,24 +303,24 @@ void* A_HOT MemoryManager::Alloc( size_t siz )
 {
 	siz = siz + (siz&1);
 
-	// サイズが零か大きすぎるなら
-	// デフォルトの new 演算子に任せる
+	// If the size is zero or too large
+	// Leave it to the default new operator
 	uint i = static_cast<uint>( (siz-1)/2 );
 	if( i >= SMALL_MAX/2 )
 		return malloc( siz );
 
-	// マルチスレッド対応
+	// Multi-thread compatible
 	AutoLock al(this);
 
-	// このサイズのメモリ確保が初めてなら
-	// ここでメモリプールを作成する。
+	// If this is your first time allocating memory of this size,
+	// Create a memory pool here.
 	if( !pools_[i].isValid() )
 	{
 		bool ok = pools_[i].Construct( static_cast<ushort>(siz) );
 		if( !ok ) return NULL;
 	}
 
-	// ここで割り当て
+	// Assign here
 	return pools_[i].Alloc();
 }
 
@@ -328,19 +328,19 @@ void A_HOT MemoryManager::DeAlloc( void* ptr, size_t siz )
 {
 	siz = siz + (siz&1);
 
-	// サイズが零か大きすぎるなら
-	// デフォルトの delete 演算子に任せる
+	// If the size is zero or too large
+	// Defer to default delete operator
 	uint i = static_cast<uint>( (siz-1)/2 );
 	if( i >= SMALL_MAX/2 )
 	{
 		::free( ptr );
-		return; // VCで return void が出来ないとは…
+		return; // You can't do return void in VC...
 	}
 
-	// マルチスレッド対応
+	// Multi-thread compatible
 	AutoLock al(this);
 
-	// ここで解放
+	// release here
 	pools_[i].DeAlloc( ptr );
 }
 
@@ -352,7 +352,7 @@ MemoryManager* MemoryManager::pUniqueInstance_;
 
 MemoryManager::MemoryManager()
 {
-	// 唯一のインスタンスは私です
+	// the only instance is me
 	pUniqueInstance_ = this;
 
 }

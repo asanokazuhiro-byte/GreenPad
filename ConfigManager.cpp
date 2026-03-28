@@ -12,14 +12,14 @@ using namespace editwing;
 void BootNewProcess( const TCHAR* cmd ); // in GpMain.cpp
 
 //-------------------------------------------------------------------------
-// 設定項目管理。
-// SetDocTypeで切り替えると、文書タイプ依存の項目を自動で
-// 入れ替えたり色々。
+// Setting item management.
+// When switched with SetDocType, document type dependent items are automatically changed.
+// Swapping and stuff.
 //-------------------------------------------------------------------------
 
 ConfigManager::ConfigManager()
 {
-	// デフォルトのレイアウト設定は何よりも先に読んでおく
+	// Read the default layout settings before anything else.
 	DocType d;
 	d.name    = RzsString(IDS_DEFAULT).c_str();
 	d.layfile = TEXT("default.lay");
@@ -28,7 +28,7 @@ ConfigManager::ConfigManager()
 	dtList_.Add( d );
 	curDt_ = dtList_.begin();
 
-	// ini読み込み
+	// ini loading
 	LoadIni();
 	SetDocTypeByName( newfileDoctype_ );
 	LOGGER( "ConfigManager() initialized" );
@@ -36,7 +36,7 @@ ConfigManager::ConfigManager()
 
 ConfigManager::~ConfigManager()
 {
-	// ini保存
+	// ini save
 	SaveIni();
 }
 
@@ -75,7 +75,7 @@ int ConfigManager::SetDocType( const Path& fname )
 				if( b ) break;
 			}
 		if( i == e )
-			ct=0, i=dtList_.begin(); // 適切なのが見つからなければ[標準]。
+			ct=0, i=dtList_.begin(); // If you can't find a suitable one, choose [Standard].
 	}
 	else
 	{
@@ -91,14 +91,14 @@ int ConfigManager::SetDocType( const Path& fname )
 bool ConfigManager::MatchDocType
 	( const unicode* fname, const unicode* pat )
 {
-	// pattern と fname とのマッチをとって判定…
+	// Determine by matching pattern and fname...
 	return reg_match( pat, fname, false );
 }
 
 
 
 //-------------------------------------------------------------------------
-// 設定ダイアログ関連
+// Settings dialog related
 //-------------------------------------------------------------------------
 
 struct ConfigDlg A_FINAL: public ki::DlgImpl
@@ -412,7 +412,7 @@ bool ConfigManager::DoDialog( const ki::Window& parent )
 		ConfigDlg dlg(*this, parent.hwnd());
 		if( IDOK != dlg.endcode() )
 			return false;
-		curDt_ = dtList_.begin(); // とりあえず
+		curDt_ = dtList_.begin(); // for now
 	}
 	inichanged_=1;
 	SaveIni();
@@ -422,7 +422,7 @@ bool ConfigManager::DoDialog( const ki::Window& parent )
 
 
 //-------------------------------------------------------------------------
-// *.lay ファイルからの読み込み処理, Process reading from *.lay file
+// Process reading from *.lay file, Process reading from *.lay file
 //-------------------------------------------------------------------------
 
 namespace {
@@ -467,12 +467,12 @@ namespace {
 #define COLBRIGHTNESS(x) ( (218*GetRValue(x) + 732*GetGValue(x) + 74*GetBValue(x))>>10 )
 void ConfigManager::LoadLayout( ConfigManager::DocType* dt )
 {
-  // １．省略値として…
+  // 1. As a default value...
 
 	DtList::iterator ref = dtList_.begin();
 	if( ref != dtList_.end() && ref->loaded )
 	{
-		// default.layがロードされていればそれを使う
+		// If default.lay is loaded, use it
 		dt->vc        = ref->vc;
 		dt->wrapWidth = ref->wrapWidth;
 		dt->wrapType  = ref->wrapType;
@@ -483,7 +483,7 @@ void ConfigManager::LoadLayout( ConfigManager::DocType* dt )
 	}
 	else
 	{
-		// 組み込みのデフォルト設定をロード, Load built-in default settings
+		// Load built-in default settings
 		COLORREF bgcol = ::GetSysColor(COLOR_WINDOW); // RGB(255,255,255);
 		bool brightmode = COLBRIGHTNESS(bgcol) > 128;
 		dt->vc.SetTabStep( 4 );
@@ -508,7 +508,7 @@ void ConfigManager::LoadLayout( ConfigManager::DocType* dt )
 	}
 	dt->loaded     = true;
 
-  // ２．*.layファイルからの読み込み
+  // 2. Loading from *.lay files
 	// MessageBox(NULL, dt->layfile.c_str(), TEXT("Loading"), 0);
 	unicode buf[512];
 	size_t len = GetLayData(dt->layfile.c_str(), buf, countof(buf));
@@ -674,7 +674,7 @@ size_t ConfigManager::GetLayData(const TCHAR *name, unicode *buf, size_t buf_len
 
 
 //-------------------------------------------------------------------------
-// *.ini ファイルからの読み込み/書き込み処理
+// Reading/writing from *.ini files
 //-------------------------------------------------------------------------
 
 static const TCHAR s_sharedConfigSection[] = TEXT("SharedConfig");
@@ -684,10 +684,10 @@ void ConfigManager::LoadIni()
 	ki::IniFile ini_;
 	inichanged_=0;
 
-	// 共通の設定の読み取りセクション
+	// Reading common settings section
 	sharedConfigMode_ = ini_.SetSectionAsUserNameIfNotShared( s_sharedConfigSection );
 
-	// 共通の設定
+	// Common settings
 	zoom_      = (short)ini_.GetInt( TEXT("Zoom"), 100 );
 	undoLimit_ = ini_.GetInt( TEXT("UndoLimit"), -1 );
 	txtFilter_ = ini_.GetStr( TEXT("TxtFilter"),
@@ -724,7 +724,7 @@ void ConfigManager::LoadIni()
 
 	language_ = ini_.GetStr( TEXT("Language"), TEXT("") );
 
-	// 新規ファイル関係
+	// New file related
 	newfileCharset_ = ini_.GetInt( TEXT("NewfileCharset"), charSets_.defaultCs() );
 	if(newfileCharset_ == -1) newfileCharset_ = 1252; // 1.07.4 bugfix
 	int neededCP = TextFileR::neededCodepage(newfileCharset_);
@@ -733,7 +733,7 @@ void ConfigManager::LoadIni()
 	newfileDoctype_ = ini_.GetStr( TEXT("NewfileDoctype"), RzsString( IDS_DEFAULT ).c_str() );
 	newfileLB_      = (lbcode) ini_.GetInt( TEXT("NewfileLB"), CRLF );
 
-	// 文書タイプリストの０番以外のクリア
+	// Clear all numbers other than 0 in the document type list
 	dtList_.DelAfter( ++dtList_.begin() );
 	ReadAllDocTypes( ini_.getName() );
 
@@ -826,7 +826,7 @@ void ConfigManager::ReadAllDocTypes( const TCHAR *ininame )
 				++i;
 		}
 
-		// その文書タイプを実際に読み込み
+		// actually read that document type
 		d.name      = p;
 		d.layfile   = *substrings[0] ? substrings[0] : TEXT("default.lay");
 		d.kwdfile   = substrings[1];
@@ -868,10 +868,10 @@ void ConfigManager::SaveIni()
 	ini_.PutStrinSect( Ulong2lStr(strnum, ct), TEXT("DocType"), TEXT("") );
 
 
-	// 共通の設定の書き込みセクション
+	// Write section for common settings
 	ini_.SetSectionAsUserNameIfNotShared( s_sharedConfigSection );
 
-	// 共通の設定
+	// Common settings
 	ini_.PutInt( TEXT("Zoom"), zoom_ );
 	ini_.PutInt( TEXT("UndoLimit"), undoLimit_ );
 	ini_.PutStr( TEXT("TxtFilter"), txtFilter_.c_str() );
@@ -897,7 +897,7 @@ void ConfigManager::SaveIni()
 
 	ini_.PutStr( TEXT("Language"), language_.c_str() );
 
-	// 新規ファイル関係
+	// New file related
 	ini_.PutInt( TEXT("NewfileCharset"), newfileCharset_ );
 	ini_.PutStr( TEXT("NewfileDoctype"), newfileDoctype_.c_str() );
 	ini_.PutInt( TEXT("NewfileLB"),      newfileLB_      );
@@ -912,7 +912,7 @@ void ConfigManager::SaveIni()
 
 
 //-------------------------------------------------------------------------
-// [最近使ったファイル]関係
+// [Recently used files] related
 //-------------------------------------------------------------------------
 
 namespace {
@@ -923,7 +923,7 @@ bool ConfigManager::AddMRU( const ki::Path& fname )
 {
 	if(!mrus_) return false;
 
-	// メモリ内のMRUリストを更新
+	// Update MRU list in memory
 	{
 		int i;
 		for( i=0; i<mrus_; ++i ) // countof(mru_)
@@ -936,7 +936,7 @@ bool ConfigManager::AddMRU( const ki::Path& fname )
 	}
 
 	ki::IniFile ini;
-	// iniへ保存
+	// Save to ini
 	{ // Restrict Mutex context
 		Mutex mx(s_mrulock);
 		if( mx.isLocked() )
@@ -960,7 +960,7 @@ int ConfigManager::SetUpMRUMenu( HMENU m, UINT id )
 	if (!mrus_) return 0; // Nothing to do
 
 	ki::IniFile ini;
-	// iniから読み込み
+	// read from ini
 	{ // Restrict Mutex context
 		Mutex mx(s_mrulock);
 		if( mx.isLocked() )
@@ -976,10 +976,10 @@ int ConfigManager::SetUpMRUMenu( HMENU m, UINT id )
 		}
 	}
 
-	// 全項目を削除
+	// Delete all items
 	while( ::DeleteMenu( m, 0, MF_BYPOSITION ) );
 
-	// メニュー構築
+	// Menu construction
 	enum { MAX_ENTRY_LEN = 60 };
 	TCHAR buf[MAX_ENTRY_LEN+INT_DIGITS+4];
 	buf[0] = TEXT('&');
@@ -1008,7 +1008,7 @@ Path ConfigManager::GetMRU( int no ) const
 
 
 //-------------------------------------------------------------------------
-// ウインドウサイズ復元処理
+// Window size restoration process
 //-------------------------------------------------------------------------
 
 void ConfigManager::RememberWnd( const ki::Window* wnd )
@@ -1030,12 +1030,12 @@ void ConfigManager::RememberWnd( const ki::Window* wnd )
 }
 
 //-------------------------------------------------------------------------
-// [文書タイプ]サブメニューの作成
+// Creating a [Document Type] submenu
 //-------------------------------------------------------------------------
 
 void ConfigManager::SetDocTypeMenu( HMENU m, UINT idstart )
 {
-	// 全項目を削除
+	// Delete all items
 	while( ::DeleteMenu( m, 0, MF_BYPOSITION ) );
 
 	DtList::iterator i=dtList_.begin(), e=dtList_.end();

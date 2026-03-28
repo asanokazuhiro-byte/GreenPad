@@ -12,11 +12,11 @@ namespace editwing {
 //=========================================================================
 //@{ @pkg editwing.Ctrl //@}
 //@{
-//	簡単なエディットコントロール
+//	easy edit controls
 //
-//	とりあえず字が表示できて色が変えられてカーソルが動かせて…
-//	という、Doc/Viewの基本機能をそのまま使った形のもの。
-//	ウインドウ分割対応版とかもそのうち作るかもしれない。
+//	For now, the characters can be displayed, the colors can be changed, and the cursor can be moved...
+//	This is a form that uses the basic functions of Doc/View as is.
+//	I might make a split-window compatible version soon.
 //@}
 //=========================================================================
 
@@ -29,13 +29,13 @@ public:
 
 public:
 
-	//@{ 文書データ操作 //@}
+	//@{Document data manipulation //@}
 	doc::Document& getDoc() { return doc_; }
 
-	//@{ 表示機能操作 //@}
+	//@{ Display function operation //@}
 	view::View& getView() { return *view_; }
 
-	//@{ カーソル機能操作 //@}
+	//@{ Cursor function operation //@}
 	view::Cursor& getCursor() { return view_->cur(); }
 
 private:

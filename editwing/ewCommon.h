@@ -8,7 +8,7 @@ namespace editwing {
 
 
 //=========================================================================
-// Unicode関係
+// Unicode related
 //=========================================================================
 
 inline bool isHighSurrogate(unicode ch)
@@ -24,16 +24,16 @@ inline bool isLowSurrogate(unicode ch)
 //=========================================================================
 //@{ @pkg editwing.Common //@}
 //@{
-//	テキスト中の位置情報
+//	Location information in text
 //@}
 //=========================================================================
 
 struct DPos
 {
-	//@{ バッファ中のアドレス (0～ ) //@}
+	//@{Address in buffer (0~) //@}
 	ulong ad;
 
-	//@{ 論理行番号 (0～ ) //@}
+	//@{Logical line number (0~) //@}
 	ulong tl;
 
 	bool operator == ( const DPos& r ) const
@@ -57,104 +57,104 @@ struct DPos
 
 //=========================================================================
 //@{
-//	特殊文字を表す定数値
+//	Constant values ​​representing special characters
 //@}
 //=========================================================================
 
 enum SpecialChars
 {
 	scEOF = 0, // EOF
-	scEOL = 1, // 改行
-	scTAB = 2, // タブ
-	scHSP = 3, // 半角スペース
-	scZSP = 4  // 全角スペース
+	scEOL = 1, // line break
+	scTAB = 2, // tab
+	scHSP = 3, // half-width space
+	scZSP = 4  // full-width space
 };
 
 
 
 //=========================================================================
 //@{
-//	単語の種類を表す定数値
+//	Constant value representing the type of word
 //@}
 //=========================================================================
 
 enum TokenType
 {
 	TAB = 0x00, // Tab
-	WSP = 0x04, // 半角スペース, half-width space
-	ALP = 0x08, // 普通の字, normal character
-	 CE = 0x0c, // コメント終了タグ, comment end tag
-	 CB = 0x10, // コメント開始タグ, comment start tag
-	 LB = 0x14, // 行コメント開始タグ, line comment start tag
-	 Q1 = 0x18, // 単一引用符, single quote
-	 Q2 = 0x1c  // 二重引用符, double quote
+	WSP = 0x04, // half-width space
+	ALP = 0x08, // normal character
+	 CE = 0x0c, // comment end tag, comment end tag
+	 CB = 0x10, // comment start tag, comment start tag
+	 LB = 0x14, // line comment start tag, line comment start tag
+	 Q1 = 0x18, // single quote, single quote
+	 Q2 = 0x1c  // double quote, double quote
 };
 
 
 
 //=========================================================================
 //@{
-//	色指定箇所を表す定数値
+//	Constant value representing the color specified location
 //@}
 //=========================================================================
 
 enum ColorType
 {
-	TXT = 0, // 文字色
-	CMT = 1, // コメント文字色
-	KWD = 2, // キーワード文字色
-	//  = 3, // ( コメントアウトされたキーワード文字色 )
-	CTL = 4, // 特殊文字色
-	BG  = 5, // 背景色
-	LN  = 6  // 行番号
+	TXT = 0, // font color
+	CMT = 1, // Comment text color
+	KWD = 2, // Keyword text color
+	//  = 3, // (commented keyword text color)
+	CTL = 4, // special text color
+	BG  = 5, // background color
+	LN  = 6  // line number
 };
 
 
 
 //=========================================================================
 //@{
-//	折り返し位置を示す定数値
+//	Constant value indicating wrap position
 //@}
 //=========================================================================
 
 enum WrapType
 {
-	NOWRAP    = -1, // 折り返し無し
-	RIGHTEDGE =  0  // 右端
+	NOWRAP    = -1, // No wrapping
+	RIGHTEDGE =  0  // right end
 };
 
 
 
 //=========================================================================
 //@{
-//	表示設定
+//	Display settings
 //
-//	フォント・色・タブ幅・特殊文字の表示、の情報を保持。
-//	ただし、強調単語の指定は Document に対して行う。
+//	Retains information about fonts, colors, tab widths, and special character display.
+//	However, the emphasized word is specified for the Document.
 //@}
 //=========================================================================
 
 struct VConfig
 {
-	//@{ フォント //@}
+	//@{ font //@}
 	LOGFONT font;
 
-	//@{ 色 //@}
+	//@{ color //@}
 	COLORREF color[7];
 
 	short fontsize;
 	short fontwidth;
 
-	//@{ タブ幅文字数, tab width character count //@}
+	//@{ tab width character count, tab width character count //@}
 	uchar tabstep;
 
-	//@{ 特殊文字表示 //@}
+	//@{Special character display //@}
 	byte sc;
 
-	//@{ 危険なデフォルトコンストラクタ //@}
+	//@{ Dangerous default constructor //@}
 	VConfig() {}
 
-	//@{ フォント関係初期化, Initialize font relationship //@}
+	//@{ Initialize font relationship //@}
 	VConfig( const TCHAR* fnam, short fsiz )
 	{
 		SetFont( fnam,fsiz );
@@ -168,7 +168,7 @@ struct VConfig
 		sc = 0;
 	}
 
-	//@{ フォント関係設定 //@}
+	//@{ Font related settings //@}
 	void SetFont(
 		const TCHAR* fnam, short fsiz
 		, uchar fontCS=DEFAULT_CHARSET
@@ -199,7 +199,7 @@ struct VConfig
 		// ki::LOGGER( "VConfig::SetFont() end" );
 	}
 
-	//@{ タブ幅設定 //@}
+	//@{Tab width setting //@}
 	void SetTabStep( int tab )
 	{
 		tabstep = Max( 1, tab );

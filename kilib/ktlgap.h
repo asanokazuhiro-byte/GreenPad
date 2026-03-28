@@ -11,14 +11,14 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.KTL //@}
 //@{
-//	基本型専用ギャップバッファ
+//	Basic type dedicated gap buffer
 //
-//	小耳に挟んだギャップバッファというもの。
-//	ものすごい勘違いをして別物ができているかもしれませんが、
-//	細かいことはあまり気にしないでください。
-//	配列のようにランダムアクセス可能で、
-//	同一箇所への連続した挿入/削除が速いというデータ構造です。
-//	( 下の図で言うと、gap_startへの挿入/削除にはデータの移動が必要ない )
+//	There's something called a gap buffer that I heard a lot about.
+//	I may have made a huge misunderstanding and ended up with something completely different, but
+//	Don't worry too much about the details.
+//	It can be accessed randomly like an array,
+//	It is a data structure that allows for fast continuous insertion/deletion at the same location.
+//	(In the diagram below, inserting/deleting from gap_start does not require data movement.)
 //	<pre>
 //@@  D  <--0
 //@@  D
@@ -28,8 +28,8 @@ namespace ki {
 //@@  D
 //@@     <--array_end
 //	</pre>
-//	メモリイメージをそのままコピーしてる実装なので、
-//	プリミティブ型以外では絶対に使わないこと。
+//	Since the implementation copies the memory image as is,
+//	Never use it for anything other than primitive types.
 //@}
 //=========================================================================
 
@@ -39,10 +39,10 @@ class A_WUNUSED gapbuf
 public:
 
 	//@{
-	//	コンストラクタ
+	//	constructor
 	//	@param alloc_size
-	//		最初に確保する"メモリの"サイズ。
-	//		"配列の"サイズではないことに注意。
+	//		The initial "memory" size to allocate.
+	//		Note that this is not the "array's" size.
 	//@}
 	explicit gapbuf( ulong alloc_size=32 )
 		: alen_( Max(alloc_size, (ulong)16) )
@@ -53,7 +53,7 @@ public:
 	~gapbuf()
 		{ ::free( buf_ ); }
 
-	//@{ 要素挿入 //@}
+	//@{ Insert element //@}
 	bool InsertAt( ulong i, const T& x )
 		{
 			// Try to get more room if needed.
@@ -66,7 +66,7 @@ public:
 			return true;
 		}
 
-	//@{ 要素挿入(複数) //@}
+	//@{ Insert elements (multiple) //@}
 	void InsertAt( ulong i, const T* x, ulong len )
 		{
 			if( ge_-gs_ <= len )
@@ -80,21 +80,21 @@ public:
 			gs_ += len;
 		}
 
-	//@{ 末尾に要素を追加 //@}
+	//@{ Add element to end //@}
 	void Add( const T& x )
 		{ InsertAt( size(), x ); }
 
-	//@{ 末尾に要素を追加(複数) //@}
+	//@{ Add elements to the end (multiple) //@}
 	void Add( const T* x, ulong len )
 		{ InsertAt( size(), x, len ); }
 
-	//@{ 要素削除 //@}
+	//@{ Delete element //@}
 	void RemoveAt( ulong i, ulong len=1 )
 		{
 			if( i <= gs_ && gs_ <= i+len )
 			{
-				// この場合はメモリ移動の必要がない
-				// まず前半を削除
+				// In this case, there is no need to move memory
+				// Delete the first half first
 				len -= (gs_-i);
 				gs_ = i;
 			}
@@ -103,29 +103,29 @@ public:
 				MakeGapAt( i );
 			}
 
-			// 後半を削除
+			// Delete the second half
 			ge_ += len;
 		}
 
-	//@{ 要素削除(全部) //@}
+	//@{ Delete element (all) //@}
 	void RemoveAll()
 		{ RemoveAt( 0, size() ); }
 
-	//@{ 要素削除(指定index以降全部) //@}
+	//@{ Delete element (all after specified index) //@}
 	void RemoveToTail( ulong i )
 		{ RemoveAt( i, size()-i ); }
 
-	//@{ 要素コピー(指定index以降全部) //@}
+	//@{ Element copy (all after specified index) //@}
 	ulong CopyToTail( ulong i, T* x )
 		{ return CopyAt( i, size()-i, x ); }
 
-	//@{ 要素コピー //@}
+	//@{ element copy //@}
 	ulong CopyAt( ulong i, ulong len, T* x )
 		{
 			ulong copyed=0;
 			if( i < gs_ )
 			{
-				// 前半
+				// first half
 				copyed += Min( len, gs_-i );
 				memmove( (char*)x, (char*)(buf_+i), copyed*sizeof(T) );
 				x   += copyed;
@@ -133,22 +133,22 @@ public:
 				i   += copyed;
 			}
 
-			// 後半
+			// second half
 			memmove( (char*)x, (char*)(buf_+(i-gs_)+ge_), len*sizeof(T) );
 			return copyed + len;
 		}
 
 public:
 
-	//@{ 要素数 //@}
+	//@{Number of elements //@}
 	ulong size() const
 		{ return alen_ - (ge_-gs_); }
 
-	//@{ 要素取得 //@}
+	//@{get element //@}
 	T& operator[]( ulong i )
 		{ return buf_[ ( i<gs_ ) ? i : i+(ge_-gs_) ]; }
 
-	//@{ 要素取得(const) //@}
+	//@{ Get element (const) //@}
 	const T& operator[]( ulong i ) const
 		{ return buf_[ ( i<gs_ ) ? i : i+(ge_-gs_) ]; }
 
@@ -215,11 +215,11 @@ private:
 
 //=========================================================================
 //@{
-//	gapbuf + smartptr のふり
+//	Pretend to be gapbuf + smartptr
 //
-//	要素削除時にdeleteを実行しっちゃったりするバージョン。
-//	任意オブジェクトをギャップバッファで使いたいときは
-//	これでてきとーに代用すべし。
+//	A version that executes delete when deleting an element.
+//	When you want to use an arbitrary object in a gap buffer
+//	You should use this instead.
 //@}
 //=========================================================================
 
@@ -240,7 +240,7 @@ private:
 //
 //			if( i <= gs_ && gs_ <= i+len )
 //			{
-//				// 前半を削除
+//				// Delete the first half
 //				for( ulong j=i, ed=gs_; j<ed; ++j )
 //					delete buf_[j];
 //
@@ -252,7 +252,7 @@ private:
 //				gapbuf<T*>::MakeGapAt( i );
 //			}
 //
-//			// 後半を削除
+//			// Delete the second half
 //			for( ulong j=ge_, ed=ge_+len; j<ed; ++j )
 //				delete buf_[j];
 //			ge_ = ge_+len;
@@ -298,7 +298,7 @@ public:
 
 			if( i <= gs_ && gs_ <= i+len )
 			{
-				// 前半を削除
+				// Delete the first half
 				for( ulong j=i, ed=gs_; j<ed; ++j )
 					buf_[j].Clear();
 
@@ -310,7 +310,7 @@ public:
 				gapbuf<T>::MakeGapAt( i );
 			}
 
-			// 後半を削除
+			// Delete the second half
 			for( ulong j=ge_, ed=ge_+len; j<ed; ++j )
 				buf_[j].Clear();
 			ge_ = ge_+len;

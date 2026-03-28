@@ -2,8 +2,8 @@
 #define _KILIB_KTL_APTR_H_
 #include "types.h"
 #ifdef _MSC_VER
-#pragma warning( disable : 4284 ) // 警告：->のリターン型がうにゃうにゃ
-#pragma warning( disable : 4150 ) // 警告：deleteの定義がうにょうにょ
+#pragma warning( disable : 4284 ) // Warning: -> return type is limp
+#pragma warning( disable : 4150 ) // Warning: Definition of delete is confusing
 #endif
 #ifndef __ccdoc__
 namespace ki {
@@ -14,10 +14,10 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.KTL //@}
 //@{
-//	自動ポインタ
+//	automatic pointer
 //
-//	私の期待する範囲では概ね std::unique_ptr と同じ動作をすると思う…。
-//	車輪の最発明ばんざーい！
+//	I think it behaves roughly the same as std::unique_ptr within the scope of my expectations...
+//	Hurray for the best wheel invention!
 //@}
 //=========================================================================
 
@@ -26,11 +26,11 @@ class A_WUNUSED uptr
 {
 public:
 
-	//@{ コンストラクタ //@}
+	//@{ constructor //@}
 	explicit uptr( T* p = NULL )
 		: obj_( p ) {}
 
-	//@{ デストラクタ //@}
+	//@{ destructor //@}
 	~uptr()
 		{ delete obj_; }
 
@@ -48,19 +48,19 @@ public:
 
 public:
 
-	//@{ 間接演算子 //@}
+	//@{ indirect operator //@}
 	T& operator*() const
 		{ return *obj_; }
 
-	//@{ メンバ参照 //@}
+	//@{ member reference //@}
 	T* operator->() const
 		{ return obj_; }
 
-	//@{ ポインタ取得 //@}
+	//@{ Get pointer //@}
 	T* get() const
 		{ return obj_; }
 
-	//@{ 所有権解放 //@}
+	//@{Release ownership //@}
 	T* release()
 		{
 			T* ptr = obj_;
@@ -68,7 +68,7 @@ public:
 			return ptr;
 		}
 
-	//@{ 有効かどうか //@}
+	//@{ Is it valid? //@}
 	bool isValid() const
 		{
 			return (obj_ != NULL);
@@ -83,7 +83,7 @@ private:
 
 //=========================================================================
 //@{
-//	自動ポインタ（配列版）
+//	Automatic pointer (array version)
 //@}
 //=========================================================================
 
@@ -92,20 +92,20 @@ class A_WUNUSED aarr
 {
 public:
 
-	//@{ コンストラクタ //@}
+	//@{ constructor //@}
 	explicit aarr( size_t sz )
 		: obj_( (T *)malloc( sizeof(T) * sz ) ) {}
 	aarr(): obj_( NULL ) {} ;
 
-	//@{ デストラクタ //@}
+	//@{ destructor //@}
 	~aarr()
 		{ free( obj_ ); }
 
-	//@{ 所有権移動 何故かbccで上手く行かない部分があるのでconst付き //@}
+	//@{ Ownership transfer For some reason bcc doesn't work, so I added const //@}
 	aarr( const aarr<T>& r )
 		: obj_ ( const_cast<aarr<T>&>(r).release() ) {}
 
-	//@{ 所有権移動 //@}
+	//@{ Ownership transfer //@}
 	aarr<T>& operator=( aarr<T>& r )
 		{
 			if( obj_ != r.obj_ )
@@ -118,11 +118,11 @@ public:
 
 public:
 
-	//@{ ポインタ取得 //@}
+	//@{ Get pointer //@}
 	T* get() const
 		{ return obj_; }
 
-	//@{ 所有権解放 //@}
+	//@{Release ownership //@}
 	T* release()
 		{
 			T* ptr = obj_;
@@ -130,7 +130,7 @@ public:
 			return ptr;
 		}
 
-	//@{ 有効かどうか //@}
+	//@{ Is it valid? //@}
 	bool isValid() const
 		{
 			return (obj_ != NULL);
@@ -138,7 +138,7 @@ public:
 
 public:
 
-	//@{ 配列要素アクセス //@}
+	//@{Array element access //@}
 	T& operator[]( int i ) const
 		{ return obj_[i]; }
 
@@ -151,13 +151,13 @@ private:
 
 //=========================================================================
 //@{
-//	削除権専有ポインタ
+//	Deletion rights exclusive pointer
 //
-//	「リソースの獲得はコンストラクタで・解放はデストラクタで」を
-//	徹底できるならこんなの使わずに、迷わず const auto_ptr を用いる
-//	べきです。べきですが、メンバ初期化リストで this を使うとVC++の
-//	コンパイラに怒られるのが気持悪いので、ついこっちを使ってコンストラクタ
-//	関数内で初期化してしまうのでふ…(^^;
+//	"Resources are acquired in the constructor and released in the destructor"
+//	If you can be thorough, don't use this, use const auto_ptr without hesitation
+//	Should. Should be, but if you use this in the member initialization list, VC++'s
+//	I don't want to get scolded by the compiler, so I just used this constructor
+//	Because it is initialized within the function...(^^;
 //@}
 //=========================================================================
 #if 0
@@ -166,22 +166,22 @@ class dptr
 {
 public:
 
-	//@{ コンストラクタ //@}
+	//@{ constructor //@}
 	explicit dptr( T* p = NULL )
 		: obj_( p ) {}
 
-	//@{ デストラクタ //@}
+	//@{ destructor //@}
 	~dptr()
 		{ delete obj_; }
 
-	//@{ 新しいオブジェクトを所有。古いのは削除 //@}
+	//@{ own new object; Delete the old one //@}
 	void operator=( T* p )
 		{
-			delete obj_; // 古いのは削除
+			delete obj_; // Delete the old one
 			obj_ = p;
 		}
 
-	//@{ 有効かどうか //@}
+	//@{ Is it valid? //@}
 	bool isValid() const
 		{
 			return (obj_ != NULL);
@@ -189,15 +189,15 @@ public:
 
 public:
 
-	//@{ 間接演算子 //@}
+	//@{ indirect operator //@}
 	T& operator*() const
 		{ return *obj_; }
 
-	//@{ メンバ参照 //@}
+	//@{ member reference //@}
 	T* operator->() const
 		{ return obj_; }
 
-	//@{ ポインタ取得 //@}
+	//@{ Get pointer //@}
 	T* get() const
 		{ return obj_; }
 
@@ -214,7 +214,7 @@ private:
 
 //=========================================================================
 //@{
-//	削除権専有ポインタ（配列版）
+//	Deletion right exclusive pointer (array version)
 //@}
 //=========================================================================
 
@@ -223,22 +223,22 @@ class darr
 {
 public:
 
-	//@{ コンストラクタ //@}
+	//@{ constructor //@}
 	explicit darr( T* p = NULL )
 		: obj_( p ) {}
 
-	//@{ デストラクタ //@}
+	//@{ destructor //@}
 	~darr()
 		{ delete [] obj_; }
 
-	//@{ 新しいオブジェクトを所有。古いのは削除 //@}
+	//@{ own new object; Delete the old one //@}
 	void operator=( T* p )
 		{
-			delete [] obj_; // 古いのは削除
+			delete [] obj_; // Delete the old one
 			obj_ = p;
 		}
 
-	//@{ 有効かどうか //@}
+	//@{ Is it valid? //@}
 	bool isValid() const
 		{
 			return (obj_ != NULL);
@@ -246,7 +246,7 @@ public:
 
 public:
 
-	//@{ 配列要素アクセス //@}
+	//@{Array element access //@}
 	T& operator[]( int i ) const
 		{ return obj_[i]; }
 

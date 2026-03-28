@@ -194,9 +194,9 @@ namespace ki {
 
 //=========================================================================
 //@{
-//	文字列処理＋α２
+//	String processing + α2
 //
-//	Wide文字版関数を自前で
+//	Create the wide text version function yourself
 //@}
 //=========================================================================
 //#undef lstrcpy
@@ -207,12 +207,12 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.StdLib //@}
 //@{
-//	文字列処理
+//	String processing
 //
-//	かなりMFCのCStringをパクってます。とりあえず operator= による
-//	単純代入にはほとんどコストがかからないようにしました。SubStr()の
-//	時もコピーしないようにしようかとも思ったんですが、そこまでは
-//	要らないだろうという気もするので…。
+//	It pretty much copies MFC's CString. For now, use operator=
+//	We made simple assignments almost costless. SubStr()
+//	I also thought about not copying the time, but until then
+//	I feel like I don't need it...
 //@}
 //=========================================================================
 
@@ -220,37 +220,37 @@ class A_WUNUSED String
 {
 public:
 
-	//@{ 空文字列作成 //@}
+	//@{Create empty string //@}
 	inline String() { SetData( null() ); }
 	~String();
 
-	//@{ 別のStringのコピー //@}
+	//@{ Copying another String //@}
 	inline String( const String& obj ) { SetData( obj.data() ); }
 
-	//@{ 別の文字配列のコピー //@}
+	//@{ Copying another character array //@}
 	String( const TCHAR* str, long siz=-1 );
 
-	//@{ リソースから作成 //@}
+	//@{ Create from resource //@}
 	inline explicit String( UINT rsrcID ) { SetData( null() ), Load( rsrcID ); }
 
-	//@{ 大文字小文字を区別する比較 //@}
+	//@{ Case-sensitive comparison //@}
 	inline bool operator==( LPCTSTR s ) const
 		{ return 0==my_lstrcmp( c_str(), s ); }
 	inline bool operator==( const String& obj ) const
 		{ return (data_==obj.data_ ? true : operator==( obj.c_str() )); }
 
-	//@{ 大文字小文字を区別しない比較 //@}
+	//@{ Case-insensitive comparison //@}
 	bool isSame( LPCTSTR s ) const
 		{ return 0==::lstrcmpi( c_str(), s ); }
 	bool isSame( const String& obj ) const
 		{ return (data_==obj.data_ ? true : operator==( obj.c_str() )); }
 
-	//@{ 単純代入 //@}
+	//@{simple assignment //@}
 	String& operator=( const String& obj );
 	String& operator=( const TCHAR* s ) { return SetString( s, my_lstrlen(s) ); }
 	String& operator=( const XTCHAR* s );
 
-	//@{ 加算代入 //@}
+	//@{ addition assignment //@}
 	String& operator+=( const String& obj )
 		{ return CatString( obj.c_str(), obj.len() ); }
 	String& operator+=( const TCHAR* s )
@@ -264,37 +264,37 @@ public:
 	String& operator+=( const wchar_t* s );
 #endif
 
-	//@{ リソースロード //@}
+	//@{ Resource load //@}
 	String& Load( UINT rsrcID );
 
-	//@{ 右を削る //@}
+	//@{ cut right //@}
 	void TrimRight( size_t siz );
 
-	//@{ intから文字列へ変換 //@}
+	//@{ Convert int to string //@}
 	String& SetInt( int n );
 
 	String& SetUlong( ulong n );
 
-	//@{ 文字列からintへ変換 //@}
+	//@{ Convert string to int //@}
 	int GetInt() const { return GetInt( data_->buf() ); }
 	int GetULong() const { return GetULong( data_->buf() ); }
 
 public:
 
-	//@{ 文字列バッファを返す //@}
+	//@{ return string buffer //@}
 	inline const TCHAR* c_str() const { return data_->buf(); }
 
-	//@{ 長さ //@}
+	//@{ length //@}
 	inline size_t len() const { return data_->len-1; }
 
-	//@{ 要素 //@}
+	//@{ element //@}
 	inline TCHAR operator[](int n) const { return data_->buf()[n]; }
 
-	//@{ ワイド文字列に変換して返す //@}
+	//@{ Convert to wide string and return //@}
 	const wchar_t* ConvToWChar() const;
 	const char* ConvToChar() const;
 
-	//@{ ConvTo(W)Charの返値バッファの解放 //@}
+	//@{ Release the return value buffer of ConvTo(W)Char //@}
 	void FreeWCMem( const wchar_t* wc ) const;
 	void FreeCMem( const char* str ) const;
 
@@ -303,25 +303,25 @@ public:
 
 public:
 
-	//@{ 次の一文字 //@}
+	//@{ Next character //@}
 	static TCHAR*       next( TCHAR* p ) A_NONNULL;
 	static const TCHAR* next( const TCHAR* p ) A_NONNULL;
 
-	//@{ ２バイト文字の先頭かどうか？ //@}
+	//@{ Is it the beginning of a double-byte character? //@}
 	static bool isLB( TCHAR c );
 
-	//@{ 文字列からintへ変換 //@}
+	//@{ Convert string to int //@}
 	static int GetInt( const TCHAR* p ) A_NONNULL;
 	static ulong GetULong( const TCHAR* x ) A_NONNULL;
 
 protected:
 
-	// 書き込み可能なバッファを、終端含めて最低でもminimum文字分用意する
+	// Prepare a writable buffer for at least minimum characters including the end
 	inline TCHAR* AllocMem( size_t minimum )
 		{ return AllocMemHelper( minimum, TEXT(""), 1 ); }
 	TCHAR* ReallocMem( size_t minimum=0 );
 
-	// 書き込み終了後、長さを再設定
+	// After writing, reset the length
 	void UnlockMem( long siz=-1 )
 		{ data_->len = 1 + (siz==-1 ? my_lstrlen(c_str()) : siz); }
 
@@ -329,9 +329,9 @@ private:
 
 	struct StringData
 	{
-		long  ref;         // 参照カウンタ
-		size_t len;        // 終端'\0'を含める長さ
-		size_t alen;       // 割り当てられているメモリのサイズ
+		long  ref;         // reference counter
+		size_t len;        // Length including terminating '\0'
+		size_t alen;       // Size of allocated memory
 		TCHAR* buf() const // TCHAR buf[alen]
 			{ return reinterpret_cast<TCHAR*>(
 				const_cast<StringData*>(this+1)
@@ -343,10 +343,10 @@ private:
 	TCHAR*  AllocMemHelper( size_t minimum, const TCHAR* str, size_t siz ) A_NONNULL;
 	String& CatString( const TCHAR* str, size_t siz ) A_NONNULL;
 	String& SetString( const TCHAR* str, size_t siz ) A_NONNULL;
-	inline void   SetData( StringData* d ) A_NONNULL { data_=d, data_->ref++; } // 初期化
+	inline void   SetData( StringData* d ) A_NONNULL { data_=d, data_->ref++; } // Initialization
 	void          ReleaseData();
-	inline static StringData* null() { return nullData_; } // ０文字データ
-	inline        StringData* data() const { return data_; } // 内部データ構造
+	inline static StringData* null() { return nullData_; } // 0 character data
+	inline        StringData* data() const { return data_; } // Internal data structure
 
 private:
 
@@ -368,7 +368,7 @@ private:
 #ifndef __ccdoc__
 
 
-// ポインタ計算サポート
+// Pointer calculation support
 #if !defined(_UNICODE) && defined(_MBCS)
 	inline TCHAR* String::next( TCHAR* p )
 		{ return p + lb_[*(uchar*)p]; }
@@ -398,7 +398,7 @@ inline const String operator+( const TCHAR* a, const String& b )
 inline const String operator+( const String& a, TCHAR b )
 	{ return String(a) += b; }
 
-// ConvToWCharの返値バッファの解放
+// Freeing the return value buffer of ConvToWChar
 inline void String::FreeWCMem( const wchar_t* wc ) const
 #ifdef _UNICODE
 	{}
@@ -422,9 +422,9 @@ inline bool String::isCompatibleWithACP() const
 #undef XTCHAR
 //=========================================================================
 //@{
-//	文字列処理＋α
+//	String processing + α
 //
-//	Stringクラス内のバッファ確保関数を呼べるようにした版Stringです。
+//	This is a version of String that allows you to call the buffer allocation function in the String class.
 //@}
 //=========================================================================
 

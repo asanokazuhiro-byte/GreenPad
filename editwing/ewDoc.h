@@ -18,11 +18,11 @@ class Replace;
 
 //=========================================================================
 //@{
-//	イベントハンドラインターフェイス
+//	event handler interface
 //
-//	ドキュメントから発生するイベント（挿入/削除などなど…）を
-//	受け取りたい場合は、このインターフェイスを継承し、適宜ハンドラを
-//	書くこと。Viewの再描画処理などもこれを通じて実行されている。
+//	Events that occur from the document (insert/delete, etc.)
+//	If you want to receive it, inherit this interface and set the handler accordingly.
+//	writing. View redrawing processing is also executed through this.
 //@}
 //=========================================================================
 
@@ -30,23 +30,23 @@ class A_NOVTABLE DocEvHandler
 {
 public:
 	//@{
-	//	テキスト内容が変更されたときに発生
-	//	@param s        変更範囲の先頭
-	//	@param e        変更範囲の終端(前)
-	//	@param e2       変更範囲の終端(後)
-	//	@param reparsed e2より後ろのコメントアウト状態が変化していたらtrue
-	//	@param nmlcmd   挿入/削除/置換ならtrue、ファイル開き/全置換ならfalse
+	//	Occurs when the text content changes
+	//	@param s Start of change range
+	//	@param e End of change range (previous)
+	//	@param e2 End of change range (after)
+	//	@param reparsed True if the commented out state after e2 has changed
+	//	@param nmlcmd true for insert/delete/replace, false for open file/replace all
 	//@}
 	virtual void on_text_update( const DPos& s,
 		const DPos& e, const DPos& e2, bool reparsed, bool nmlcmd ) {}
 
 	//@{
-	//	キーワードが変更されたときに発生
+	//	Occurs when a keyword is changed
 	//@}
 	virtual void on_keyword_change() {}
 
 	//@{
-	//	ダーティフラグが変更されたときに発生
+	//	Occurs when the dirty flag is changed
 	//@}
 	virtual void on_dirtyflag_change( bool dirty ) {}
 };
@@ -55,12 +55,12 @@ public:
 
 //=========================================================================
 //@{
-//	操作コマンドインターフェイス
+//	Operation command interface
 //
-//	ドキュメントは、Command から派生したクラスのインスタンスの
-//	operator() を呼び出すことで、色々な操作を実行する。とりあえず
-//	具体的には Insert/Delete/Replace の３つだけ。あとでマクロコマンド用
-//	クラスも作るつもりだけど、とりあえずは保留。
+//	The documentation for instances of classes derived from Command
+//	Perform various operations by calling operator(). for now
+//	Specifically, there are only three: Insert/Delete/Replace. later for macro commands
+//	I'm planning to create a class, but I'll put it on hold for now.
 //@}
 //=========================================================================
 
@@ -78,7 +78,7 @@ public:
 
 //=========================================================================
 //@{
-//	挿入コマンド
+//	insert command
 //@}
 //=========================================================================
 
@@ -87,10 +87,10 @@ class Insert A_FINAL: public Command
 public:
 
 	//@{
-	//	@param s 挿入位置
-	//	@param str 挿入文字列
-	//	@param len 文字列の長さ
-	//	@param del コマンド終了時にdelete [] strしてよいか？
+	//	@param s insertion position
+	//	@param str insert string
+	//	@param len String length
+	//	@param del Can I delete [] str when the command ends?
 	//@}
 	Insert( const DPos& s, const unicode* str, ulong len, bool del=false );
 	~Insert() override;
@@ -108,7 +108,7 @@ private:
 
 //=========================================================================
 //@{
-//	削除コマンド
+//	Delete command
 //@}
 //=========================================================================
 
@@ -117,8 +117,8 @@ class Delete A_FINAL: public Command
 public:
 
 	//@{
-	//	@param s 開始位置
-	//	@param e 終端位置
+	//	@param s start position
+	//	@param e end position
 	//@}
 	Delete( const DPos& s, const DPos& e );
 
@@ -134,7 +134,7 @@ private:
 
 //=========================================================================
 //@{
-//	置換コマンド
+//	Replacement command
 //@}
 //=========================================================================
 
@@ -143,11 +143,11 @@ class Replace A_FINAL: public Command
 public:
 
 	//@{
-	//	@param s 開始位置
-	//	@param e 終端位置
-	//	@param str 挿入文字列
-	//	@param len 文字列の長さ
-	//	@param del コマンド終了時にdelete [] strしてよいか？
+	//	@param s start position
+	//	@param e end position
+	//	@param str insert string
+	//	@param len String length
+	//	@param del Can I delete [] str when the command ends?
 	//@}
 	Replace( const DPos& s, const DPos& e,
 		const unicode* str, ulong len, bool del=false );
@@ -167,27 +167,27 @@ private:
 
 //=========================================================================
 //@{
-//	マクロコマンド
+//	macro command
 //
-//	複数のコマンドを一つのコマンドとして連続実行する。
-//	ただし、Insert/Delete/Replaceを一回行うたびに当然
-//	文字列の位置は変化するのだが、それに関する変換処理は
-//	行わない。すなわち、Insert->Delete->Insert みたいな
-//	連続処理を書くときは、行数や文字数の変化を考慮しながら
-//	値を定めていくことが必要になる。ので、あんまり使えない(^^;
+//	Continuously execute multiple commands as one command.
+//	However, each time you perform Insert/Delete/Replace, the
+//	The position of the string changes, but the conversion process is
+//	Don't do it. i.e. something like Insert->Delete->Insert
+//	When writing continuous processing, consider changes in the number of lines and characters.
+//	It is necessary to determine the value. So I can't use it much (^^;
 //@}
 //=========================================================================
 
 class MacroCommand A_FINAL: public Command
 {
 public:
-	//@{ コマンドの追加 //@}
+	//@{Add command //@}
 	void Add( Command* cmd ) { if( cmd ) arr_.Add(cmd); } // do not save NULLs
 
-	//@{ コマンド数 //@}
+	//@{Number of commands //@}
 	ulong size() const { return arr_.size(); }
 
-	//@ デストラクタ //@}
+	//@ destructor //@}
 	~MacroCommand() override
 	{
 		for( ulong i=0,e=arr_.size(); i<e; ++i )

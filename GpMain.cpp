@@ -7,7 +7,7 @@ using namespace ki;
 using namespace editwing;
 
 //-------------------------------------------------------------------------
-// 新規プロセス起動
+// Start new process
 //-------------------------------------------------------------------------
 
 void BootNewProcess( const TCHAR* cmd = TEXT("") )
@@ -41,7 +41,7 @@ static HMENU LoadLocalizedMainMenu(HINSTANCE hInst)
 static HMENU getDocTypeSubMenu(HWND hwnd) { return GetSubMenu( ::GetSubMenu(::GetMenu(hwnd),3),9 ); }
 
 //-------------------------------------------------------------------------
-// ステータスバー制御
+// status bar control
 //-------------------------------------------------------------------------
 
 inline GpStBar::GpStBar()
@@ -53,13 +53,13 @@ inline GpStBar::GpStBar()
 
 inline void GpStBar::SetCsText( const TCHAR* str )
 {
-	// 文字コード表示領域にSetTextする
+	// SetText to character code display area
 	SetText( str_=str, CS_PART );
 }
 
 inline void GpStBar::SetLbText( int lb )
 {
-	// 改行コード表示領域にSetTextする
+	// SetText to line feed code display area
 	static const TCHAR* const lbstr[] = {TEXT("CR"),TEXT("LF"),TEXT("CRLF")};
 	SetText( lbstr[lb_=lb], LB_PART );
 }
@@ -90,7 +90,7 @@ void GpStBar::SetZoom( short z )
 
 int GpStBar::AutoResize( bool maximized )
 {
-	// 文字コード表示領域を確保しつつリサイズ
+	// Resize while ensuring character code display area
 	int h = StatusBar::AutoResize( maximized );
 	int w[] = { width()-150, width()-50, width()-50, width()-50, width() };
 
@@ -117,14 +117,14 @@ int GpStBar::AutoResize( bool maximized )
 
 
 //-------------------------------------------------------------------------
-// ディスパッチャ
+// dispatcher
 //-------------------------------------------------------------------------
 
 LRESULT GreenPadWnd::on_message( UINT msg, WPARAM wp, LPARAM lp )
 {
 	switch( msg )
 	{
-	// アクティブ化。EditCtrlにフォーカスを。
+	// Activation. Focus on EditCtrl.
 	case WM_ACTIVATE:
 		if( LOWORD(wp) != WA_INACTIVE )
 			edit_.SetFocus();
@@ -137,7 +137,7 @@ LRESULT GreenPadWnd::on_message( UINT msg, WPARAM wp, LPARAM lp )
 			PostMessage(hwnd(), WMU_CHECKFILETIMESTAMP, 0, 0);
 		return WndImpl::on_message( msg, wp, lp );
 
-	// サイズ変更。子窓を適当に移動。
+	// Resize. Move the child window appropriately.
 	case WM_SIZE:
 		if( wp==SIZE_MAXIMIZED || wp==SIZE_RESTORED )
 		{
@@ -173,7 +173,7 @@ LRESULT GreenPadWnd::on_message( UINT msg, WPARAM wp, LPARAM lp )
 		} break;
 	#endif // PM_DPIAWARE
 
-	// ウインドウ移動
+	// Move window
 	case WM_MOVE:
 		{
 			RECT rc;
@@ -192,7 +192,7 @@ LRESULT GreenPadWnd::on_message( UINT msg, WPARAM wp, LPARAM lp )
 //		return 1;
 //		}break;
 
-	// システムコマンド。終了ボタンとか。
+	// System command. An end button.
 	case WM_SYSCOMMAND:
 		if( wp==SC_CLOSE || wp==SC_DEFAULT )
 			on_exit();
@@ -200,18 +200,18 @@ LRESULT GreenPadWnd::on_message( UINT msg, WPARAM wp, LPARAM lp )
 			return WndImpl::on_message( msg, wp, lp );
 		break;
 
-	// 右クリックメニュー, right-click menu
+	// right-click menu, right-click menu
 	case WM_CONTEXTMENU:
 		if( reinterpret_cast<HWND>(wp) == edit_.hwnd() )
 			::TrackPopupMenu(
-				::GetSubMenu( ::GetMenu(hwnd()), 1 ), // 編集メニュー表示, Edit menu display
+				::GetSubMenu( ::GetMenu(hwnd()), 1 ), // Edit menu display, Edit menu display
 				GetSystemMetrics(SM_MENUDROPALIGNMENT)|TPM_TOPALIGN|TPM_LEFTBUTTON|TPM_RIGHTBUTTON,
 				static_cast<SHORT>(LOWORD(lp)), static_cast<SHORT>(HIWORD(lp)), 0, hwnd(), NULL );
 		else
 			return WndImpl::on_message( msg, wp, lp );
 		break;
 
-	// メニューのグレーアウト処理, Menu gray-out processing
+	// Menu gray-out processing, Menu gray-out processing
 	case WM_INITMENU:
 	case WM_INITMENUPOPUP:
 		on_initmenu( reinterpret_cast<HMENU>(wp), msg==WM_INITMENUPOPUP );
@@ -291,7 +291,7 @@ LRESULT GreenPadWnd::on_message( UINT msg, WPARAM wp, LPARAM lp )
 		}
 		break;
 
-	// その他
+	// others
 	default:
 		return WndImpl::on_message( msg, wp, lp );
 	}
@@ -402,17 +402,17 @@ bool GreenPadWnd::on_command( UINT id, HWND ctrl )
 
 bool GreenPadWnd::PreTranslateMessage( MSG* msg )
 {
-	// 苦肉の策^^;
+	// A last resort ^^;
 	if( search_.TrapMsg(msg) )
 		return true;
-	// キーボードショートカット処理
+	// Keyboard shortcut handling
 	return 0 != ::TranslateAccelerator( hwnd(), accel_, msg );
 }
 
 
 
 //-------------------------------------------------------------------------
-// コマンド処理
+// Command processing
 //-------------------------------------------------------------------------
 
 void GreenPadWnd::on_dirtyflag_change( bool )
@@ -619,7 +619,7 @@ void GreenPadWnd::on_savefileas()
 	if( ShowSaveDlg() )
 	{
 		Save();
-		ReloadConfig(); // 文書タイプに応じて表示を更新
+		ReloadConfig(); // Update display depending on document type
 	}
 }
 BOOL GreenPadWnd::myPageSetupDlg(LPPAGESETUPDLG lppsd)
@@ -667,7 +667,7 @@ void GreenPadWnd::on_print()
 
 	totalCopies = thePrintDlg.nCopies;
 
-	// タイトルに表示される文字列の調整
+	// Adjusting the text displayed in the title
 	// [FileName *] - GreenPad
 	TCHAR name[1+MAX_PATH+6+32+1];
 	GetTitleText( name );
@@ -800,7 +800,7 @@ void GreenPadWnd::on_print()
 	::EndDoc(thePrintDlg.hDC);
 	::DeleteDC(thePrintDlg.hDC);
 
-	// 解放する。
+	// Release.
 	::GlobalFree(thePrintDlg.hDevNames);
 	::GlobalFree(thePrintDlg.hDevMode);
 
@@ -1248,7 +1248,7 @@ void GreenPadWnd::on_move( const DPos& c, const DPos& s )
 	ulong cad = c.ad;
 	if( ! cfg_.countByUnicode() )
 	{
-		// ShiftJIS風のByte数カウント
+		// ShiftJIS style byte count
 		const unicode* cu = edit_.getDoc().tl(c.tl);
 		const uint tab = NZero(cfg_.vConfig().tabstep);
 		cad = 0;
@@ -1274,7 +1274,7 @@ void GreenPadWnd::on_move( const DPos& c, const DPos& s )
 		ulong sad = s.ad;
 		if( ! cfg_.countByUnicode() )
 		{
-			// ShiftJIS風のByte数カウント
+			// ShiftJIS style byte count
 			const unicode* su = edit_.getDoc().tl(s.tl);
 			sad = 0;
 			for( ulong i=0; i<s.ad; ++i )
@@ -1300,7 +1300,7 @@ void GreenPadWnd::on_toggleime()
 }
 
 //-------------------------------------------------------------------------
-// ユーティリティー
+// utility
 //-------------------------------------------------------------------------
 
 void GreenPadWnd::JumpToLine( ulong ln )
@@ -1337,7 +1337,7 @@ void GreenPadWnd::GetTitleText( TCHAR *name )
 
 void GreenPadWnd::UpdateWindowName()
 {
-	// タイトルバーに表示される文字列の調整
+	// Adjusting the text displayed in the title bar
 	// [FileName *] - GreenPad
 	{
 		TCHAR name[1+MAX_PATH+6+32+1];
@@ -1396,13 +1396,13 @@ void GreenPadWnd::on_mru( int no )
 
 
 //-------------------------------------------------------------------------
-// 設定更新処理
+// Settings update process
 //-------------------------------------------------------------------------
 
 void GreenPadWnd::ReloadConfig( bool noSetDocType )
 {
 	LOGGER("GreenPadWnd::ReloadConfig begin");
-	// 文書タイプロード, document type
+	// document type load, document type
 	if( !noSetDocType )
 	{
 		int t = cfg_.SetDocType( filename_ );
@@ -1411,14 +1411,14 @@ void GreenPadWnd::ReloadConfig( bool noSetDocType )
 	}
 	LOGGER("GreenPadWnd::ReloadConfig DocTypeLoaded");
 
-	// Undo回数制限, limit undo
+	// Undo count limit, limit undo
 	edit_.getDoc().SetUndoLimit( cfg_.undoLimit() );
 
 	wrap_ = cfg_.wrapType(); //       wt,    smart wrap,      line number,    Font...
 	edit_.getView().SetWrapLNandFont( wrap_, cfg_.wrapSmart(), cfg_.showLN(), cfg_.vConfig(), cfg_.GetZoom() );
 	LOGGER("GreenPadWnd::ReloadConfig ViewConfigLoaded");
 
-	// キーワードファイル, keyword file
+	// keyword file, keyword file
 	Path kwd = cfg_.kwdFile();
 	FileR fp;
 	if( kwd.len()!=0 && kwd.isFile() && fp.Open(kwd.c_str()) )
@@ -1431,12 +1431,12 @@ void GreenPadWnd::ReloadConfig( bool noSetDocType )
 
 
 //-------------------------------------------------------------------------
-// 開く処理
+// Opening process
 //-------------------------------------------------------------------------
 
 bool GreenPadWnd::ShowOpenDlg( Path* fn, int* cs )
 {
-	// [Open][Cancel] 開くファイル名指定ダイアログを表示
+	// [Open][Cancel] Display the file name specification dialog to open
 	RzsString txtfiles(IDS_TXTFILES);
 	RzsString allfiles(IDS_ALLFILES);
 	const TCHAR *flst[] = {
@@ -1464,16 +1464,16 @@ bool GreenPadWnd::Open( const ki::Path& fn, int cs, bool always )
 {
 	if( isUntitled() && !edit_.getDoc().isModified() )
 	{
-		// 無題で無変更だったら自分で開く
+		// If it is untitled and unchanged, open it yourself.
 		return OpenByMyself( fn, cs, true, always );
 	}
 	else
 	{
-		// 同じ窓で開くモードならそうする
+		// If the mode is to open in the same window, do that.
 		if( cfg_.openSame() )
 			return ( AskToSave() ? OpenByMyself( fn, cs, true, true ) : true );
 
-		// そうでなければ他へ回す
+		// If not, pass it on to something else
 		String
 			cmd  = TEXT("-c");
 			cmd += SInt2Str( cs ).c_str();
@@ -1503,7 +1503,7 @@ bool GreenPadWnd::OpenByMyself( const ki::Path& fn, int cs, bool needReConf, boo
 {
 	//MsgBox(fn.c_str(), TEXT("File:"), 0);
 	LOGGERS( fn.c_str() );
-	// ファイルを開けなかったらそこでおしまい。
+	// If you can't open the file, that's it.
 	TextFileR tf(cs);
 
 	if( !tf.Open( fn.c_str(), always ) )
@@ -1591,7 +1591,7 @@ bool GreenPadWnd::OpenByMyself( const ki::Path& fn, int cs, bool needReConf, boo
 	}
 
 
-	// 自分内部の管理情報を更新, Update internal management information
+	// Update internal management information
 	if( fn[0]==TEXT('\\') || (fn[0] && fn[1]==TEXT(':')) )
 		// Absolute path: '\file', 'x:\file', '\\share\file', '\\?\...', 'c:\\file' etc.
 		filename_ = fn;
@@ -1609,25 +1609,25 @@ bool GreenPadWnd::OpenByMyself( const ki::Path& fn, int cs, bool needReConf, boo
 			lb_       = tf.linebreak();
 	}
 	else
-	{ // 空ファイルの場合は新規作成と同じ扱い
+	{ // If it is an empty file, it is treated the same as creating a new file.
 	  // If the file is empty, it is treated as if it were newly created.
 		csi_      = cfg_.GetNewfileCsi();
 		lb_       = cfg_.GetNewfileLB();
 	}
 	filename_.BeShortLongStyle();
 
-	// カレントディレクトリを、ファイルのある位置以外にしておく
-	// （こうしないと、開いているファイルのあるディレクトリが削除できない）
+	// Set the current directory to a location other than the file location
+	// (If you do not do this, you will not be able to delete the directory with open files.)
 	// Make sure the current directory is somewhere other than where the file is located.
 	// (otherwise the directory with the open file cannot be deleted)
 	::SetCurrentDirectory( Path(filename_).BeDriveOnly().c_str() );
 
-	// 文書タイプに応じて表示を更新
+	// Update display depending on document type
 	// Update display according to document type
 	if( needReConf )
 		ReloadConfig();
 
-	// 開く
+	// open
 	edit_.getDoc().ClearAll();
 	stb_.SetText( RzsString(IDS_LOADING).c_str() );
 	old_filetime_ = filename_.getLastWriteTime(); // Save timestamp
@@ -1636,10 +1636,10 @@ bool GreenPadWnd::OpenByMyself( const ki::Path& fn, int cs, bool needReConf, boo
 	//::EnableWindow(edit_.hwnd(), TRUE);
 	stb_.SetText( TEXT("(1,1)") );
 
-	// タイトルバー更新
+	// Title bar update
 	UpdateWindowName();
 
-	// [最近使ったファイル]へ追加
+	// Add to [Recent Files]
 	if( cfg_.AddMRU( filename_ ) )
 		PostMsgToAllFriends(GPM_MRUCHANGED);
 
@@ -1649,12 +1649,12 @@ bool GreenPadWnd::OpenByMyself( const ki::Path& fn, int cs, bool needReConf, boo
 
 
 //-------------------------------------------------------------------------
-// 保存処理
+// Preservation treatment
 //-------------------------------------------------------------------------
 
 bool GreenPadWnd::ShowSaveDlg()
 {
-	// [Save][Cancel] 保存先ファイル名指定ダイアログを表示
+	// [Save][Cancel] Display the save destination file name specification dialog
 	RzsString allfiles(IDS_ALLFILES);
 	const TCHAR *flst[] = {
 		allfiles.c_str(),
@@ -1695,14 +1695,14 @@ bool GreenPadWnd::Save_showDlgIfNeeded()
 {
 	bool wasUntitled = isUntitled();
 
-	// [Save][Cancel] ファイル名未定ならダイアログ表示
+	// [Save][Cancel] Display dialog if file name is undecided
 	if( isUntitled() )
 		if( !ShowSaveDlg() )
 			return false;
 	if( Save() )
 	{
 		if( wasUntitled )
-			ReloadConfig(); // 文書タイプに応じて表示を更新
+			ReloadConfig(); // Update display depending on document type
 		return true;
 	}
 	return false;
@@ -1710,10 +1710,10 @@ bool GreenPadWnd::Save_showDlgIfNeeded()
 
 bool GreenPadWnd::AskToSave()
 {
-	// 変更されていたら、
-	// [Yes][No][Cancel] 保存するかどうか尋ねる。
-	// 保存するなら
-	// [Save][Cancel]    ファイル名未定ならダイアログ表示
+	// If it has been changed,
+	// [Yes][No][Cancel] Ask whether to save.
+	// If you want to save
+	// [Save][Cancel] Display dialog if file name is undecided
 
 	if( edit_.getDoc().isModified() )
 	{
@@ -1751,11 +1751,11 @@ bool GreenPadWnd::Save()
 			MsgBox( fnerror.c_str(), RzsString(IDS_SAVEERROR).c_str() );
 			return false;
 		}
-		// 無事ファイルに保存できた場合
+		// If the file was successfully saved
 		edit_.getDoc().SaveFile( tf );
 	}
 	UpdateWindowName();
-	// [最近使ったファイル]更新
+	// [Recently used files] Update
 	if( cfg_.AddMRU( filename_ ) )
 		PostMsgToAllFriends(GPM_MRUCHANGED);
 
@@ -1766,7 +1766,7 @@ bool GreenPadWnd::Save()
 
 
 //-------------------------------------------------------------------------
-// メインウインドウの初期化
+// Initializing the main window
 //-------------------------------------------------------------------------
 
 GreenPadWnd::ClsName GreenPadWnd::className_ = TEXT("GreenPad MainWnd");
@@ -1841,7 +1841,7 @@ bool GreenPadWnd::StartUp( const Path& fn, int cs, int ln )
 	{
 		LOGGER( "for new file..." );
 
-		// ファイルを開か(け)なかった場合
+		// If the file is not opened
 		ReloadConfig( fn.len()==0 );
 		LOGGER( "GreenPadWnd::StartUp reloadconfig end" );
 		UpdateWindowName();
@@ -1850,7 +1850,7 @@ bool GreenPadWnd::StartUp( const Path& fn, int cs, int ln )
 	}
 	stb_.SetZoom( cfg_.GetZoom() );
 
-	// 指定の行へジャンプ
+	// Jump to specified line
 	if( ln != -1 )
 		JumpToLine( ln );
 
@@ -1868,8 +1868,8 @@ void GreenPadWnd::ShowUp2()
 
 
 //-------------------------------------------------------------------------
-// スタートアップルーチン
-//	コマンドラインの解析を行う
+// startup routine
+//	Parse the command line
 //-------------------------------------------------------------------------
 
 int kmain()
@@ -1941,7 +1941,7 @@ int kmain()
 
 		LOGGER( "argv processed" );
 
-	  //-- まずオプションスイッチを処理
+	  //-- Process option switches first
 
 		for( i=1; i<arg.size() && arg[i][0]==TEXT('-'); ++i )
 			switch( arg[i][1] )
@@ -1959,14 +1959,14 @@ int kmain()
 
 		LOGGER( "option processed" );
 
-	  //-- 次にファイル名
+	  //-- then filename
 		Path file;
 		if( i < arg.size() )
 		{
 			file = arg[i];
 			if( !file.isFile() )
 			{
-				ulong j; // ""無しで半スペ入りでもそれなりに対処
+				ulong j; // Even if you are half-skilled without "", you can deal with it as well.
 				for( j=i+1; j<arg.size(); ++j )
 				{
 					file += ' ';
@@ -1984,7 +1984,7 @@ int kmain()
 
 		LOGGER( "filename processed" );
 
-	  //-- 余ってる引数があれば、それで新規プロセス起動
+	  //-- If there are any remaining arguments, start a new process with them
 
 		if( ++i < arg.size() )
 		{
@@ -2000,14 +2000,14 @@ int kmain()
 
 		LOGGER( "newprocess booted" );
 
-	  //-- メインウインドウ発進
+	  //-- Main window launch
 		if( !wnd.StartUp(file, optC, optL) )
 			return -1;
 
 		TS.reset();
 	}
 
-  //-- メインループ
+  //-- Main loop
 
 	LOGGER( "kmain() startup ok" );
 

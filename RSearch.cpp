@@ -8,13 +8,13 @@ using namespace ki;
 
 //=========================================================================
 //@{
-//	文字の種類
+//	Character type
 //@}
 //=========================================================================
 
 enum RegToken
 {
-	R_Char,  // 普通の文字
+	R_Char,  // normal characters
 	R_Any,   // '.'
 	R_Lcl,   // '['
 	R_Rcl,   // ']'
@@ -33,9 +33,9 @@ enum RegToken
 
 //=========================================================================
 //@{
-//	トークンに分解
+//	decompose into tokens
 //
-//	行頭を表す^と行末を表す$については上位層で頑張る
+//	The upper layer will do its best for ^, which represents the beginning of a line, and $, which represents the end of a line.
 //@}
 //=========================================================================
 
@@ -57,7 +57,7 @@ private:
 
 //=========================================================================
 //@{
-//	トークンに分解：実装
+//	Decomposition into tokens: implementation
 //@}
 //=========================================================================
 
@@ -105,20 +105,20 @@ RegToken RegLexer::GetToken()
 
 //=========================================================================
 //@{
-//	構文木のノードに振られる値の種類
+//	Types of values ​​assigned to syntax tree nodes
 //@}
 //=========================================================================
 
 enum RegTypeEnum
 {
-	N_Char,     // 普通の文字 (ch)
-	N_Class,    // [...] など (cls)
-	N_Concat,   // 連接       (left, right)
+	N_Char,     // Ordinary characters (ch)
+	N_Class,    // [...] etc. (cls)
+	N_Concat,   // conjunction (left, right)
 	N_Or,       // |          (left, right)
 	N_Closure,  // *          (left)
 	N_Closure1, // +          (left)
 	N_01,       // ?          (left)
-	N_Empty     // 空         (--)
+	N_Empty     // empty (--)
 };
 typedef byte RegType;
 
@@ -155,19 +155,19 @@ struct RegNode: public Object
 		if( left )  delete left;
 		if( right ) delete right;
 	}
-	RegType           type; // このノードの種類
-	bool            cmpcls; // ↑補集合かどうか
-	wchar_t             ch; // 文字
-	uptr<RegClass>     cls; // 文字集合
-	RegNode          *left; // 左の子
-	RegNode         *right; // 右の子
+	RegType           type; // Type of this node
+	bool            cmpcls; // ↑Whether it is a complement set or not
+	wchar_t             ch; // character
+	uptr<RegClass>     cls; // character set
+	RegNode          *left; // the child on the left
+	RegNode         *right; // child on the right
 };
 
 
 
 //=========================================================================
 //@{
-//	構文木作成
+//	Syntax tree creation
 //@}
 //=========================================================================
 
@@ -206,7 +206,7 @@ private:
 
 //=========================================================================
 //@{
-//	構文木作成：実装
+//	Syntax tree creation: implementation
 //@}
 //=========================================================================
 
@@ -391,7 +391,7 @@ RegNode* RegParser::expr()
 
 //=========================================================================
 //@{
-//	状態遷移
+//	state transition
 //@}
 //=========================================================================
 
@@ -402,10 +402,10 @@ struct RegTrans : public Object
 
 	Type           type;
 	bool         cmpcls;
-	int              to; // 状態番号toの状態へ遷移
-	uptr<RegClass>  cls; // この文字集合
-	                     // orEpsilon が来たら
-	uptr<RegTrans> next; // 連結リスト
+	int              to; // Transition to state number to
+	uptr<RegClass>  cls; // this character set
+	                     // orEpsilon comes
+	uptr<RegTrans> next; // linked list
 
 //	RegTrans() {} ;
 	explicit RegTrans(Type t, RegClass *rc, bool cmp, int tto, RegTrans *nx)
@@ -454,7 +454,7 @@ struct RegTrans : public Object
 
 //=========================================================================
 //@{
-//	構文木->NFA変換
+//	Syntax tree -> NFA conversion
 //@}
 //=========================================================================
 
@@ -469,7 +469,7 @@ public:
 	bool isTailType() const { return parser.isTailType(); }
 
 private:
-	// マッチング処理
+	// Matching process
 	int dfa_match( const wchar_t* str, int len, bool caseS );
 
 	struct st_ele { int st, ps; };
@@ -595,13 +595,13 @@ void RegNFA::gen_nfa( int entry, RegNode* t, int exit )
 
 //=========================================================================
 //@{
-//	マッチング
+//	matching
 //@}
 //=========================================================================
 
 void RegNFA::push(storage<st_ele>& stack, int curSt, int pos)
 {
-	// ε無限ループ防止策。同じ状態には戻らないように…
+	// ε Infinite loop prevention measures. Don't go back to the same situation...
 	for( int i=stack.size()-1; i>=0; --i )
 		if( stack[i].ps != pos )
 			break;
@@ -622,9 +622,9 @@ RegNFA::st_ele RegNFA::pop(storage<st_ele>& stack)
 int RegNFA::match( const wchar_t* str, int len, bool caseS )
 {
 	if( parser.err() )
-		return -1; // エラー状態なのでmatchとかできません
+		return -1; // I can't match it because it's in an error state.
 	//if( st.size() <= 31 )
-	//	return dfa_match(str,len,caseS); // 状態数が少なければDFAを使う、かも
+	//	return dfa_match(str,len,caseS); // Maybe use DFA if the number of states is small
 
 	int matchpos = -1;
 
@@ -632,17 +632,17 @@ int RegNFA::match( const wchar_t* str, int len, bool caseS )
 	push(stack, start, 0);
 	while( stack.size() > 0 )
 	{
-		// スタックからpop
+		// pop from stack
 		st_ele se = pop(stack);
 		int curSt = se.st;
 		int   pos = se.ps;
 
-		// マッチ成功してたら記録
-		if( curSt == final ) // 1==終状態
+		// Record if the match is successful
+		if( curSt == final ) // 1==end state
 			if( matchpos < pos )
 				matchpos = pos;
 
-		// さらに先の遷移を調べる
+		// Explore further transitions
 		if( matchpos < len )
 		{
 			for( RegTrans* tr=st[curSt]; tr!=NULL; tr=tr->next.get() )
@@ -678,15 +678,15 @@ int RegNFA::dfa_match( const wchar_t* str, int len, bool caseS )
 			StateSet |= NewSS;
 		}
 
-		// 受理状態を含んでるかどうか判定
+		// Determine whether the acceptance state is included.
 		if( StateSet & (1<<final) )
 			matchpos = pos;
 
-		// 文字列の終わりに達した
+		// reached the end of the string
 		if( pos == len )
 			break;
 
-		// 遷移
+		// transition
 		unsigned int NewSS = 0;
 		for(int s=0; (1u<<s)<=StateSet; ++s)
 			if( (1u<<s) & StateSet )
@@ -713,7 +713,7 @@ bool reg_match( const wchar_t* pat, const wchar_t* str, bool caseS )
 
 //=========================================================================
 //@{
-//	GreenPad用検索オブジェクト
+//	Search object for GreenPad
 //@}
 //=========================================================================
 

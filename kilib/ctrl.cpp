@@ -59,10 +59,10 @@ void StatusBar::SetStatusBarVisible(bool b)
 
 int StatusBar::AutoResize( bool maximized )
 {
-	// サイズ自動変更
+	// automatic resize
 	SendMsg( WM_SIZE );
 
-	// 変更後のサイズを取得
+	// Get the changed size
 	RECT rc;
 	getPos( &rc );
 	width_ = rc.right - rc.left;
@@ -71,7 +71,7 @@ int StatusBar::AutoResize( bool maximized )
 
 bool StatusBar::PreTranslateMessage( MSG* )
 {
-	// 何もしない
+	// do nothing
 	return false;
 }
 
@@ -102,8 +102,8 @@ int StatusBar::GetText( TCHAR* str, int part )
 
 void ComboBox::Select( const TCHAR* str )
 {
-	// SELECTSTRING は先頭が合ってる物に全てにマッチするので使えない。
-	// おそらくインクリメンタルサーチとかに使うべきものなのだろう。
+	// SELECTSTRING cannot be used because it matches everything with the same beginning.
+	// Perhaps it should be used for incremental search or something.
 	LRESULT i = SendMsg( CB_FINDSTRINGEXACT, ~0, reinterpret_cast<LPARAM>(str) );
 	if( i != CB_ERR )
 		SendMsg( CB_SETCURSEL, i );

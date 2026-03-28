@@ -12,10 +12,10 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.WinUtil //@}
 //@{
-//	ファイル検索
+//	file search
 //
-//	Win32 APIのFindFirstFile等を用いて、ディレクトリ内の
-//	ファイルリストアップを行います。
+//	Using FindFirstFile etc. of Win32 API,
+//	List files.
 //@}
 //=========================================================================
 
@@ -23,23 +23,23 @@ class FindFile
 {
 public:
 
-	//@{ コンストラクタ //@}
+	//@{ constructor //@}
 	FindFile() : han_( INVALID_HANDLE_VALUE ), first_(false) {}
 
-	//@{ デストラクタ //@}
+	//@{ destructor //@}
 	~FindFile() { Close(); }
 
-	//@{ 検索終了処理 //@}
+	//@{Search end process //@}
 	void Close();
 
-public: //-- 外向きインターフェイス --------------------------
+public: //-- Outward interface --------------------------
 
 	bool Begin( const TCHAR* wild );
 	bool Next( WIN32_FIND_DATA* pfd );
 
 public:
 
-	//@{ static版。マッチする最初のファイルを取得 //@}
+	//@{static version. Get the first matching file //@}
 	static bool FindFirst( const TCHAR* wild, WIN32_FIND_DATA* pfd );
 
 private:

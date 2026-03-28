@@ -164,7 +164,7 @@ bool IniFile::PutStrinSect( const TCHAR* key, const TCHAR *sect, const TCHAR* va
 {
 	if( val && val[0]==TEXT('"') && val[my_lstrlen(val)-1]==TEXT('"') )
 	{
-		// 両端に " があると勝手に削られるので対処
+		// If there is a " on both ends, it will be deleted automatically, so deal with it.
 		String nval;
 		nval += TEXT('"');
 		nval += val;

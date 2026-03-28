@@ -79,24 +79,24 @@ static UINT GetInputCP()
 
 
 //=========================================================================
-//---- ip_cursor.cpp カーソルコントロール
+//---- ip_cursor.cpp Cursor control
 //
-//		カレットを表示したりIMEに適当に対応したり色々。
-//		ところで疑問なのだが Caret って「カレット」と
-//		読むのか「キャレット」と読むのか？
+//		Displaying carets, responding appropriately to IME, etc.
+//		By the way, I have a question, but does Caret mean "caret"?
+//		Should I read it as "caret"?
 //
-//---- ip_text.cpp   文字列操作・他, string manipulation, etc.
-//---- ip_parse.cpp  キーワード解析, keyword parsing
-//---- ip_wrap.cpp   折り返し
-//---- ip_scroll.cpp スクロール
-//---- ip_draw.cpp   描画・他
+//---- ip_text.cpp String manipulation, etc.
+//---- ip_parse.cpp keyword parsing, keyword parsing
+//---- ip_wrap.cpp wrapping
+//---- ip_scroll.cpp Scroll
+//---- ip_draw.cpp Drawing/etc.
 //=========================================================================
 
 
 
 
 //-------------------------------------------------------------------------
-// カーソル初期化, Cursor initialization
+// cursor initialization
 //-------------------------------------------------------------------------
 
 Cursor::Cursor( HWND wnd, ViewImpl& vw, doc::Document& dc )
@@ -119,7 +119,7 @@ Cursor::Cursor( HWND wnd, ViewImpl& vw, doc::Document& dc )
 	, hasLastDblClk_( false )
 	, inputCP_( GetInputCP() )
 {
-	// てきとーに情報初期化
+	// Initialize information quickly
 	// SPI_GETKEYBOARDSPEED gives value from 0-31, 0=>~30Hz, 31=>~2.5Hz
 	// kb speed in in ms = 33 + KEYBOARDSPEED * 11; more or less
 	keyRepTime_ = 15; // Default in case SystemParametersInfo fails
@@ -145,29 +145,29 @@ void Cursor::DelHandler( const CurEvHandler* ev )
 
 
 //-------------------------------------------------------------------------
-// ヘルパー関数群, helper function group
+// helper function group, helper function group
 //-------------------------------------------------------------------------
 
 void Cursor::UpdateCaretPos()
 {
-	// メンバ変数の値を元に、実際にCaretを動かす処理
+	// The process of actually running Caret based on the value of member variables
 	int x, y;
 	view_.GetOrigin( &x, &y );
 	x += cur_.vx;
 	y += cur_.vl * view_.fnt().H();
 
-	// 行番号ゾーンにCaretがあっても困るので左に追いやる
+	// It would be a problem if there was a Caret in the line number zone, so move it to the left.
 	if( 0<x && x<view_.left() )
 		x = -view_.left();
 
-	// セット
+	// set
 	caret_.SetPos( x, y );
 	pEvHan_->on_move( cur_, sel_ );
 }
 
 void Cursor::Redraw( const VPos& s, const VPos& e )
 {
-	int x, y; // 原点
+	int x, y; // origin
 	view_.GetOrigin( &x, &y );
 
 	POINT sp = {x+s.vx, y+(long)s.vl*view_.fnt().H()};
@@ -177,7 +177,7 @@ void Cursor::Redraw( const VPos& s, const VPos& e )
 		sp.y^=ep.y, ep.y^=sp.y, sp.y^=ep.y;
 	ep.x+=2;
 
-	// 手抜き16bitチェック入り…
+	// Shoddy 16bit check included...
 	const long LFT = view_.left();
 	const long RHT = view_.right();
 	const long TOP = 0;
@@ -221,7 +221,7 @@ bool Cursor::getCurPosUnordered( const VPos** cur, const VPos** sel ) const
 
 
 //-------------------------------------------------------------------------
-// Viewからの指令を処理, Process commands from View
+// Process commands from View
 //-------------------------------------------------------------------------
 
 void Cursor::on_setfocus()
@@ -250,7 +250,7 @@ void Cursor::on_scroll_end()
 
 void Cursor::ResetPos()
 {
-	// 設定変更などに対応, Support for changing settings, etc.
+	// Support for changing settings, etc.
 	view_.ConvDPosToVPos( cur_, &cur_ );
 	view_.ConvDPosToVPos( sel_, &sel_ );
 	UpdateCaretPos();
@@ -309,7 +309,7 @@ void Cursor::on_text_update
 
 
 //-------------------------------------------------------------------------
-// キー入力への対応, Support for keystrokes
+// Support for keystrokes
 //-------------------------------------------------------------------------
 
 void CurEvHandler::on_char( Cursor& cur, unicode wch )
@@ -384,7 +384,7 @@ void Cursor::on_keydown( int vk, LPARAM flag )
 
 
 //-------------------------------------------------------------------------
-// モード切替, mode switching
+// mode switching, mode switching
 //-------------------------------------------------------------------------
 
 void Cursor::SetInsMode( bool bIns )
@@ -401,18 +401,18 @@ void Cursor::SetROMode( bool bRO )
 
 
 //-------------------------------------------------------------------------
-// 文字入力・削除, Character input and deletion
+// Character input and deletion
 //-------------------------------------------------------------------------
 
 void Cursor::InputChar( unicode ch )
 {
-	// 「上書モード ＆ 選択状態でない ＆ 行末でない」なら右一文字選択
+	// If "overwrite mode & not selected & not end of line" select one character to the right
 	// If you are in overwriting mode, not selected,
 	// and not at the end of a line, select the right character.
 	if( !bIns_ && cur_==sel_ && doc_.len(cur_.tl)!=cur_.ad )
 		Right( false, true );
 
-	// 入力, character input by the user
+	// input, character input by the user
 	switch(ch)
 	{
 	case L'\r': Return();     break;
@@ -533,8 +533,8 @@ void Cursor::InputAt( const char* str, size_t len, int x, int y )
 
 void Cursor::DelBack( bool wide )
 {
-	// 選択状態なら BackSpace == Delete
-	// でなければ、 BackSpace == Left + Delete (手抜き
+	// If selected, BackSpace == Delete
+	// Otherwise, BackSpace == Left + Delete (cutting corners)
 	// Ctrl+BackSpace == Leftword + delete
 	if( cur_ == sel_ )
 	{
@@ -547,8 +547,8 @@ void Cursor::DelBack( bool wide )
 
 void Cursor::Del( bool wide )
 {
-	// 選択状態なら cur_ ～ sel_ を削除
-	// でなければ、 cur_ ～ rightOf(cur_) を削除
+	// If selected, delete cur_ ~ sel_
+	// Otherwise, remove cur_ ~ rightOf(cur_)
 	// Ctrl+Del == Right + delete
 	if( wide )
 		Right( true, true );
@@ -657,7 +657,7 @@ void Cursor::Tabulation(bool shi)
 	QuoteSelectionW(L"\t", shi); // Quote with a tab!
 }
 //-------------------------------------------------------------------------
-// テキスト取得, Get Text
+// Get Text
 //-------------------------------------------------------------------------
 
 ki::aarr<unicode> Cursor::getSelectedStr() const
@@ -666,7 +666,7 @@ ki::aarr<unicode> Cursor::getSelectedStr() const
 	if( cur_ > sel_ )
 		dm=sel_, dM=cur_;
 
-	// テキスト取得, Get Text
+	// Get Text
 	ulong len = doc_.getRangeLength( dm, dM );
 	ki::aarr<unicode> ub( len+1 );
 	if( ub.get() )
@@ -675,14 +675,14 @@ ki::aarr<unicode> Cursor::getSelectedStr() const
 }
 
 //-------------------------------------------------------------------------
-// クリップボード処理, Clipboard processing
+// Clipboard processing, Clipboard processing
 //-------------------------------------------------------------------------
 
 void Cursor::Cut()
 {
 	if( cur_ != sel_ )
 	{
-		// コピーして削除
+		// copy and delete
 		Copy();
 		Del( false );
 	}
@@ -955,7 +955,7 @@ void Cursor::ASCIIFy()
 	ModSelection( ASCIIOnlyW );
 }
 //-------------------------------------------------------------------------
-// カーソル移動, Cursor movement
+// cursor movement
 //-------------------------------------------------------------------------
 
 void Cursor::MoveCur( const DPos& dp, bool select )
@@ -969,13 +969,13 @@ void Cursor::MoveTo( const VPos& vp, bool sel )
 {
 	if( sel )
 	{
-		// 選択状態が変わる範囲を再描画
+		// Redraw the range where the selection status changes
 		// Redraw the area where the selection state changes
 		Redraw( vp, cur_ );
 	}
 	else
 	{
-		// 選択解除される範囲を再描画
+		// Redraw areas that are deselected
 		// Redraw the range to be deselected
 		if( cur_ != sel_ )
 			Redraw( cur_, sel_ );
@@ -990,9 +990,9 @@ void Cursor::Home( bool wide, bool select )
 {
 	VPos np;
 	np.ad = np.vx = np.rx = np.rl = 0;
-	if( wide ) // 文書の頭へ, Go to the head of the document.
+	if( wide ) // Go to the head of the document.
 		np.tl = np.vl = 0;
-	else // 行の頭へ, To the head of the line
+	else // To the head of the line
 	{
 		// 1.07.4 --> 1.08 :: Virtual Home
 		// np.tl = cur_.tl, np.vl = cur_.vl-cur_.rl;
@@ -1008,12 +1008,12 @@ void Cursor::Home( bool wide, bool select )
 void Cursor::End( bool wide, bool select )
 {
 	VPos np;
-	if( wide ) // 文書の末尾へ, To the end of the document
+	if( wide ) // To the end of the document
 	{
 		np.tl = doc_.tln()-1;
 		np.vl = view_.vln()-1;
 	}
-	else // 行の末尾へ, To the end of the line
+	else // To the end of the line
 	{
 		// 1.07.4 --> 1.08 :: Virtual End
 		// np.tl = cur_.tl;
@@ -1032,7 +1032,7 @@ void Cursor::End( bool wide, bool select )
 
 void Cursor::Ud( int dy, bool select )
 {
-	// はみ出す場合は、先頭行/終端行で止まるように制限
+	// If it extends beyond the line, limit it to the first line/end line.
 	// Limit overflow to stop at start/end line
 	VPos np = cur_;
 	if( (signed)np.vl + dy < 0 )
@@ -1042,30 +1042,30 @@ void Cursor::Ud( int dy, bool select )
 
 	np.vl += dy;
 	np.rl += dy;
-	if( dy<0 ) // 上へ戻る場合, To go back to the top
+	if( dy<0 ) // To go back to the top
 	{
-		// ジャンプ先論理行の行頭へDash!
+		// Dash to the beginning of the jump destination logical line!
 		while( (signed)np.rl < 0 )
 			np.rl += view_.rln(--np.tl);
 	}
-	else if( dy>0 ) // 下へ進む場合
+	else if( dy>0 ) // If you go down
 	{
-		// ジャンプ先論理行の行頭へDash!
+		// Dash to the beginning of the jump destination logical line!
 		while( (signed)np.rl > 0 )
 			np.rl -= view_.rln(np.tl++);
 		if( (signed)np.rl < 0 )
-			np.rl += view_.rln(--np.tl); //行き過ぎ修正～
+			np.rl += view_.rln(--np.tl); //Excessive correction~
 	}
 
-	// x座標決定にかかる, x-coordinate determination
+	// x-coordinate determination
 	const unicode* str = doc_.tl(np.tl);
 
-	// 右寄せになってる。不自然？, It's right-justified. Unnatural?
+	// It's aligned to the right. unnatural? , It's right-justified. Unnatural?
 	np.ad = (np.rl==0 ? 0 : view_.rlend(np.tl,np.rl-1)+1);
 	np.vx = (np.rl==0 ? 0 : view_.fnt().W(&str[np.ad-1]));
 	while( np.vx < np.rx && np.ad < view_.rlend(np.tl,np.rl) )
 	{
-		// 左寄せにしてみた。
+		// I tried aligning it to the left.
 		ulong newvx;
 		if( str[np.ad] == L'\t' )
 			newvx = view_.fnt().nextTab(np.vx);
@@ -1132,7 +1132,7 @@ void Cursor::GotoMatchingBrace( bool select )
 }
 
 //-------------------------------------------------------------------------
-// マウス入力への対応
+// Support for mouse input
 //-------------------------------------------------------------------------
 
 void Cursor::on_lbutton_dbl( short x, short y )
@@ -1145,9 +1145,9 @@ void Cursor::on_lbutton_dbl( short x, short y )
 	lastDblClkY_ = y;
 	hasLastDblClk_ = true;
 
-	// 行番号ゾーンの場合は特に何もしない
+	// Do nothing special for the line number zone
 	if( view_.lna()-view_.fnt().F() < x )
-		// 行末の場合も特に何もしない
+		// Do nothing especially at the end of the line
 		if( cur_.ad != doc_.len(cur_.tl) )
 		{
 			VPos np;
@@ -1189,7 +1189,7 @@ void Cursor::on_lbutton_down( short x, short y, bool shift )
 			}
 		}
 
-		// これまでの選択範囲をクリア
+		// Clear previous selection
 		Redraw( cur_, sel_ );
 
 		if( tripleClick )
@@ -1207,10 +1207,10 @@ void Cursor::on_lbutton_down( short x, short y, bool shift )
 		}
 		else
 		{
-		// 行番号ゾーンのクリックだったら、行選択モードに
+		// If you click on the line number zone, go to line selection mode.
 			lineSelectMode_ = ( x < view_.lna()-view_.fnt().F() );
 
-		// 選択開始位置を調整
+		// Adjust selection start position
 			sel_ = clickPos;
 			if( lineSelectMode_ )
 				view_.ConvDPosToVPos( DPos(sel_.tl,0), &sel_, &sel_ );
@@ -1218,20 +1218,20 @@ void Cursor::on_lbutton_down( short x, short y, bool shift )
 		}
 	}
 
-	// 移動！
+	// Move!
 	dragX_ = x;
 	dragY_ = y;
 	if( !tripleClick )
 		MoveByMouse( dragX_, dragY_ );
 
-	// マウス位置の追跡開始
+	// Start tracking mouse position
 	timerID_ = ::SetTimer( caret_.hwnd(), 178116, keyRepTime_, NULL );
 	::SetCapture( caret_.hwnd() );
 }
 
 void Cursor::on_lbutton_up( short x, short y )
 {
-	// 追跡解除
+	// Untrack
 	if( timerID_ != 0 )
 	{
 		::ReleaseCapture();
@@ -1271,7 +1271,7 @@ void Cursor::on_mouse_move( short x, short y, WPARAM fwKeys )
 {
 	if( timerID_ != 0 )
 	{
-		// View内部ならMouseMoveに反応
+		// If inside the View, respond to MouseMove
 		POINT pt = { dragX_=x, dragY_=y };
 		if( PtInRect( &view_.zone(), pt ) )
 			MoveByMouse( dragX_, dragY_ );
@@ -1280,7 +1280,7 @@ void Cursor::on_mouse_move( short x, short y, WPARAM fwKeys )
 
 void Cursor::on_timer()
 {
-	// View外部ならTimerに反応
+	// React to Timer if outside the View
 	POINT pt = { dragX_, dragY_ };
 	if( !PtInRect( &view_.zone(), pt ) )
 		MoveByMouse( dragX_, dragY_ );
@@ -1322,7 +1322,7 @@ void Cursor::ToggleIME()
 }
 
 //-------------------------------------------------------------------------
-// 再変換
+// reconversion
 //-------------------------------------------------------------------------
 
 int Cursor::on_ime_reconvertstring( RECONVERTSTRING* rs )

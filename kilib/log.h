@@ -9,13 +9,13 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.Core //@}
 //@{
-//	ログ取り機能（デバッグ用）
+//	Logging function (for debugging)
 //
-//	アプリ起動/終了用処理を担当します。
-//	旧kilibと違って、ユーザー側のアプリケーションクラスを
-//	ここから派生させることは出来ません。ユーザーのコードは、
-//	必ず kmain() というグローバル関数から実行開始されます。
-//	このAppクラス自体は、主にHINSTANCEの管理を行うだけ。
+//	Responsible for application startup/termination processing.
+//	Unlike the old kilib, the application class on the user side
+//	It cannot be derived from here. The user's code is
+//	Execution always starts from the global function kmain().
+//	This App class itself mainly manages HINSTANCE.
 //@}
 //=========================================================================
 

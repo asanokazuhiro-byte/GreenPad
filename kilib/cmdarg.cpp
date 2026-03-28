@@ -18,32 +18,32 @@ Argv::Argv( const TCHAR* cmd )
 
 	while( *p != TEXT('\0') )
 	{
-		// 引数を区切る空白をスキップ
+		// Skip spaces separating arguments
 		while( *p == TEXT(' ') )
 			++p;
 
-		// " だったら、その旨記録してさらに一個進める
+		// " If so, record that and proceed one more step.
 		if( *p == TEXT('\"') )
 			endc=TEXT('\"'), ++p;
 		else
 			endc=TEXT(' ');
 
-		// 文字列終端なら終了
+		// Terminate if the string ends
 		if( *p == TEXT('\0') )
 			break;
 
-		// 引数リストへ保存
+		// save to argument list
 		if( argNum_ >= MAX_ARGS )
 			break;
 		
 		arg_[ argNum_++ ] = p;
 
 
-		// 引数の終わりへ…
+		// To the end of the argument...
 		while( *p!=endc && *p!=TEXT('\0') )
 			++p;
 
-		// 終わりは'\0'にすることによって、引数を区切る
+		// Separate arguments by ending with '\0'
 		if( *p != TEXT('\0') )
 			*p++ = TEXT('\0');
 	}

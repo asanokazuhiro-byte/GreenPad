@@ -18,12 +18,12 @@ class View;
 //=========================================================================
 //@{ @pkg editwing.View.Impl //@}
 //@{
-//	描画基本ルーチン
+//	Basic drawing routine
 //
-//	利用するには、Canvasオブジェクトから getPainter して使います。
-//	画面用デバイスコンテキストのレイヤです。きちんと書いておけば印刷機能を
-//	追加するときに楽なのかもしれませんが、そんなことを考える計画性が
-//	あるはずもなく極めて適当に…。
+//	To use it, use getPainter from the Canvas object.
+//	This is a layer of device context for screens. If you write it properly, you can print it out.
+//	It may be easier when adding, but I don't have the planning ability to think about such things.
+//	It shouldn't have happened, but it was very appropriate...
 //@}
 //=========================================================================
 class Document;
@@ -33,37 +33,37 @@ public:
 
 	~Painter() {  Destroy(); }
 
-	//@{ 指定位置に一文字出力, Output a single character at the specified position //@}
+	//@{ Output a single character at the specified position //@}
 	void CharOut( unicode ch, int x, int y );
 
-	//@{ 指定位置に文字列を出力, Output a string at the specified position //@}
+	//@{ Output a string at the specified position //@}
 	void StringOut( const unicode* str, int len, int x, int y );
 	void StringOutA( const char* str, int len, int x, int y );
 
 	void DrawCTLs( const unicode* str, int len, int x, int y );
 
-	//@{ 文字色切り替え, text color switching //@}
+	//@{ text color switching, text color switching //@}
 	void SetColor( int i );
 
-	//@{ 背景色で塗りつぶし, Fill rect with background color //@}
+	//@{ Fill rect with background color //@}
 	void Fill( const RECT& rc );
 
-	//@{ 反転, Invert color in the rectangle //@}
+	//@{ Invert, Invert color in the rectangle //@}
 	void Invert( const RECT& rc );
 
-	//@{ 線を引く, Draw a line from point x to point y //@}
+	//@{ draw a line, Draw a line from point x to point y //@}
 	void DrawLine( int x1, int y1, int x2, int y2 );
 
-	//@{ クリップ領域設定, (IntersectClipRect())  //@}
+	//@{Clip region settings, (IntersectClipRect()) //@}
 	void SetClip( const RECT& rc );
 
-	//@{ クリップ領域解除, SelectClipRgn( dc_, NULL)//@}
+	//@{Remove clip region, SelectClipRgn( dc_, NULL)//@}
 	void ClearClip();
 
-	//@{ 半角スペース用記号描画, Symbol drawing for half-width space //@}
+	//@{ Symbol drawing for half-width space //@}
 	void DrawHSP( int x, int y, int times );
 
-	//@{ 全角スペース用記号描画, Symbol drawing for full-width spaces //@}
+	//@{ Symbol drawing for full-width spaces //@}
 	void DrawZSP( int x, int y, int times );
 
 	void SetupDC(HDC hdc);
@@ -71,19 +71,19 @@ public:
 
 public:
 
-	//@{ 高さ, height(pixel) //@}
+	//@{ height, height(pixel) //@}
 	CW_INTTYPE H() const { return height_; }
 
-	//@{ 数字幅, digit width (pixel) //@}
+	//@{ digit width, digit width (pixel) //@}
 	CW_INTTYPE F() const { return figWidth_; }
 
-	//@{ 文字幅, character width (pixel) //@}
+	//@{ character width, character width (pixel) //@}
 	CW_INTTYPE Wc( const unicode ch ) const
 	{ // Direclty return the character width!
 	  // You must have initialized it before...
 		return widthTable_[ ch ];
 	}
-	CW_INTTYPE W( const unicode* pch ) const // 1.08 サロゲートペア回避, Avoid Surrogate Pair
+	CW_INTTYPE W( const unicode* pch ) const // 1.08 Avoid Surrogate Pair
 	{
 		unicode ch = *pch;
 		if( widthTable_[ ch ] == (CW_INTTYPE)-1 )
@@ -125,7 +125,7 @@ public:
 		return widthTable_[ ch ];
 	}
 
-	//@{ 標準文字幅, standard character width (pixel) //@}
+	//@{ standard character width, standard character width (pixel) //@}
 	CW_INTTYPE W() const { return widthTable_[ L'x' ]; }
 
 
@@ -146,15 +146,15 @@ public:
 		return true;
 	}
 
-	//@{ 次のタブ揃え位置を計算, Calculate next tab alignment position //@}
+	//@{ Calculate next tab alignment position, //@}
 	//int nextTab(int x) const { int t=T(); return (x/t+1)*t; }
 	inline int nextTab(int x) const { int t=(int)T(); return ((x+4)/t+1)*t; }
 	private: CW_INTTYPE T() const { return widthTable_[ L'\t' ]; } public:
 
-	//@{ 現在のフォント情報, Current font information //@}
+	//@{Current font information, Current font information //@}
 	const LOGFONT& LogFont() const { return logfont_; }
 
-	//@{ 特別文字を描画するか否か, Whether to draw special characters or not //@}
+	//@{ Whether to draw special characters or not //@}
 	bool sc( int i ) const { return 0 != (scDraw_ & (1u << i)); }
 
 private:
@@ -191,11 +191,11 @@ private:
 
 //=========================================================================
 //@{
-//	描画可能領域
+//	drawable area
 //
-//	ウインドウサイズの変更や折り返しの有無やフォントの設定などに
-//	対応して、描画領域のサイズを適当に管理します。やることは
-//	とりあえずそれだけ。
+//	Change window size, wrap or not, font settings, etc.
+//	Correspondingly, manage the size of the drawing area appropriately. What to do
+//	That's it for now.
 //@}
 //=========================================================================
 
@@ -205,50 +205,50 @@ public:
 
 	Canvas( const View& vw );
 	~Canvas();
-	//@{ Viewの大きさ変更イベント処理
-	//	 @return 折り返し幅が変わったらtrue //@}
+	//@{ View resize event handling
+	//	 @return true if wrapping width changes //@}
 	bool on_view_resize( int cx, int cy );
 
-	//@{ 行数変更イベント処理
-	//	 @return テキスト領域の幅が変わったらtrue //@}
+	//@{ Row count change event processing
+	//	 @return true if the width of the text area changes //@}
 	bool on_tln_change( ulong tln );
 
-	//@{ フォント変更イベント処理 //@}
+	//@{ Font change event handling //@}
 	void on_font_change( const VConfig& vc );
 
-	//@{ 設定変更イベント処理 //@}
+	//@{ Setting change event processing //@}
 	void on_config_change( short wrap, bool showln, bool warpSmart );
 
 	void on_config_change_nocalc( short wrap, bool showln, bool warpSmart );
 
 public:
 
-	//@{ [行番号を表示するか否か] //@}
+	//@{ [Whether to display line numbers] //@}
 	bool showLN() const { return showLN_; }
 
-	//@{ [-1:折り返し無し  0:窓右端  else:指定文字数] //@}
+	//@{ [-1: No wrapping 0: Right edge of window else: Specified number of characters] //@}
 	int wrapType() const { return wrapType_; }
 
 	bool wrapSmart() const { return warpSmart_; }
 
-	//@{ 折り返し幅(pixel) //@}
+	//@{ Wrapping width (pixel) //@}
 	ulong wrapWidth() const { return wrapWidth_; }
 
-	//@{ 表示領域の位置(pixel) //@}
+	//@{ Display area position (pixel) //@}
 	const RECT& zone() const { return txtZone_; }
 
 private:
 
-	short wrapType_;  // [ -1:折り返し無し  0:窓右端  else:指定文字数 ]
+	short wrapType_;  // [ -1: No wrapping 0: Right edge of window else: Specified number of characters ]
 	bool  warpSmart_; // [ Enable wrapping at word boundaries ]
-	bool  showLN_;    // [ 行番号を表示するか否か ]
+	bool  showLN_;    // [Whether to display line numbers]
 
 public:
-	Painter       font_; // 描画用オブジェクト
+	Painter       font_; // drawing object
 private:
-	ulong    wrapWidth_; // 折り返し幅(pixel)
-	RECT       txtZone_; // テキスト表示域の位置(pixel)
-	int         figNum_; // 行番号の桁数
+	ulong    wrapWidth_; // Folding width (pixel)
+	RECT       txtZone_; // Position of text display area (pixel)
+	int         figNum_; // Number of digits in line number
 
 private:
 
@@ -264,17 +264,17 @@ private:
 
 //=========================================================================
 //@{
-//	行毎の折り返し情報
+//	Wrapping information per line
 //@}
 //=========================================================================
 
 struct WLine: public ki::sstorage<ulong, false>
 {
-	// [0]   : その行の折り返し無しでの横幅を格納
-	// [1-n] : n行目の終端のindexを格納。
+	// [0]: Stores the width of the line without wrapping
+	// [1-n]: Stores the index of the end of the nth line.
 	//
-	//   例えば "aaabbb" という論理行を "aaab" "bb" と折るなら
-	//   {48, 4, 6} などという長さ３の配列となる。
+	//   For example, if you fold the logical line "aaabbb" into "aaab" "bb"
+	//   This results in an array of length 3, such as {48, 4, 6}.
 
 	ulong& width()      { return (*this)[0]; }
 	ulong width() const { return (*this)[0]; }
@@ -285,37 +285,37 @@ struct WLine: public ki::sstorage<ulong, false>
 
 //=========================================================================
 //@{
-//	再描画範囲を指定するためのフラグ
+//	Flag for specifying redraw range
 //@}
 //=========================================================================
 
 enum ReDrawType
 {
-	LNAREA, // 行番号ゾーンのみ
-	LINE,   // 変更のあった一行のみ
-	AFTER,  // 変更のあった行以下全部
-	ALL     // 全画面
+	LNAREA, // Line number zone only
+	LINE,   // Only one line changed
+	AFTER,  // Everything below the changed line
+	ALL     // full screen
 };
 
 
 
 //=========================================================================
 //@{
-//	描画処理を細かく指定する構造体
+//	Structure that specifies drawing processing in detail
 //@}
 //=========================================================================
 
 struct VDrawInfo
 {
-	const RECT rc;  // 再描画範囲, redraw range
-	int XBASE;      // 一番左の文字のx座標, x-coordinate of the leftmost character
-	int XMIN;       // テキスト再描画範囲左端, left edge of text redraw range
-	int XMAX;       // テキスト再描画範囲右端, Right edge of text redraw range
-	int YMIN;       // テキスト再描画範囲上端, Top edge of text redraw range
-	int YMAX;       // テキスト再描画範囲下端, Bottom edge of text redraw range
-	ulong TLMIN;    // テキスト再描画範囲上端論理行番号, Logical line number at the top of the text redraw range
-	int SXB, SXE;   // 選択範囲のx座標, x-coordinate of selection
-	int SYB, SYE;   // 選択範囲のy座標, y-coordinate of selection
+	const RECT rc;  // redraw range, redraw range
+	int XBASE;      // x-coordinate of the leftmost character
+	int XMIN;       // left edge of text redraw range
+	int XMAX;       // Right edge of text redraw range
+	int YMIN;       // Top edge of text redraw range
+	int YMAX;       // Bottom edge of text redraw range
+	ulong TLMIN;    // Logical line number at the top of the text redraw range
+	int SXB, SXE;   // x-coordinate of selection
+	int SYB, SYE;   // y-coordinate of selection, y-coordinate of selection
 
 	explicit VDrawInfo( const RECT& r )
 		: rc(r), XBASE(0), XMIN(0),XMAX(0), YMIN(0),YMAX(0)
@@ -326,11 +326,11 @@ struct VDrawInfo
 
 //=========================================================================
 //@{
-//	折り返しedテキストの管理・表示等
+//	Management and display of wrapped ed text, etc.
 //
-//	Canvasクラスによって計算された領域サイズを参考に、テキストの
-//	折り返し処理を実行する。ここで、スクロール制御、描画処理など
-//	主要な処理は全て実行することになる。
+//	The text area size is calculated by the Canvas class as a reference.
+//	Execute wrap-around processing. Here, scroll control, drawing processing, etc.
+//	All major processing will be executed.
 //@}
 //=========================================================================
 
@@ -340,7 +340,7 @@ public:
 
 	ViewImpl( View& vw, doc::Document &dc );
 
-	//@{ 折り返し方式切替 //@}
+	//@{ Switch loopback method //@}
 	inline void SetWrapType( short wt )
 		{ cvs_.on_config_change( wt, cvs_.showLN(), cvs_.wrapSmart() );
 		  DoConfigChange(); }
@@ -350,11 +350,11 @@ public:
 		  DoConfigChange(); }
 
 
-	//@{ 行番号表示/非表示切替 //@}
+	//@{Show/hide line number //@}
 	inline void ShowLineNo( bool show )
 		{ cvs_.on_config_change( cvs_.wrapType(), show, cvs_.wrapSmart() ); DoConfigChange(); }
 
-	//@{ 表示色・フォント切替 //@}
+	//@{ Display color/font switching //@}
 	inline void SetFont( const VConfig& vcc, short zoom )
 	{
 		VConfig vc = vcc;
@@ -362,7 +362,7 @@ public:
 		vc.fontsize = vc.fontsize < 1 ? 1 : vc.fontsize;
 		cvs_.on_font_change( vc );
 		cur_.on_setfocus();
-		CalcEveryLineWidth(); // 行幅再計算
+		CalcEveryLineWidth(); // Recalculate line width
 		DoConfigChange();
 	}
 
@@ -371,37 +371,37 @@ public:
 		{ cvs_.on_config_change_nocalc( wt, showLN, ws );
 		  SetFont( vc, zoom ); }
 
-	//@{ テキスト領域のサイズ変更イベント //@}
+	//@{Text area resize event //@}
 	inline void on_view_resize( int cx, int cy ) { DoResize( cvs_.on_view_resize( cx, cy ) ); }
 
 	void DoResize( bool wrapWidthChanged );
 	void DoConfigChange();
 
-	//@{ テキストデータの更新イベント //@}
+	//@{Text data update event //@}
 	void on_text_update( const DPos& s,
 		const DPos& e, const DPos& e2, bool bAft, bool mCur );
 
-	//@{ 描画処理 //@}
+	//@{Drawing process //@}
 	void on_paint( const PAINTSTRUCT& ps );
 
 public:
 
-	//@{ 全表示行数 //@}
+	//@{ Total number of displayed lines //@}
 	ulong vln() const { return vlNum_; }
 
-	//@{ 一行の表示行数 //@}
+	//@{ Number of displayed lines per line //@}
 	ulong rln( ulong tl ) const { return wrap_[tl].rln(); }
 
-	//@{ 折り返し位置 //@}
+	//@{ wrap position //@}
 	ulong rlend( ulong tl, ulong rl ) const { return wrap_[tl][rl+1]; }
 
-	//@{ 一個でも折り返しが存在するか否か //@}
+	//@{ Whether there is at least one wrapping //@}
 	bool wrapexists() const { return doc_.tln() != vln(); }
 
-	//@{ カーソル //@}
+	//@{ cursor //@}
 	Cursor& cur() { return cur_; }
 
-	//@{ フォント //@}
+	//@{ font //@}
 	const Painter& fnt() const { return cvs_.font_; }
 
 
@@ -461,10 +461,10 @@ private:
 private:
 
 	HWND hwnd_;
-	SCROLLINFO rlScr_; // 横スクロール情報（pixel単位）
-	SCROLLINFO udScr_; // 縦スクロール情報（行単位）
-	ulong udScr_tl_;   // 一番上に表示される論理行のTLine_Index
-	ulong udScr_vrl_;  // 一番上に表示される表示行のVRLine_Index
+	SCROLLINFO rlScr_; // Horizontal scroll information (in pixels)
+	SCROLLINFO udScr_; // Vertical scroll information (line by line)
+	ulong udScr_tl_;   // TLine_Index of the logical line displayed at the top
+	ulong udScr_vrl_;  // VRLine_Index of the top visible line
 
 private:
 
@@ -487,10 +487,10 @@ private:
 //=========================================================================
 //@{ @pkg editwing.View //@}
 //@{
-//	描画処理など
+//	drawing processing etc.
 //
-//	このクラスでは、メッセージの分配を行うだけで、実装は
-//	Canvas/ViewImpl 等で行う。ので、詳しくはそちらを参照のこと。
+//	This class only performs message distribution and the implementation is
+//	This is done using Canvas/ViewImpl etc. So please refer there for details.
 //@}
 //=========================================================================
 
@@ -498,25 +498,25 @@ class View A_FINAL: public ki::WndImpl, public doc::DocEvHandler
 {
 public:
 
-	//@{ 何もしないコンストラクタ //@}
+	//@{ Constructor that does nothing //@}
 	View( doc::Document& d, HWND wnd );
 	~View();
 
-	//@{ 折り返し方式切替 //@}
+	//@{ Switch loopback method //@}
 	void SetWrapType( short wt );
 
 	void SetWrapSmart( bool ws);
 
-	//@{ 行番号表示/非表示切替 //@}
+	//@{Show/hide line number //@}
 	void ShowLineNo( bool show );
 
-	//@{ 表示色・フォント切替 //@}
+	//@{ Display color/font switching //@}
 	void SetFont( const VConfig& vc, short zoom );
 
 	//@{ Set all canva stuff at once (faster) //@}
 	void SetWrapLNandFont( short wt, bool ws, bool showLN, const VConfig& vc, short zoom );
 
-	//@{ カーソル //@}
+	//@{ cursor //@}
 	Cursor& cur();
 
 private:

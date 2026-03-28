@@ -45,23 +45,23 @@ static DWORD myGetDpiForWindow(HWND hwnd, HDC hdc)
 }
 
 //=========================================================================
-//---- ip_draw.cpp   描画・他
+//---- ip_draw.cpp Drawing/etc.
 //
-//		折り返しとか色とかを考慮しつつ、実際に描画処理を
-//		行うのがここ。あとメッセージディスパッチャなども
-//		ついでにこのファイルに。^^;
+//		Actually perform the drawing process while taking into consideration things like wrapping and colors.
+//		This is where you do it. Also a message dispatcher etc.
+//		Also in this file. ^^;
 //
-//---- ip_text.cpp   文字列操作・他
-//---- ip_parse.cpp  キーワード解析
-//---- ip_wrap.cpp   折り返し
-//---- ip_scroll.cpp スクロール
-//---- ip_cursor.cpp カーソルコントロール
+//---- ip_text.cpp String manipulation/etc.
+//---- ip_parse.cpp Keyword parsing
+//---- ip_wrap.cpp wrapping
+//---- ip_scroll.cpp Scroll
+//---- ip_cursor.cpp Cursor control
 //=========================================================================
 
 
 
 //-------------------------------------------------------------------------
-// Viewの初期化・解放
+// Initialize/release View
 //-------------------------------------------------------------------------
 
 View::ClsName
@@ -75,25 +75,25 @@ View::View( doc::Document& d, HWND wnd )
 	static bool ClassRegistered = false;
 	if( !ClassRegistered )
 	{
-		// 初回構築時のみ、クラス登録を行う
+		// Perform class registration only when building for the first time.
 		ClassRegistered = true;
 		WNDCLASS wc      = {0};
 		wc.lpszClassName = className_;
 		wc.style         = CS_DBLCLKS;
 		wc.hCursor       = app().LoadOemCursor( IDC_IBEAM );
 
-		// GlobalIMEを有効にする
+		// Enable GlobalIME
 		ATOM a = WndImpl::Register( &wc );
 		ime().FilterWindows( &a, 1 );
 	}
 
-	// 窓作成
+	// window creation
 	Create( NULL, wnd );
 }
 
 View::~View()
 {
-	// 窓破棄
+	// window discarded
 	Destroy();
 }
 
@@ -113,7 +113,7 @@ void View::on_destroy()
 
 
 //-------------------------------------------------------------------------
-// サブオブジェクトにそのまま回す
+// Turn it into a subobject as it is
 //-------------------------------------------------------------------------
 
 void View::SetWrapType( short wt )
@@ -289,7 +289,7 @@ LRESULT View::on_message( UINT msg, WPARAM wp, LPARAM lp )
 
 
 //-------------------------------------------------------------------------
-// 線を引くとか四角く塗るとか、そーいう基本的な処理
+// Basic processing such as drawing lines and painting squares
 //-------------------------------------------------------------------------
 static CW_INTTYPE wtable[65536]; // static width table
 static const uchar ctlMap[32] = {
@@ -329,11 +329,11 @@ void Painter::Init( const VConfig& vc )
 
 	font_ = init_font( vc );
 	brush_ = ::CreateSolidBrush( vc.color[BG] );
-	// 制御文字を描画するか否か？のフラグを記憶,
+	// Whether to draw control characters? remember the flags of,
 	// Whether to draw control characters or not? flag is stored.
 	scDraw_ = vc.sc;
 
-	// 文字色を記憶, Memorize text color
+	// Memorize text color
 	for( unsigned i=0; i<countof(colorTable_); ++i )
 		colorTable_[i] = vc.color[i];
 	colorTable_[3] = vc.color[CMT];
@@ -341,13 +341,13 @@ void Painter::Init( const VConfig& vc )
 	if( !font_ ) // Dummy font, no CDC/Tablewidth to setup.
 		return;
 
-	// DCにセット, Setup the Compatible Device Context (CDC)
+	// Set to DC, Setup the Compatible Device Context (CDC)
 	::SelectObject( cdc_, font_  );
 	::SelectObject( cdc_, brush_ );
 	::SetBkMode(    cdc_, TRANSPARENT );
 	::SetMapMode(   cdc_, MM_TEXT );
 
-	// 高さの情報, Height Information
+	// Height Information
 	TEXTMETRIC met;
 	::GetTextMetrics( cdc_, &met );
 	height_ = (CW_INTTYPE) met.tmHeight;
@@ -357,7 +357,7 @@ void Painter::Init( const VConfig& vc )
 	::SelectObject( cdc_, pen_ );
 
 
-	// 文字幅テーブル初期化（ASCII範囲の文字以外は遅延処理）
+	// Initialize character width table (delayed processing for characters other than those in the ASCII range)
 	memFF( widthTable_, 65536*sizeof(*widthTable_) );
 	{ // Ascii only characters
 		#define GETCHARWIDTH GetCharWidthW
@@ -384,9 +384,9 @@ void Painter::Init( const VConfig& vc )
 		widthTable_[ uniundef ] = static_cast<CW_INTTYPE>(sz.cx);
 	}
 
-	// 下位サロゲートは文字幅ゼロ (Lower surrogates have zero character width)
+	// Lower surrogates have zero character width
 	mem00( widthTable_+0xDC00, (0xE000 - 0xDC00)*sizeof(*widthTable_) );
-	// 数字の最大幅を計算, Calculate maximum width of numbers
+	// Calculate maximum width of numbers
 	figWidth_ = 0;
 	for( unicode ch=L'0'; ch<=L'9'; ++ch )
 		if( figWidth_ < widthTable_[ch] )
@@ -473,7 +473,7 @@ void Painter::RestoreDC()
 
 void Painter::Destroy()
 {
-	// 適当な別オブジェクトをくっつけて自分を解放する
+	// Free yourself by attaching another object
 	::SelectObject( cdc_, ::GetStockObject( OEM_FIXED_FONT ) );
 	::SelectObject( cdc_, ::GetStockObject( BLACK_PEN ) );
 	::SelectObject( cdc_, ::GetStockObject( WHITE_BRUSH ) );
@@ -575,7 +575,7 @@ inline void Painter::ClearClip()
 
 void Painter::DrawHSP( int x, int y, int times )
 {
-	// 半角スペース記号(ホチキスの芯型)を描く
+	// Draw a half-width space symbol (staple core type)
 	// Draw a half-width space symbol (staple core type)
 	const int w=Wc(L' '), h=H();
 	const int rh = Max(h/4, 4);
@@ -600,7 +600,7 @@ void Painter::DrawHSP( int x, int y, int times )
 
 void Painter::DrawZSP( int x, int y, int times )
 {
-	// 全角スペース記号(平たい四角)を描く
+	// Draw a full-width space symbol (flat square)
 	// Draw a full-width space symbol (flat rectangle)
 	const int w=Wc(0x3000/*L'　'*/), h=H();
 	const int rh = Max(h/4, 4);
@@ -618,22 +618,22 @@ void Painter::DrawZSP( int x, int y, int times )
 
 
 //-------------------------------------------------------------------------
-// 再描画したい範囲を Invalidate する。
+// Invalidate the range you want to redraw.
 //-------------------------------------------------------------------------
 
 void ViewImpl::ReDraw( ReDrawType r, const DPos* s )
 {
-	// まずスクロールバーを更新, First update the scroll-bars
+	// First update the scroll-bars
 	UpdateScrollBar();
 
 	switch( r )
 	{
-	case ALL: // 全画面, The whole client area
+	case ALL: // full screen, The whole client area
 
 		::InvalidateRect( hwnd_, NULL, FALSE );
 		break;
 
-	case LNAREA: // 行番号表示域のみ, Line number display area only
+	case LNAREA: // Line number display area only, Line number display area only
 
 		if( lna() > 0 )
 		{
@@ -642,8 +642,8 @@ void ViewImpl::ReDraw( ReDrawType r, const DPos* s )
 		}
 		break;
 
-	case LINE: // 指定した行の後半, Second half of the specified line
-	case AFTER: // 指定した行以下全部, Everything below the specified line
+	case LINE: // Second half of the specified line
+	case AFTER: // Everything below the specified line
 
 		{
 			DPos st = ( s->ad==0 ? *s : doc_.leftOf(*s,true) );
@@ -655,12 +655,12 @@ void ViewImpl::ReDraw( ReDrawType r, const DPos* s )
 
 
 //-------------------------------------------------------------------------
-// WM_PAINTハンドラ
+// WM_PAINT handler
 //-------------------------------------------------------------------------
 
 void A_HOT ViewImpl::on_paint( const PAINTSTRUCT& ps )
 {
-	// 描画範囲の情報を詳しく取得, Obtain detailed information about the drawing area
+	// Obtain detailed information about the drawing area
 	Painter& p = cvs_.font_;
 	p.SetupDC( ps.hdc );
 	VDrawInfo v( ps.rcPaint );
@@ -675,17 +675,17 @@ void A_HOT ViewImpl::on_paint( const PAINTSTRUCT& ps )
 
 	if( ps.rcPaint.right <= lna()  )
 	{
-		// case A: 行番号表示域のみ更新, Only the line number display area is updated.
+		// case A: Only the line number display area is updated.
 		DrawLNA( v, p );
 	}
 	else if( lna() <= ps.rcPaint.left )
 	{
-		// case B: テキスト表示域のみ更新, Update text display area only
+		// case B: Update text display area only
 		DrawTXT( v, p );
 	}
 	else
 	{
-		// case C: 両方更新, Both updates
+		// case C: Both updates, Both updates
 		DrawLNA( v, p );
 		p.SetClip( cvs_.zone() );
 		DrawTXT( v, p );
@@ -697,24 +697,24 @@ void A_HOT ViewImpl::on_paint( const PAINTSTRUCT& ps )
 
 
 //-------------------------------------------------------------------------
-// 行番号ゾーン描画, Line Number Zone Drawing
+// Line Number Zone Drawing, Line Number Zone Drawing
 //-------------------------------------------------------------------------
 
 void ViewImpl::DrawLNA( const VDrawInfo& v, Painter& p )
 {
-	// 背面消去, backward erase
+	// backward erase
 	RECT rc = { v.rc.left, v.rc.top, lna(), v.rc.bottom };
 	TCHAR digitsbuf[ULONG_DIGITS+1];
 	p.Fill( rc );
 
 	if( v.rc.top < v.YMAX )
 	{
-		// 境界線表示, Boundary line indication
+		// Boundary line indication
 		int line = lna() - p.F()/2;
 		p.DrawLine( line, v.rc.top, line, v.YMAX );
 		p.SetColor( LN );
 
-		// 行番号表示, line number indication
+		// line number indication, line number indication
 		ulong  n = v.TLMIN+1;
 		int    y = v.YMIN;
 		int edge = lna() - p.F();
@@ -738,7 +738,7 @@ void ViewImpl::DrawLNA( const VDrawInfo& v, Painter& p )
 
 
 //-------------------------------------------------------------------------
-// テキスト描画, text rendering
+// text rendering
 //-------------------------------------------------------------------------
 
 inline void ViewImpl::Inv( int y, int xb, int xe, Painter& p )
@@ -753,25 +753,25 @@ inline void ViewImpl::Inv( int y, int xb, int xe, Painter& p )
 void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 {
 	if( doc_.isBusy() ) return;
-	// 定数１, Constant 1
+	// Constant 1, Constant 1
 //	const int   TAB = p.T();
 	const int     H = p.H();
 	const ulong TLM = doc_.tln()-1;
 
-	// 作業用変数１, Working variable 1
+	// Working variable 1, Working variable 1
 	RECT  a = { 0, v.YMIN, 0, v.YMIN+p.H() };
 	int clr = -1;
 	int   x=0, x2;
 	ulong i=0, i2;
-	// 論理行単位のLoop. Loop per logical line.
+	// Loop per logical line.
 	for( ulong tl=v.TLMIN; a.top<v.YMAX; ++tl )
 	{
-		// 定数２, Constant 2
+		// Constant 2, Constant 2
 		const unicode* str = doc_.tl(tl);
 		const uchar*   flg = doc_.pl(tl);
 		const int rYMAX = Min( v.YMAX, (int)(a.top+rln(tl)*H) );
 
-		// 作業用変数２, Working variable 2
+		// Working variable 2, Working variable 2
 		ulong stt=0, end, t, n;
 		ulong rl=0;
 		if( a.top <= -H )
@@ -781,18 +781,18 @@ void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 			a.bottom += H * rl;
 			stt = end = rlend(tl,rl);
 		}
-		// 表示行単位のLoop
+		// Loop for each display line
 		for( ; a.top<rYMAX; ++rl,a.top+=H,a.bottom+=H,stt=end )
 		{
-			// 作業用変数３, Working Variable 3
+			// Working Variable 3, Working Variable 3
 			end = rlend(tl,rl);
 			if( a.bottom<=v.YMIN )
 				continue;
 
-			// テキストデータ描画, text data rendering
+			// text data rendering, text data rendering
 			for( x2=x=0, i2=i=stt; x<=v.XMAX && i<end; x=x2,i=i2 )
 			{
-				// n := 次のTokenの頭, n := next Token head
+				// n := next Token head, n := next Token head
 				t = (flg[i]>>5);
 				n = i + t;
 				if( n >= end )
@@ -801,32 +801,32 @@ void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 					while( n<end && (flg[n]>>5)==0 )
 						++n;
 
-				// x2, i2 := このTokenの右端, x2, i2 := right end of this Token
+				// x2, i2 := right end of this Token, x2, i2 := right end of this Token
 				i2 ++;
 				x2 = (str[i]==L'\t' ? p.nextTab(x2) : x2+p.W(&str[i]));
 			//	if( x2 <= v.XMIN )
 			//		x=x2, i=i2;
 				while( i2<n && x2<=v.XMAX )
 					x2 += p.W( &str[i2++] );
-				// 再描画すべき範囲と重なっていない, Not overlapping with the area that should be redrawn.
+				// Not overlapping with the area that should be redrawn.
 				if( x2<=v.XMIN )
 					continue;
 
-				// x, i := このトークンの左端, x, i := left end of this token
+				// x, i := left end of this token, x, i := left end of this token
 				if( x<v.XMIN )
 				{
-					// tabの分が戻りすぎ？
+					// Is the tab amount returned too much?
 					x = x2, i = i2;
 					while( v.XMIN<x )
 						x -= p.W( &str[--i] );
 				}
 
-				// 背景塗りつぶし, background filling
+				// background filling, background filling
 				a.left  = x + v.XBASE;
 				a.right = x2 + v.XBASE;
 				p.Fill( a );
 				// GdiFlush();
-				// 描画, Drawing
+				// drawing
 				switch( str[i] )
 				{
 				case L'\t': // 9
@@ -863,12 +863,12 @@ void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 				}
 			}
 
-			// 選択範囲だったら反転, If it is a selection, invert it.
+			// If it is a selection, invert it.
 			if( v.SYB<=a.top && a.top<=v.SYE )
 				Inv( a.top, a.top==v.SYB?v.SXB:(v.XBASE),
 				            a.top==v.SYE?v.SXE:(v.XBASE+x), p );
 
-			// 行末より後ろの余白を背景色塗, Background color fill in the margin after the end of the line
+			// Background color fill in the margin after the end of the line
 			if( x<v.XMAX )
 			{
 				a.left = v.XBASE + Max( v.XMIN, x );
@@ -877,7 +877,7 @@ void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 			}
 		}
 
-		// 行末記号描画反転, line end symbol rendering inversion
+		// line end symbol rendering inversion, line end symbol rendering inversion
 		SpecialChars sc = (tl==TLM ? scEOF : scEOL);
 		if( i==doc_.len(tl) && -32768<x+v.XBASE )
 		{
@@ -893,7 +893,7 @@ void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 		}
 	}
 
-	// EOF後余白を背景色塗, EOF after margin background color fill
+	// EOF after margin background color fill
 	if( a.top < v.rc.bottom )
 	{
 		a.left   = v.rc.left;

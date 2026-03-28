@@ -179,18 +179,18 @@ void String::LibInit()
 
 String::String( const TCHAR* s, long len )
 {
-	// 長さ指定が無い場合は計算
+	// Calculate if length is not specified
 	if( len==-1 )
 		len = my_lstrlen(s);
 
 	if( len==0 )
 	{
-		// 0文字用の特殊バッファ
+		// special buffer for 0 characters
 		SetData( null() );
 	}
 	else
 	{
-		// 新規バッファ作成
+		// Create new buffer
 		data_ = static_cast<StringData*>
 		    (malloc( sizeof(StringData)+(len+1)*sizeof(TCHAR) ));
 		if( !data_ )
@@ -301,13 +301,13 @@ String& String::Load( UINT rsrcID )
 {
 	enum { step=256 };
 
-	// 256バイトの固定長バッファへまず読んでみる
+	// First try reading into a fixed length buffer of 256 bytes.
 	TCHAR tmp[step], *buf;
 	int red = app().LoadString( rsrcID, tmp, countof(tmp) );
 	if( countof(tmp) - red > 2 )
 		return (*this = tmp);
 
-	// 少しずつ増やして対応してみる
+	// Try increasing it little by little.
 	size_t siz = step;
 	do
 	{
@@ -331,10 +331,10 @@ void String::TrimRight( size_t siz )
 	}
 	else
 	{
-		// 文字列バッファの参照カウントを確実に１にする
+		// Ensure the reference count of string buffer is 1
 		ReallocMem();
 
-		// 指定文字数分削る
+		// Delete specified number of characters
 		data_->len -= siz;
 		data_->buf()[data_->len-1] = TEXT('\0');
 	}

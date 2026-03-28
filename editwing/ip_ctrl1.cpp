@@ -6,7 +6,7 @@ using namespace editwing;
 
 
 //-------------------------------------------------------------------------
-// EwEditコントロール作成/破棄
+// EwEdit control creation/destruction
 //-------------------------------------------------------------------------
 
 EwEdit::ClsName EwEdit::className_ = TEXT("EditWing Control-01");
@@ -20,7 +20,7 @@ EwEdit::EwEdit()
 	{
 		ClassRegistered = true;
 
-		// 初回構築時のみ、クラス登録を行う
+		// Perform class registration only when building for the first time.
 		WNDCLASS wc      = {0};
 		wc.lpszClassName = className_;
 		WndImpl::Register( &wc );
@@ -46,7 +46,7 @@ void EwEdit::on_destroy()
 
 
 //-------------------------------------------------------------------------
-// 簡単なメッセージ制御
+// Easy message control
 //-------------------------------------------------------------------------
 
 LRESULT EwEdit::on_message( UINT msg, WPARAM wp, LPARAM lp )

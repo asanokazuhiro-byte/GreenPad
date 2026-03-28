@@ -164,7 +164,7 @@ bool TextFileR::GetChardetVersionStr( wchar_t* buf, int bufSize )
 }
 
 //=========================================================================
-// テキストファイル読み出し共通インターフェイス
+// Common interface for reading text files
 //=========================================================================
 
 struct ki::TextFileRPimpl : public TmpObject
@@ -180,8 +180,8 @@ struct ki::TextFileRPimpl : public TmpObject
 
 
 //-------------------------------------------------------------------------
-// Unicode系用のベースクラス
-//	UTF-8以外はそんなに出会わないだろうから遅くてもよしとする。
+// Base class for Unicode systems
+//	I don't think I'll encounter anything other than UTF-8 that much, so I'm fine with it being late.
 //-------------------------------------------------------------------------
 
 struct rBasicUTF : public ki::TextFileRPimpl
@@ -220,7 +220,7 @@ struct rBasicUTF : public ki::TextFileRPimpl
 
 	size_t ReadBuf( unicode* buf, size_t siz ) override A_FINAL
 	{
-		// 改行が出るまで読む
+		// read until line break occurs
 		unicode *w=buf, *e=buf+siz-1;
 
 		while( !Eof() )
@@ -235,7 +235,7 @@ struct rBasicUTF : public ki::TextFileRPimpl
 		if(buf<w && *(w-1)==L'\r' && PeekC() == L'\n' )
 			Skip();
 
-		// 読んだ文字数
+		// Number of characters read
 		return w-buf;
 	}
 };
@@ -243,8 +243,8 @@ struct rBasicUTF : public ki::TextFileRPimpl
 
 
 //-------------------------------------------------------------------------
-// UCS2ベタ/UCS4ベタ。それぞれUTF16, UTF32の代わりとして使う。
-// ついでに同じtemplateで、ISO-8859-1も処理してしまう。^^;
+// UCS2 beta/UCS4 beta. Used as a substitute for UTF16 and UTF32, respectively.
+// Incidentally, the same template will also process ISO-8859-1. ^^;
 //-------------------------------------------------------------------------
 
 
@@ -258,7 +258,7 @@ struct rUCS A_FINAL : public rBasicUTF
 
 	const T *fb, *fe;
 
-	// エンディアン変換
+	// endian conversion
 	inline  byte swap(  byte val ) { return val; }
 	inline dbyte swap( dbyte val ) { return (val<<8) |(val>>8); }
 
@@ -273,7 +273,7 @@ typedef rUCS<dbyte, false> rUtf16LE;
 typedef rUCS<dbyte, true> rUtf16BE;
 
 
-// UTF-32読み込み
+// UTF-32 reading
 template<bool be>
 struct rUtf32 A_FINAL: public rBasicUTF
 {
@@ -289,7 +289,7 @@ struct rUtf32 A_FINAL: public rBasicUTF
 	qbyte curChar() { return be ? swap(*fb) : *fb; }
 	bool inBMP(qbyte c) { return c<0x10000; }
 
-	// エンディアン変換
+	// endian conversion
 	inline qbyte swap( qbyte val )
 	{
 		return ((val>>24)&0xff |
@@ -511,9 +511,9 @@ struct rUtfOFSS A_FINAL: public rBasicUTF
 //     0-  F : 1bbbb
 //    10- FF : 1bbbb 0bbbb
 //   100-FFF : 1bbbb 0bbbb 0bbbb
-// というように、16進での一桁を一文字で表していくフォーマット。
-// 各 0bbbb は '0', '1', ... '9', 'A', ... 'F'
-// 各 1bbbb は 'G', 'H', ... 'P', 'Q', ... 'V' の字で表現。
+// A format in which one hexadecimal digit is represented by one character.
+// Each 0bbbb is '0', '1', ... '9', 'A', ... 'F'
+// Each 1bbbb is represented by the letters 'G', 'H', ... 'P', 'Q', ... 'V'.
 //-------------------------------------------------------------------------
 
 struct rUtf5 A_FINAL: public rBasicUTF
@@ -524,7 +524,7 @@ struct rUtf5 A_FINAL: public rBasicUTF
 
 	const uchar *fb, *fe;
 
-	// 16進文字から整数値へ変換
+	// Convert hexadecimal characters to integer values
 	inline byte conv( uchar x )
 	{
 		if(/*'0'<=x &&*/x<='9' ) return x-'0';
@@ -546,9 +546,9 @@ struct rUtf5 A_FINAL: public rBasicUTF
 
 //-------------------------------------------------------------------------
 // UTF-7
-//   ASCII範囲の字はそのまま。それ以外はUTF-16の値をbase64エンコード
-//   して出力。エンコードされた部分は + と - で挟まれる。また '+' と
-//   いう字自体を表現するために "+-" という形式を用いる。
+//   Characters in the ASCII range remain as they are. Otherwise, UTF-16 values ​​are base64 encoded.
+//   and output. The encoded part is sandwiched between + and -. Also '+'
+//   The form "+-" is used to represent the character itself.
 //-------------------------------------------------------------------------
 
 namespace
@@ -574,9 +574,9 @@ struct rUtf7 A_FINAL: public rBasicUTF
 		{ fillbuf();  /*SkipBOMIfNeeded();*/ }
 
 	const uchar *fb, *fe;
-	unicode buf[3]; // b64を８文字毎に読んでバッファに溜めておく
-	int rest;       // バッファの空き
-	bool inB64;     // base64エリア内ならtrue
+	unicode buf[3]; // Read every 8 characters of b64 and store them in a buffer
+	int rest;       // Buffer free space
+	bool inB64;     // true if inside base64 area
 
 	void Skip() override { if(--rest==0) fillbuf(); }
 	bool Eof() override { return fb>=fe && rest==0; }
@@ -591,17 +591,17 @@ struct rUtf7 A_FINAL: public rBasicUTF
 					if( fb+1<fe && fb[1]=='-' )
 						rest=1, buf[0]=L'+', fb+=2;  // +-
 					else
-						++fb, inB64=true, fillbuf(); // 単独 +
+						++fb, inB64=true, fillbuf(); // Alone +
 				else
-					rest=1, buf[0]=*fb++;            // 普通の字
+					rest=1, buf[0]=*fb++;            // normal characters
 			else
 			{
-				// 何文字デコードできるか数える
+				// Count how many characters you can decode
 				int N=0, E=Max(int(fb-fe),8);
 				while( N<E && fb[N]<0x80 && u7c[fb[N]]!=0xff )
 					++N;
 
-				// デコード
+				// decode
 				buf[0]=buf[1]=buf[2]=0;
 				switch( N )
 				{
@@ -621,7 +621,7 @@ struct rUtf7 A_FINAL: public rBasicUTF
 						rest=2, t=buf[0], buf[0]=buf[1], buf[1]=t;
 				}
 
-				// 使った分進む
+				// Advance by the amount used
 				if( N<E )
 				{
 					inB64=false;
@@ -1028,16 +1028,16 @@ struct rUtfEBCDIC A_FINAL: public rBasicUTF
 
 //-------------------------------------------------------------------------
 // UTF8/MBCS
-//  CR,LFが１バイト文字としてきちんと出てくるので、
-//  切り分けが簡単な形式をここでまとめて扱う。UTF8以外の変換は
-//  Windowsに全て任せている。
+//  CR and LF appear properly as 1-byte characters, so
+//  Here we will summarize the formats that are easy to separate. Conversion other than UTF8
+//  I leave everything to Windows.
 //-------------------------------------------------------------------------
 
 namespace
 {
 	typedef char* (WINAPI * uNextFunc)(WORD,const char*,DWORD);
 
-	// CharNextExAはGB18030の４バイト文字列を扱えないそうだ。
+	// It seems that CharNextExA cannot handle GB18030 4-byte strings.
 	static char* WINAPI CharNextGB18030( WORD, const char* sp, DWORD )
 	{
 		const unsigned char *q;
@@ -1064,7 +1064,7 @@ namespace
 		return (char *)( q );
 	}
 
-	// IMultiLanguage2::DetectInputCodepageはGB18030のことを認識できません。
+	// IMultiLanguage2::DetectInputCodepage cannot recognize GB18030.
 	static bool IsGB18030Like( const uchar* ptr, size_t siz, int refcs )
 	{
 		size_t i;
@@ -1135,10 +1135,10 @@ namespace
 		return 6; // 1111110x
 	}
 
-	// Win95対策。
+	// Win95 countermeasures.
 	//   http://support.microsoft.com/default.aspx?scid=%2Fisapi%2Fgomscom%2Easp%3Ftarget%3D%2Fjapan%2Fsupport%2Fkb%2Farticles%2Fjp175%2F3%2F92%2Easp&LN=JA
-	// MSDNにはWin95以降でサポートと書いてあるのにCP_UTF8は
-	// 使えないらしいので、自前の変換関数で。
+	// Although MSDN says it is supported on Win95 and later, CP_UTF8 is
+	// It seems like it can't be used, so I used my own conversion function.
 	static uchar next_LUT[256]; // Filled by GetCharNextExA()
 	typedef int (WINAPI * uConvFunc)(UINT,DWORD,const char*,int,wchar_t*,int);
 	static int WINAPI Utf8ToWideChar( UINT, DWORD, const char* sb, int ss, wchar_t* wb, int ws )
@@ -1147,7 +1147,7 @@ namespace
 
 		const uchar *p = reinterpret_cast<const uchar*>(sb);
 		const uchar *e = reinterpret_cast<const uchar*>(sb+ss);
-		wchar_t     *w = wb; // バッファサイズチェック無し（仕様）
+		wchar_t     *w = wb; // No buffer size check (specifications)
 
 		for( int t; p<e; ++w )
 		{
@@ -1166,7 +1166,7 @@ namespace
 }
 struct rMBCS A_FINAL: public TextFileRPimpl
 {
-	// ファイルポインタ＆コードページ, File Pointer & Code Page
+	// File Pointer & Code Page, File Pointer & Code Page
 	const char* fb;
 	const char* fe;
 	const int   cp;
@@ -1174,7 +1174,7 @@ struct rMBCS A_FINAL: public TextFileRPimpl
 	const uConvFunc conv;
 	enum { ANSIMODE=0, UTF8MODE=1, DBCSMODE=2 };
 
-	// 初期設定, Initialization
+	// Initialization
 	rMBCS( const uchar* b, size_t s, int c )
 		: fb( reinterpret_cast<const char*>(b) )
 		, fe( reinterpret_cast<const char*>(b+s) )
@@ -1183,7 +1183,7 @@ struct rMBCS A_FINAL: public TextFileRPimpl
 		, conv( cp==UTF8N && !::IsValidCodePage(65001)
 		                  ? Utf8ToWideChar : MultiByteToWideChar )
 	{
-		if( cp==UTF8N ) // BOMスキップ
+		if( cp==UTF8N ) // BOM Skip
 			fb += rBasicUTF::GetAfterBOM((uchar*)fb, (uchar*)fe, "\xEF\xBB\xBF", 3);
 		if( cp==GB18030 )
 			fb += rBasicUTF::GetAfterBOM((uchar*)fb, (uchar*)fe, "\x84\x31\x95\x33", 4);
@@ -1191,11 +1191,11 @@ struct rMBCS A_FINAL: public TextFileRPimpl
 
 	size_t ReadBuf( unicode* buf, size_t siz ) override
 	{
-		// バッファの終端か、ファイルの終端の近い方まで読み込む
+		// Read until the end of the buffer or near the end of the file
 		// Read to the end of the buffer or near the end of the file
 		const char *p, *end = Min( fb+siz/2-2, fe );
 
-		// 改行が出るまで進む
+		// Proceed until line break occurs
 		p=fb;
 		switch( (UINT_PTR)next )
 		{
@@ -1237,12 +1237,12 @@ struct rMBCS A_FINAL: public TextFileRPimpl
 		// we do not translate it.
 		const char *pp = p - ( p < fe && p > fb && *(p-1)=='\r' && *(p) =='\n' );
 
-		// Unicodeへ変換, convertion to Unicode
+		// conversion to Unicode, conversion to Unicode
 		size_t len = conv( cp, 0, fb, pp-fb, buf, siz );
 
 		fb = p;
 
-		// 終了
+		// end
 		return len;
 	}
 
@@ -1316,49 +1316,49 @@ struct rMBCS A_FINAL: public TextFileRPimpl
 
 
 //-------------------------------------------------------------------------
-// ISO-2022 の適当な実装
+// A suitable implementation of ISO-2022
 //
-//	コードページとして、G0, G1, G2, G3 の四面を持つ。
-//	それぞれ決まったエスケープシーケンスによって、
-//	さまざまな文字集合を各面に呼び出すことが出来る。
-//	とりあえず現在のバージョンで対応しているふりなのは
-//	次の通り。()内に、そのいい加減っぷりを示す。
+//	It has four code pages: G0, G1, G2, and G3.
+//	With each fixed escape sequence,
+//	Various character sets can be called into each side.
+//	For the time being, the current version supports this.
+//	As follows. The sloppiness is shown in parentheses.
 //
-//		<<いつでも>>
-//		1B 28 42    : G0へ ASCII
-//		1B 28 4A    : G0へ JIS X 0201 ローマ字 (のかわりにASCII)
-//		1B 29 4A    : G1へ JIS X 0201 ローマ字 (のかわりにASCII)
-//		1B 2A 4A    : G2へ JIS X 0201 ローマ字 (のかわりにASCII)
-//		1B 3B 4A    : G3へ JIS X 0201 ローマ字 (のかわりにASCII)
-//		1B 2E 41    : G2へ ISO-8859-1
-//		<<CP932が有効な場合>>
-//		1B 28 49    : G0へ JIS X 0201 カナ
-//		1B 29 49    : G1へ JIS X 0201 カナ
-//		1B 2A 49    : G2へ JIS X 0201 カナ
-//		1B 2B 49    : G3へ JIS X 0201 カナ
-//		1B 24 40    : G0へ JIS X 0208(1978)
-//		1B 24 42    : G0へ JIS X 0208(1983)    (年度は区別しない)
-//		<<CP936が有効な場合>>
-//		1B 24 41    : G0へ GB 2312
-//		1B 24 29 41 : G1へ GB 2312
-//		1B 24 2A 41 : G2へ GB 2312
-//		1B 24 2B 41 : G3へ GB 2312
-//		<<CP949が有効な場合>>
-//		1B 24 28 43 : G0へ KS X 1001
-//		1B 24 29 43 : G1へ KS X 1001
-//		1B 24 2A 43 : G2へ KS X 1001
-//		1B 24 2B 43 : G3へ KS X 1001
+//		<<Anytime>>
+//		1B 28 42 : to G0 ASCII
+//		1B 28 4A : To G0 JIS X 0201 Roman alphabet (ASCII instead)
+//		1B 29 4A : To G1 JIS X 0201 Roman alphabet (ASCII instead)
+//		1B 2A 4A : To G2 JIS X 0201 Roman alphabet (ASCII instead)
+//		1B 3B 4A : To G3 JIS X 0201 Roman alphabet (ASCII instead)
+//		1B 2E 41 : To G2 ISO-8859-1
+//		<<When CP932 is enabled>>
+//		1B 28 49 : To G0 JIS X 0201 Kana
+//		1B 29 49 : To G1 JIS X 0201 Kana
+//		1B 2A 49 : To G2 JIS X 0201 Kana
+//		1B 2B 49 : To G3 JIS X 0201 Kana
+//		1B 24 40 : To G0 JIS X 0208(1978)
+//		1B 24 42: To G0 JIS X 0208(1983) (Does not distinguish between years)
+//		<<When CP936 is enabled>>
+//		1B 24 41 : to G0 GB 2312
+//		1B 24 29 41 : to G1 GB 2312
+//		1B 24 2A 41 : to G2 GB 2312
+//		1B 24 2B 41 : to G3 GB 2312
+//		<<When CP949 is enabled>>
+//		1B 24 28 43 : To G0 KS X 1001
+//		1B 24 29 43 : to G1 KS X 1001
+//		1B 24 2A 43 : To G2 KS X 1001
+//		1B 24 2B 43 : To G3 KS X 1001
 //
-//	各面に呼び出した文字集合は、
+//	The character set called on each side is
 //		GL (0x21～0xfe) GR (0xa0～0xff)
-//	のどちらかへマップすることで、実際のバイト値となる。
-//	マップ命令となるバイト列は、次の通り
+//	By mapping to either, it becomes the actual byte value.
+//	The byte string that becomes the map instruction is as follows:
 //
-//		0F    : GL        へG0を呼び出し
-//		0E    : GL        へG1を呼び出し
-//		1B 7E : GR        へG1を呼び出し
-//		8E    : GL/GR両方 へG2を一瞬だけ呼び出し。1B 4E も同義
-//		8F    : GL/GR両方 へG3を一瞬だけ呼び出し。1B 4F も同義
+//		0F: Call G0 to GL
+//		0E : Call G1 to GL
+//		1B 7E : Call G1 to GR
+//		8E: Call G2 to both GL/GR for a moment. 1B 4E is also synonymous
+//		8F: Call G3 to both GL/GR for a moment. 1B 4F also has the same meaning
 //
 //-------------------------------------------------------------------------
 
@@ -1374,19 +1374,19 @@ struct rIso2022 A_FINAL: public TextFileRPimpl
 		if( k&1 )	s[1] = (char)((t>>6) ? t+0x40 : t+0x3f);
 		else		s[1] = (char)(t+0x9e);
 	}
-	// ファイルポインタ
+	// file pointer
 	const uchar* fb;
 	const uchar* fe;
-	const bool fixed; // ESCによる切り替えを行わないならtrue
-	const bool mode_hz; // HZの場合。
+	const bool fixed; // true if switching by ESC is not performed
+	const bool mode_hz; // For HZ.
 
-	// 作業変数
+	// work variables
 	const CodeSet *GL;
 	CodeSet      G[4];
-	int gWhat; // 次の字は 1:GL/GR 2:G2 3:G3 で出力
+	int gWhat; // The next character is output as 1:GL/GR 2:G2 3:G3
 	size_t len;
 
-	// 初期化
+	// Initialization
 	rIso2022( const uchar* b, size_t s, bool f, bool hz,
 		CodeSet g0, CodeSet g1, CodeSet g2=ASCII, CodeSet g3=ASCII )
 		: fb( b )
@@ -1437,7 +1437,7 @@ struct rIso2022 A_FINAL: public TextFileRPimpl
 
 	void DoOutput( unicode*& buf, const uchar*& p )
 	{
-		// 文字集合取り出し
+		// Character set extraction
 		CodeSet cs =
 			(gWhat==2 ? G[2] :
 			(gWhat==3 ? G[3] :
@@ -1480,10 +1480,10 @@ struct rIso2022 A_FINAL: public TextFileRPimpl
 	{
 		len=0;
 
-		// バッファの終端か、ファイルの終端の近い方まで読み込む
+		// Read until the end of the buffer or near the end of the file
 		const uchar *p, *end = Min( fb+siz/2-2, fe );
 
-		// 改行が出るまで進む
+		// Proceed until line break occurs
 		for( p=fb; p<end; ++p )
 			switch( *p )
 			{
@@ -1513,7 +1513,7 @@ struct rIso2022 A_FINAL: public TextFileRPimpl
 			++p;
 		fb = p;
 
-		// 終了
+		// end
 		return len;
 	}
 };
@@ -1521,7 +1521,7 @@ struct rIso2022 A_FINAL: public TextFileRPimpl
 
 
 //-------------------------------------------------------------------------
-// 自動判定などなど
+// Automatic judgment etc.
 //-------------------------------------------------------------------------
 
 TextFileR::TextFileR( int charset )
@@ -1585,13 +1585,13 @@ int TextFileR::neededCodepage(int cs)
 }
 bool TextFileR::Open( const TCHAR* fname, bool always )
 {
-	// ファイルを開く
+	// open file
 	if( !fp_.Open(fname, always) )
 		return false;
 	const uchar* buf = fp_.base();
 	const size_t  siz = fp_.size();
 
-	// 必要なら自動判定
+	// Automatic determination if necessary
 	cs_ = AutoDetection( cs_, buf, siz );
 	if( cs_ )
 	{
@@ -1616,7 +1616,7 @@ bool TextFileR::Open( const TCHAR* fname, bool always )
 	if( !cs_ ) cs_ = ::GetACP();
 
 
-	// 対応するデコーダを作成
+	// Create a corresponding decoder
 	switch( cs_ )
 	{
 	case 28591:   impl_ = new rWestISO88591(buf,siz); break; // ISO-8859-1
@@ -1656,9 +1656,9 @@ bool TextFileR::Open( const TCHAR* fname, bool always )
 
 int TextFileR::AutoDetection( int cs, const uchar* ptr, size_t totsiz )
 {
-//-- まず、文字の出現回数の統計を取る
+//-- First, take statistics on the number of times a character appears
 
-	size_t siz = Min( totsiz, (size_t)(16<<10) ); // 先頭16KB
+	size_t siz = Min( totsiz, (size_t)(16<<10) ); // First 16KB
 
 	uint  freq[256];
 	bool bit8 = false;
@@ -1670,20 +1670,20 @@ int TextFileR::AutoDetection( int cs, const uchar* ptr, size_t totsiz )
 		++freq[ ptr[i] ];
 	}
 
-//-- 改行コード決定 (UTF16/32/7のとき問題あり。UTF5に至っては判定不可…)
+//-- Line feed code determination (There is a problem when using UTF16/32/7. Unable to determine when it comes to UTF5...)
 
 	setLBfromFreq( freq, '\r', '\n' );
 
-//-- デフォルトコード
+//--default code
 
 	int defCs = ::GetACP();
 
-//-- 小さすぎる場合はここで終了
+//-- If it's too small, stop here
 
 	if( siz < 4 )
 		return cs==AutoDetect ? defCs : cs;
 
-//-- 明示指定がある場合はここで終了
+//-- End here if explicitly specified
 
 	uint bom4 = (ptr[0]<<24) | (ptr[1]<<16) | (ptr[2]<<8) | (ptr[3]);
 	uint bom2 = (ptr[0]<<8)  | (ptr[1]);
@@ -1732,7 +1732,7 @@ int TextFileR::AutoDetection( int cs, const uchar* ptr, size_t totsiz )
 	if( cs != AutoDetect )
 		return cs;
 
-//-- BOMチェック・7bitチェック
+//--BOM check/7bit check
 
 	bool Jp = ::IsValidCodePage(932)!=FALSE;
 
@@ -1760,7 +1760,7 @@ int TextFileR::AutoDetection( int cs, const uchar* ptr, size_t totsiz )
 	if( cs != AutoDetect )
 		return cs;
 
-//-- UTF-5 チェック
+//--UTF-5 check
 
 	uint u5sum = 0;
 	for( uchar c='0'; c<='9'; ++c ) u5sum += freq[c];
@@ -1834,18 +1834,18 @@ int TextFileR::AutoDetection( int cs, const uchar* ptr, size_t totsiz )
 	}
 
 // last resort
-//-- 暫定版 UTF-8 / 日本語EUC チェック
+//-- Preliminary version UTF-8 / Japanese EUC check
 
-	// 改行コードがLFか、ある程度の大きさか、でないと
-	// 無条件で ANSI-CP と見なしてしまう。
+	// The line feed code must be LF or of a certain size.
+	// It is unconditionally assumed to be ANSI-CP.
 	if( bit8 && (siz>4096 || lb_==1
 	 || freq[0xfd] || freq[0xfe] || freq[0xff] || freq[0x80] || freq[0xC3] ) )
 	{
-		// UHCやGBKはEUC-JPと非常に混同しやすいので、そっちがデフォルトの場合は
-		// EUC-JP自動判定を切る
+		// UHC and GBK are very easy to confuse with EUC-JP, so if that is the default,
+		// Turn off EUC-JP automatic judgment
 		if( Jp && defCs==SJIS )
 		{
-			// EUCとしておかしい値が無いかチェック
+			// Check if there are any strange values ​​as EUC
 			bool be=true;
 			for( int k=0x90; k<=0xa0; ++k )if( freq[k]>0 ){be=false;break;}
 			for( int k=0x7f; k<=0x8d; ++k )if( freq[k]>0 ){be=false;break;}
@@ -1858,7 +1858,7 @@ int TextFileR::AutoDetection( int cs, const uchar* ptr, size_t totsiz )
 	}
 
 
-//-- 判定結果
+//-- Judgment result
 
 	return cs ? cs : defCs;
 }
@@ -1898,7 +1898,7 @@ bool TextFileR::isEBCDIC( int cs )
 
 bool TextFileR::IsValidUTF8( const uchar* ptr, size_t siz ) const
 {
-	// UTF8として読めるかどうかチェック
+	// Check if it can be read as UTF8
 	int mi=1; // mask index
 	for( size_t i=0; i<siz ; ++i )
 		if( --mi )
@@ -2589,7 +2589,7 @@ bool TextFileR::CheckUTFConfidence(const uchar* ptr, size_t siz, unsigned char u
 }
 
 //=========================================================================
-// テキストファイル出力共通インターフェイス
+// Text file output common interface
 //=========================================================================
 struct ki::TextFileWPimpl : public TmpObject
 {
@@ -2651,7 +2651,7 @@ protected:
 	char  buf_[bsiz_];
 };
 //-------------------------------------------------------------------------
-// Unicodeテキスト
+// Unicode text
 //-------------------------------------------------------------------------
 
 struct wUtf16LE A_FINAL: public TextFileWPimpl
@@ -2694,7 +2694,7 @@ struct wUtf32LE A_FINAL: public TextFileWPimpl
 		{
 			unicode c = *buf++;
 			qbyte  cc = c;
-			if( (0xD800<=c && c<=0xDBFF) && siz>0 ) // trail char が正しいかどうかはチェックする気がない
+			if( (0xD800<=c && c<=0xDBFF) && siz>0 ) // I don't feel like checking if trail char is correct.
 			{
 				unicode c2 = *buf++; siz--;
 				cc = 0x10000 + (((c-0xD800)&0x3ff)<<10) + ((c2-0xDC00)&0x3ff);
@@ -2720,7 +2720,7 @@ struct wUtf32BE A_FINAL: public TextFileWPimpl
 		{
 			unicode c = *buf++;
 			qbyte  cc = c;
-			if( (0xD800<=c && c<=0xDBFF) && siz>0 ) // trail char が正しいかどうかはチェックする気がない
+			if( (0xD800<=c && c<=0xDBFF) && siz>0 ) // I don't feel like checking if trail char is correct.
 			{
 				unicode c2 = *buf++; siz--;
 				cc = 0x10000 + (((c-0xD800)&0x3ff)<<10) + ((c2-0xDC00)&0x3ff);
@@ -2760,7 +2760,7 @@ struct wUtf1 A_FINAL: public TextFileWPimpl
 {
 	wUtf1( FileW& w, bool bom ) : TextFileWPimpl(w), SurrogateHi(0)
 	{
-		if( bom ) // BOM書き込み
+		if( bom ) // BOM writing
 			fp_.Write( "\xF7\x64\x4C", 3 );
 	}
 
@@ -2820,7 +2820,7 @@ struct wUtf9 A_FINAL: public TextFileWPimpl
 {
 	wUtf9( FileW& w, bool bom ) : TextFileWPimpl(w), SurrogateHi(0)
 	{
-		if( bom ) // BOM書き込み
+		if( bom ) // BOM writing
 			fp_.Write( "\x93\xFD\xFF", 3 );
 	}
 
@@ -2875,7 +2875,7 @@ struct wUtfOFSS A_FINAL: public TextFileWPimpl
 {
 	wUtfOFSS( FileW& w, bool bom ) : TextFileWPimpl(w), SurrogateHi(0)
 	{
-		if( bom ) // BOM書き込み
+		if( bom ) // BOM writing
 			fp_.Write( "\xC3\xBC\xFF", 3 );
 	}
 
@@ -3244,7 +3244,7 @@ struct wBOCU1 A_FINAL: public TextFileWPimpl
 
 
 //-------------------------------------------------------------------------
-// Win95対策の自前UTF8/UTF7処理
+// Own UTF8/UTF7 processing for Win95
 //-------------------------------------------------------------------------
 //#ifndef _UNICODE
 
@@ -3253,7 +3253,7 @@ struct wUTF8 A_FINAL: public TextFileWPimpl
 	explicit wUTF8( FileW& w, int cp )
 		: TextFileWPimpl(w)
 	{
-		if( cp == UTF8 ) // BOM書き込み
+		if( cp == UTF8 ) // BOM writing
 			fp_.Write( "\xEF\xBB\xBF", 3 );
 	}
 
@@ -3418,7 +3418,7 @@ struct wUtfEBCDIC A_FINAL: public TextFileWPimpl
 	TextFileWPimpl( w ),
 	SurrogateHi( 0 )
 	{
-		if( bom ) // BOM書き込み
+		if( bom ) // BOM writing
 			fp_.Write( "\xDD\x73\x66\x73", 4 );
 	}
 
@@ -3473,7 +3473,7 @@ struct wUtfEBCDIC A_FINAL: public TextFileWPimpl
 };
 //#endif
 //-------------------------------------------------------------------------
-// Windows頼りの変換
+// Windows-based conversion
 //-------------------------------------------------------------------------
 
 struct wMBCS A_FINAL: public TextFileWPimpl
@@ -3483,13 +3483,13 @@ struct wMBCS A_FINAL: public TextFileWPimpl
 	{
 		if( cp == UTF8 )
 		{
-			// BOM書き込み
+			// BOM writing
 			cp_ = UTF8N;
 			fp_.Write( "\xEF\xBB\xBF", 3 );
 		}
 		if( cp == GB18030Y )
 		{
-			// BOM書き込み
+			// BOM writing
 			cp_ = GB18030;
 			fp_.Write( "\x84\x31\x95\x33", 4 );
 		}
@@ -3498,7 +3498,7 @@ struct wMBCS A_FINAL: public TextFileWPimpl
 	// Directly write into the FileW buffer (lower mem usage).
 	void WriteLine( const unicode* str, size_t len ) override
 	{
-		// WideCharToMultiByte API を利用した変換
+		// Conversion using WideCharToMultiByte API
 		fp_.WriteInCodepageFromUnicode( cp_, str, len );
 	}
 
@@ -3509,8 +3509,8 @@ private:
 
 
 //-------------------------------------------------------------------------
-// ISO-2022 サブセットその１。
-// ASCIIともう一つしか文字集合を使わないもの
+// ISO-2022 subset 1.
+// ASCII and those that use only one other character set
 //-------------------------------------------------------------------------
 
 struct wIso2022 A_FINAL: public TextFileWPimplWithBuf
@@ -3536,7 +3536,7 @@ struct wIso2022 A_FINAL: public TextFileWPimplWithBuf
 
 	void WriteBuf( const unicode* str, size_t len ) override
 	{
-		// まず WideCharToMultiByte API を利用して変換
+		// First, convert using WideCharToMultiByte API
 		int r=::WideCharToMultiByte(cp_, 0, str, len, buf_, bsiz_,NULL,NULL);
 
 		bool ascii = true;
@@ -3545,7 +3545,7 @@ struct wIso2022 A_FINAL: public TextFileWPimplWithBuf
 			fp_.NeedSpace(4);
 			if( buf_[i] & 0x80 )
 			{
-				// 非ASCII部分は最上位ビットを落としてから出力
+				// The non-ASCII part is output after dropping the most significant bit.
 				if( ascii )
 				{
 					if( hz_ )
@@ -3559,7 +3559,7 @@ struct wIso2022 A_FINAL: public TextFileWPimplWithBuf
 			}
 			else
 			{
-				// ASCII部分はそのまま出力
+				// Output the ASCII part as is
 				if( !ascii )
 				{
 					if( hz_ )
@@ -3570,13 +3570,13 @@ struct wIso2022 A_FINAL: public TextFileWPimplWithBuf
 				}
 				fp_.WriteCN( buf_[i] );
 
-				// ただしHZの場合、0x7E は 0x7E 0x7E と表す
+				// However, in the case of HZ, 0x7E is expressed as 0x7E 0x7E
 				if( hz_ && buf_[i]==0x7E )
 					fp_.WriteCN( 0x7E );
 			}
 		}
 
-		// 最後は確実にASCIIに戻す
+		// Make sure to switch back to ASCII in the end
 		if( !ascii )
 		{
 			fp_.NeedSpace(2);
@@ -3595,7 +3595,7 @@ struct wIso2022 A_FINAL: public TextFileWPimplWithBuf
 
 
 //-------------------------------------------------------------------------
-// ISO-2022 サブセットその２。日本語EUC
+// ISO-2022 subset 2. Japanese EUC
 //-------------------------------------------------------------------------
 
 // Helper: SJIS ==> JIS X 0208
@@ -3603,7 +3603,7 @@ static void sjis2jis( uchar s1, uchar s2, char* k )
 {
 	if( ((s1==0xfa || s1==0xfb) && s2>=0x40) || (s1==0xfc && (s2&0xf0)==0x40) )
 	{
-		// IBM外字のマッピング
+		// IBM external character mapping
 static const WORD IBM_sjis2kuten[400] = {
 /*fa40*/0x5c51,0x5c52,0x5c53,0x5c54,0x5c55,0x5c56,0x5c57,0x5c58,0x5c59,0x5c5a,0x0d15,0x0d16,0x0d17,0x0d18,0x0d19,0x0d1a,
 /*fa50*/0x0d1b,0x0d1c,0x0d1d,0x0d1e,0x022c,0x5c5c,0x5c5d,0x5c5e,0x0d4a,0x0d42,0x0d44,0x0248,0x5901,0x5902,0x5903,0x5904,
@@ -3636,7 +3636,7 @@ static const WORD IBM_sjis2kuten[400] = {
 	}
 	else
 	{
-		// その他
+		// others
 		if( s2>=0x9f )
 		{
 			if( s1>=0xe0 ) k[0] = ((s1-0xc0)<<1);
@@ -3664,7 +3664,7 @@ struct wEucJp A_FINAL: public TextFileWPimplWithBuf
 
 	void WriteBuf( const unicode* str, size_t len ) override
 	{
-		// まず WideCharToMultiByte API を利用して変換
+		// First, convert using WideCharToMultiByte API
 		int r = ::WideCharToMultiByte(932,0,str,len,buf_,bsiz_,NULL,NULL);
 
 		for( int i=0; i<r; ++i )
@@ -3674,7 +3674,7 @@ struct wEucJp A_FINAL: public TextFileWPimplWithBuf
 			{
 				if( 0xA1<=(uchar)buf_[i] && (uchar)buf_[i]<=0xDF )
 				{
-					// カナ
+					// Kana
 					fp_.WriteCN( 0x8E );
 					fp_.WriteCN( buf_[i] );
 				}
@@ -3688,7 +3688,7 @@ struct wEucJp A_FINAL: public TextFileWPimplWithBuf
 			}
 			else
 			{
-				// ASCII部分はそのまま出力
+				// Output the ASCII part as is
 				fp_.WriteCN( buf_[i] );
 			}
 		}
@@ -3698,7 +3698,7 @@ struct wEucJp A_FINAL: public TextFileWPimplWithBuf
 
 
 //-------------------------------------------------------------------------
-// ISO-2022 サブセットその３。ISO-2022-JP
+// ISO-2022 Subset 3. ISO-2022-JP
 //-------------------------------------------------------------------------
 
 struct wIsoJp A_FINAL: public TextFileWPimplWithBuf
@@ -3711,7 +3711,7 @@ struct wIsoJp A_FINAL: public TextFileWPimplWithBuf
 
 	void WriteBuf( const unicode* str, size_t len ) override
 	{
-		// まず WideCharToMultiByte API を利用して変換
+		// First, convert using WideCharToMultiByte API
 		int r = ::WideCharToMultiByte(932,0,str,len,buf_,bsiz_,NULL,NULL);
 
 		enum { ROMA, KANJI, KANA } state = ROMA;
@@ -3720,7 +3720,7 @@ struct wIsoJp A_FINAL: public TextFileWPimplWithBuf
 			{
 				if( 0xA1<=(uchar)buf_[i] && (uchar)buf_[i]<=0xDF )
 				{
-					// カナ
+					// Kana
 					if( state != KANA )
 						fp_.Write( "\x1b\x28\x49", 3 ), state = KANA;
 					fp_.WriteC( buf_[i] & 0x7f );
@@ -3737,7 +3737,7 @@ struct wIsoJp A_FINAL: public TextFileWPimplWithBuf
 			}
 			else
 			{
-				// ASCII部分はそのまま出力
+				// Output the ASCII part as is
 				if( state != ROMA )
 					fp_.Write( "\x1b\x28\x42", 3 ), state = ROMA;
 				fp_.WriteC( buf_[i] );
@@ -3752,7 +3752,7 @@ struct wIsoJp A_FINAL: public TextFileWPimplWithBuf
 
 
 //-------------------------------------------------------------------------
-// 書き込みルーチンの準備等々
+// Preparation for writing routine etc.
 //-------------------------------------------------------------------------
 
 TextFileW::TextFileW( int charset, int linebreak )

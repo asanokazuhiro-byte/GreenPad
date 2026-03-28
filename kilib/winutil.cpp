@@ -61,7 +61,7 @@ Clipboard::Text Clipboard::GetUnicodeText() const
 	// Always try to get the best available clipboard data.
 	if( IsClipboardFormatAvailable(CF_UNICODETEXT) )
 	{
-		// NTなら直接Unicodeでとれる
+		// If you use NT, you can get it directly in Unicode.
 		HANDLE h = GetData( CF_UNICODETEXT );
 		if( h != NULL )
 		{
@@ -75,7 +75,7 @@ Clipboard::Text Clipboard::GetUnicodeText() const
 	else if( IsClipboardFormatAvailable(CF_TEXT) )
 	{
 		// Fallback to ANSI clipboard data.
-		// 9xなら変換が必要
+		// 9x requires conversion
 		HANDLE h = GetData( CF_TEXT );
 		if( h != NULL )
 		{

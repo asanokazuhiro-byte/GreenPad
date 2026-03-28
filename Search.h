@@ -11,7 +11,7 @@
 //=========================================================================
 //@{ @pkg Gp.Search //@}
 //@{
-//	検索オブジェクト
+//	search object
 //@}
 //=========================================================================
 
@@ -19,16 +19,16 @@ class Searchable
 {
 public:
 	//@{
-	//	検索を行う
-	//	@param str 対象文字列
-	//	@param len 対象文字列の長さ
-	//	@param stt 検索開始index。0なら先頭から
-	//	@param mbg マッチ結果の先頭index
-	//	@param med マッチ結果の終端indexの１個後ろ
-	//	@return マッチしたかどうか
+	//	Do a search
+	//	@param str Target string
+	//	@param len Length of target string
+	//	@param stt Search start index. If 0, start from the beginning
+	//	@param mbg First index of match result
+	//	@param med One position after the ending index of the match result
+	//	@return Matched?
 	//
-	//	下方向サーチオブジェクトの場合、stt <= *beg の範囲
-	//	上方向サーチオブジェクトの場合、*beg <= stt の範囲を検索
+	//	For downward search objects, the range stt <= *beg
+	//	For upward search objects, search range *beg <= stt
 	//@}
 	virtual bool Search( const unicode* str, ulong len, ulong stt,
 		ulong* mbg, ulong* med ) = 0;
@@ -44,11 +44,11 @@ public:
 
 //=========================================================================
 //@{
-//	検索管理人
+//	search manager
 //
-//	前回検索したときのオプションや検索文字列を覚えておくのが
-//	このクラスの担当。検索・置換ダイアログの表示等もここで
-//	やるかもしれない。
+//	Remembering the options and search string from the last search
+//	In charge of this class. You can also display the search/replace dialog here.
+//	I might do it.
 //@}
 //=========================================================================
 
@@ -57,43 +57,43 @@ class SearchManager A_FINAL: public ki::DlgImpl
 	typedef editwing::DPos DPos;
 
 public:
-	//@{ コンストラクタ。特記事項無し //@}
+	//@{ constructor; No special notes //@}
 	SearchManager( ki::Window& w, editwing::EwEdit& e );
 
-	//@{ デストラクタ。特記事項無し //@}
+	//@{ destructor; No special notes //@}
 	~SearchManager();
 
-	//@{ 検索ダイアログ表示 //@}
+	//@{ Display search dialog //@}
 	void ShowDlg();
 
-	//@{ [次を検索]コマンド //@}
+	//@{ [Find Next] command //@}
 	void FindNext();
 
-	//@{ [前を検索]コマンド //@}
+	//@{ [Find Previous] command //@}
 	void FindPrev();
 
-	//@{ 今すぐ検索可能か？ //@}
+	//@{ Can I search now? //@}
 	bool isReady() const
 		{ return searcher_ != NULL; }
 
-	//@{ 設定Save //@}
+	//@{Save settings //@}
 	void SaveToINI();
 
-	//@{ 設定Load //@}
+	//@{SettingsLoad //@}
 	void LoadFromINI();
 
-	//@{ 苦肉の策^^; //@}
+	//@{A last resort^^; //@}
 	bool TrapMsg(MSG* msg);
 
-	//@{ 見つかりませんでしたダイアログ //@}
+	//@{ Not Found Dialog //@}
 	void NotFound(bool GoingDown=false);
 
 private:
 
-	//@{ [置換]コマンド //@}
+	//@{ [Replace] command //@}
 	void ReplaceImpl();
 
-	//@{ [全置換]コマンド //@}
+	//@{ [Replace all] command //@}
 	void ReplaceAllImpl();
 
 private:
@@ -176,10 +176,10 @@ private:
 	editwing::EwEdit& edit_;
 	Searchable *searcher_;
 
-	bool bIgnoreCase_; // 大文字小文字を同一視？
-	bool bRegExp_;     // 正規表現？
-	bool bDownSearch_; // 検索方向
-	bool bChanged_;    // 前回のsearcher構築時から変更があったらtrue
+	bool bIgnoreCase_; // Are uppercase and lowercase letters the same?
+	bool bRegExp_;     // Regular expression?
+	bool bDownSearch_; // Search direction
+	bool bChanged_;    // True if there has been a change since the last searcher construction
 	bool inichanged_;  // Set to true when the ini must be saved
 
 	ki::String findStr_;

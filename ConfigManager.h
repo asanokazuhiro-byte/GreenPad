@@ -6,16 +6,16 @@
 
 void SetFontSize(LOGFONT *font, HDC hDC, int fsiz, int fx);
 
-// アプリケーションメッセージ
+// application message
 #define GPM_MRUCHANGED WM_APP+0
 
 //=========================================================================
 //@{ @pkg Gp.Main //@}
 //@{
-//	設定の一元管理
+//	Centralized management of settings
 //
-//	SetDocTypeで切り替えると、文書タイプ依存の項目を内部で
-//	適切に切り替えたり色々します。
+//	If you switch with SetDocType, the document type dependent items will be changed internally.
+//	I switch appropriately and do various things.
 //@}
 //=========================================================================
 
@@ -26,53 +26,53 @@ public:
 	ConfigManager() A_COLD;
 	~ConfigManager() A_COLD;
 
-	//@{ 指定した名前のファイル用の文書タイプをロード //@}
+	//@{ Load document type for file with specified name //@}
 	int SetDocType( const ki::Path& fname )  A_COLD;
 
-	//@{ 指定した番号の文書タイプをロード //@}
+	//@{ Load document type with specified number //@}
 	void SetDocTypeByMenu( int pos, HMENU m )  A_COLD;
 
-	//@{ 指定した名前の文書タイプをロード //@}
+	//@{ Load document type with specified name //@}
 	bool SetDocTypeByName( const ki::String& nam )  A_COLD;
 
-	//@{ メニュー項目作成 //@}
+	//@{Create menu item //@}
 	void SetDocTypeMenu( HMENU m, UINT idstart )  A_COLD;
 
-	//@{ メニュー項目のチェック修正 //@}
+	//@{Modify menu item check //@}
 	void CheckMenu( HMENU m, int pos )  A_COLD;
 
-	//@{ 設定ダイアログ表示 //@}
+	//@{ Display settings dialog //@}
 	bool DoDialog( const ki::Window& parent )  A_COLD;
 
 	static size_t GetLayData(const TCHAR *name, unicode *buf, size_t buf_len);
 
 public:
 
-	//@{ Undo回数制限値 //@}
+	//@{ Undo count limit //@}
 	inline int undoLimit() const { return undoLimit_; }
 
-	//@{ 文字数のカウント方法 //@}
+	//@{ How to count the number of characters //@}
 	inline bool countByUnicode() const { return countbyunicode_; }
 
-	//@{ 開く/保存ダイアログに出すフィルタの設定 //@}
+	//@{ Setting the filter to be displayed in the open/save dialog //@}
 	inline const ki::String& txtFileFilter() const { return txtFilter_; }
 
-	//@{ 文字数指定時の折り返し文字数 //@}
+	//@{ Number of characters to wrap when specifying number of characters //@}
 	inline short wrapWidth() const { return curDt_->wrapWidth; }
 
 	//@{ Get smart warp flag //@}
 	inline bool wrapSmart() const { return curDt_->wrapSmart; }
 
-	//@{ 折り返し方法 //@}
+	//@{ Wrapping method //@}
 	inline short wrapType() const { return curDt_->wrapType>0 ? wrapWidth() : curDt_->wrapType; }
 
-	//@{ 行番号表示する？ //@}
+	//@{ Display line number? //@}
 	inline bool showLN() const { return curDt_->showLN; }
 
-	//@{ 表示色・フォントなど //@}
+	//@{Display color, font, etc. //@}
 	inline const editwing::VConfig& vConfig() const { return curDt_->vc; }
 
-	//@{ キーワードファイル名(フルパス) //@}
+	//@{ keyword file name (full path) //@}
 	inline ki::Path kwdFile() const
 		{
 		ki::Path p(ki::Path::Exe);
@@ -81,44 +81,44 @@ public:
 		return p;
 		}
 
-	//@{ Grep用外部実行ファイル名 //@}
+	//@{ External executable file name for Grep //@}
 	inline const ki::Path& grepExe() const { return grepExe_; }
 
-	//@{ Help用外部実行ファイル名 //@}
+	//@{Help external executable file name //@}
 	inline const ki::Path& helpExe() const { return helpExe_; }
 
-	//@{ 同じウインドウで開くモード //@}
+	//@{ Open in same window mode //@}
 	inline bool openSame() const { return openSame_; }
 
-	//@{ ステータスバー表示 //@}
+	//@{Status bar display //@}
 	inline bool showStatusBar() const { return showStatusBar_; }
 	inline void ShowStatusBarSwitch() { showStatusBar_ = !showStatusBar_; inichanged_=1; SaveIni(); }
 
-	//@{ 日付 //@}
+	//@{ date //@}
 	inline const ki::String& dateFormat() const { return dateFormat_; }
 
 public:
-	//@{ 新規ファイルの文字コードindex //@}
+	//@{Character code index of new file //@}
 	inline int GetNewfileCsi() const { return charSets_.findCsi( newfileCharset_ ); }
 
-	//@{ 新規ファイルの改行コード //@}
+	//@{ Line break code for new file //@}
 	inline ki::lbcode GetNewfileLB() const { return newfileLB_; }
 
 public:
-	//@{ [最近使ったファイル]へ追加 //@}
+	//@{ Add to [Recent Files] //@}
 	bool AddMRU( const ki::Path& fname )  A_COLD;
 
-	//@{ [最近使ったファイル]メニューの構築 //@}
+	//@{ Building the Recent Files menu //@}
 	int SetUpMRUMenu( HMENU m, UINT id )  A_COLD;
 
-	//@{ [最近使ったファイル]取得 //@}
+	//@{ Get [recently used files] //@}
 	ki::Path GetMRU( int no ) const A_COLD;
 
-	//@{ 対応文字セットリスト取得 //@}
+	//@{ Get list of supported character sets //@}
 	inline CharSetList& GetCharSetList() { return charSets_; }
 
 public:
-	//@{ ウインドウ位置・サイズ復元処理 //@}
+	//@{ Window position/size restoration processing //@}
 	inline int GetWndX() const { return rememberWindowPlace_ ? wndPos_.left : CW_USEDEFAULT; }
 	inline int GetWndY() const { return rememberWindowPlace_ ? wndPos_.top : CW_USEDEFAULT; }
 	inline int GetWndW() const {
@@ -155,7 +155,7 @@ private:
 
 	CharSetList charSets_;
 
-	// 全体的な設定
+	// Overall settings
 	int        undoLimit_;
 	ki::String txtFilter_;
 	ki::Path   grepExe_;
@@ -177,20 +177,20 @@ private:
 	bool       useQuickExit_;
 	bool       warnOnModified_;
 
-	// ウインドウサイズ記憶
+	// Window size memory
 	bool wndM_; // maximized?
 	RECT wndPos_;
 
-	// 文書タイプのリスト
+	// List of document types
 	struct DocType
 	{
-		// 定義ファイル名など
+		// Definition file name etc.
 		ki::String        name;
 		ki::String        pattern;
 		ki::String        kwdfile;
 		ki::String        layfile;
 
-		// 設定項目
+		// Setting items
 		editwing::VConfig vc;
 		short             wrapWidth;
 		signed char       wrapType;
@@ -207,11 +207,11 @@ private:
 
 	RECT rcPMargins_;
 
-	// 最近使ったファイルのリスト
+	// list of recently used files
 	int mrus_;
 	ki::Path mru_[20];
 
-	// 新規ファイル関係
+	// New file related
 	int        newfileCharset_;
 	ki::String newfileDoctype_;
 	ki::lbcode newfileLB_;

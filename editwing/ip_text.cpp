@@ -8,27 +8,27 @@ using namespace editwing::doc;
 
 
 //=========================================================================
-//---- ip_text.cpp   文字列操作・他
+//---- ip_text.cpp String manipulation/etc.
 //
-//		文字列を挿入したり削除したり…という辺りの処理が
-//		このファイルにまとめてある。外向けのインターフェイスの
-//		実装もついでにここで。
+//		Processing such as inserting and deleting character strings...
+//		They are summarized in this file. external interface
+//		The implementation is also here.
 //
-//---- ip_parse.cpp  キーワード解析
-//---- ip_wrap.cpp   折り返し
-//---- ip_scroll.cpp スクロール
-//---- ip_draw.cpp   描画・他
-//---- ip_cursor.cpp カーソルコントロール
+//---- ip_parse.cpp Keyword parsing
+//---- ip_wrap.cpp wrapping
+//---- ip_scroll.cpp Scroll
+//---- ip_draw.cpp Drawing/etc.
+//---- ip_cursor.cpp Cursor control
 //=========================================================================
 
 
 //-------------------------------------------------------------------------
-// イベントハンドラ処理
+// Event handler processing
 //-------------------------------------------------------------------------
 
 void Document::AddHandler( DocEvHandler* eh )
 {
-	// ハンドラ追加
+	// Add handler
 	if( evHanNum_ < MAX_EVHAN )
 		pEvHan_[ evHanNum_++ ] = eh;
 	
@@ -37,10 +37,10 @@ void Document::AddHandler( DocEvHandler* eh )
 
 void Document::DelHandler( const DocEvHandler* eh )
 {
-	// 後ろから見て行って…
+	// Look from behind...
 	const int last = evHanNum_ - 1;
 
-	// …見つけたら削除
+	// ...delete if found
 	for( int i=last; i>=0; --i )
 		if( pEvHan_[i] == eh )
 		{
@@ -81,7 +81,7 @@ void Document::Fire_TEXTUPDATE
 	}
 	else
 	{
-		// 全部にイベント通知
+		// Event notification for all
 		for( size_t i=0, ie=evHanNum_; i<ie; ++i )
 			pEvHan_[i]->on_text_update( s, e, e2, reparsed, nmlcmd );
 	}
@@ -91,7 +91,7 @@ void Document::Fire_KEYWORDCHANGE()
 {
 	AutoLock lk(this);
 
-	// 全部にイベント通知
+	// Event notification for all
 	for( size_t i=0, ie=evHanNum_; i<ie; ++i )
 		pEvHan_[i]->on_keyword_change();
 }
@@ -100,7 +100,7 @@ void Document::Fire_MODIFYFLAGCHANGE()
 {
 	AutoLock lk(this);
 
-	// 全部にイベント通知
+	// Event notification for all
 	bool b = urdo_.isModified();
 	for( size_t i=0, ie=evHanNum_; i<ie; ++i )
 		pEvHan_[i]->on_dirtyflag_change( b );
@@ -109,7 +109,7 @@ void Document::Fire_MODIFYFLAGCHANGE()
 
 
 //-------------------------------------------------------------------------
-// UnDo,ReDo 処理
+// UnDo,ReDo processing
 //-------------------------------------------------------------------------
 
 UnReDoChain::Node::Node( Command* c, Node* p, Node* n )
@@ -201,7 +201,7 @@ void UnReDoChain::NewlyExec( const Command& cmd, Document& doc )
 
 		while( limit_ < num_ )
 		{
-			// 回数制限を越えたので、古い物を削除
+			// The old item was deleted because the number of times limit was exceeded.
 			// Deleted the old one because it exceeded the count limit.
 			Node* old = headTail_.next_;
 			headTail_.next_   = old->next_;
@@ -272,15 +272,15 @@ void Document::Execute( const Command& cmd )
 
 
 //-------------------------------------------------------------------------
-// カーソル移動ヘルパー, Cursor movement helper
+// Cursor movement helper, Cursor movement helper
 //-------------------------------------------------------------------------
 
 DPos Document::leftOf( const DPos& dp, bool wide ) const
 {
 	if( dp.ad == 0 )
 	{
-		// 行の先頭だが、ファイルの先頭ではない場合
-		// 一つ前の行の行末へ
+		// At the beginning of a line but not at the beginning of a file
+		// To the end of the previous line
 		// If beginning of a line, but not the beginning of a file
 		// Go to the end of the previous line.
 		if( dp.tl > 0 )
@@ -289,7 +289,7 @@ DPos Document::leftOf( const DPos& dp, bool wide ) const
 	}
 	else if( !wide )
 	{
-		// 行の途中で、普通に１文字戻る場合
+		// When going back one character normally in the middle of a line
 		// If you want to go back one character "normally", in the middle of a line
 		const unicode* l = tl(dp.tl);
 		if( dp.ad>=2 && isLowSurrogate(l[dp.ad-1]) && isHighSurrogate(l[dp.ad-2]) )
@@ -298,7 +298,7 @@ DPos Document::leftOf( const DPos& dp, bool wide ) const
 	}
 	else
 	{
-		// 行の途中で、１単語分戻る場合, To go back one word in the middle of a line
+		// To go back one word in the middle of a line, To go back one word in the middle of a line
 		const uchar* f = pl(dp.tl);
 			  ulong  s = dp.ad;
 		while( --s && (f[s]>>5)==0 );
@@ -310,8 +310,8 @@ DPos Document::rightOf( const DPos& dp, bool wide ) const
 {
 	if( dp.ad == len(dp.tl) )
 	{
-		// 行末だが、ファイルの終わりではない場合
-		// 一つ後の行の先頭へ
+		// End of line but not end of file
+		// Go to the beginning of the next line
 		// At the end of a line, but not at the end of a file
 		// Go to the beginning of the next line.
 		if( dp.tl < tln()-1 )
@@ -320,10 +320,10 @@ DPos Document::rightOf( const DPos& dp, bool wide ) const
 	}
 	else if( !wide )
 	{
-		// 行の途中で、普通に１文字進む場合
+		// When normally advancing one character in the middle of a line
 		// If you advance one character normally in the middle of a line
 		const unicode* l = tl(dp.tl);
-		// 番兵 0x007f が l の末尾にいるので長さチェックは不要
+		// There is no need to check the length since the guard 0x007f is at the end of l.
 		// No need to check the length of l with the #0x007f guard at the end of l.
 		if( isHighSurrogate(l[dp.ad]) /*&& dp.ad+1 <= len(dp.tl)*/ && isLowSurrogate(l[dp.ad+1]) )
 			return DPos( dp.tl, dp.ad+2 );
@@ -331,7 +331,7 @@ DPos Document::rightOf( const DPos& dp, bool wide ) const
 	}
 	else
 	{
-		// 行の途中で、普通に１単語進む場合
+		// If you normally advance one word in the middle of a line
 		// If you advance one word normally in the middle of a line
 		const uchar* f = pl(dp.tl);
 		const ulong  e = len(dp.tl);
@@ -351,12 +351,12 @@ DPos Document::wordStartOf( const DPos& dp ) const
 {
 	if( dp.ad == 0 )
 	{
-		// 行の先頭, Beginning of line
+		// beginning of line
 		return dp;
 	}
 	else
 	{
-		// 行の途中, Midline
+		// midline, midline
 		const uchar* f = pl(dp.tl);
 			  ulong  s = dp.ad+1;
 		while( --s && (f[s]>>5)==0 );
@@ -468,22 +468,22 @@ unicode Document::findPrevBrace( DPos &dp, unicode q, unicode p ) const
 }
 
 //-------------------------------------------------------------------------
-// 挿入・削除等の作業用関数群, A set of functions for working with ins, del, etc.
+// A set of functions for working with ins, del, etc.
 //-------------------------------------------------------------------------
 
 ulong Document::getRangeLength( const DPos& s, const DPos& e )
 {
-	// とりあえず全部足す, Just add it all up.
+	// Just add it all up.
 	ulong ans=0, tl=s.tl, te=e.tl;
 	for( ; tl<=te; ++tl )
 		ans += len(tl);
-	// 先頭行の分を引く, subtract the first line
+	// subtract the first line
 	ans -= s.ad;
-	// 最終行の分を引く, Subtract the last line
+	// Subtract the last line
 	ans -= len(te) - e.ad;
-	// 改行コード(CRLF)の分を加える, Add the portion of the line feed code (CRLF)
+	// Add the portion of the line feed code (CRLF)
 	ans += (e.tl-s.tl) * 2;
-	// おしまい, The end
+	// The end, The end
 	return ans;
 }
 
@@ -492,22 +492,22 @@ void Document::getText( unicode* buf, const DPos& s, const DPos& e )
 	if( !buf ) return;
 	if( s.tl == e.tl )
 	{
-		// 一行だけの場合, If you have only one line
+		// If you have only one line
 		text_[s.tl].CopyAt( s.ad, e.ad-s.ad, buf );
 		buf[e.ad-s.ad] = L'\0';
 	}
 	else
 	{
-		// 先頭行の後ろをコピー, Copy the end of the first line
+		// Copy the end of the first line
 		buf += text_[s.tl].CopyToTail( s.ad, buf );
 		*buf++ = L'\r', *buf++ = L'\n';
-		// 途中をコピー, Copy the middle
+		// Copy the middle
 		for( ulong i=s.tl+1; i<e.tl; i++ )
 		{
 			buf += text_[i].CopyToTail( 0, buf );
 			*buf++ = L'\r', *buf++ = L'\n';
 		}
-		// 終了行の先頭をコピー, Copy the beginning of the end line
+		// Copy the beginning of the end line
 		buf += text_[e.tl].CopyAt( 0, e.ad, buf );
 		*buf = L'\0';
 	}
@@ -515,14 +515,14 @@ void Document::getText( unicode* buf, const DPos& s, const DPos& e )
 
 void Document::CorrectPos( DPos& pos )
 {
-	// 正常範囲に収まるように修正, Fix to fall within normal range.
+	// Fix to fall within normal range.
 	pos.tl = Min( pos.tl, tln()-1 );
 	pos.ad = Min( pos.ad, len(pos.tl) );
 }
 
 void Document::CorrectPos( DPos& s, DPos& e )
 {
-	// 必ずs<=eになるように修正,  Fix it so that s<=e.
+	// Fix it so that s<=e.
 	if( s > e )
 	{
 		ulong t;
@@ -536,38 +536,38 @@ bool Document::DeletingOperation
 {
 	AutoLock lk( this );
 
-	// 位置補正, Position correction
+	// position correction, position correction
 	CorrectPos( s );
 	CorrectPos( e );
 	CorrectPos( s, e );
 
-	// 削除される量をカウント, Amount to be deleted
+	// count amount to be deleted, Amount to be deleted
 	undosiz = getRangeLength( s, e );
 
-	// Undo操作用バッファ確保, Allocate buffer for Undo operation
+	// Allocate buffer for Undo operation
 	undobuf = reinterpret_cast<unicode*>( mem().Alloc( (undosiz+1)*2 ) );
 	if( undobuf )
 	{ // We got enough memory...
 		getText( undobuf, s, e );// get text to del for undo
 	}
 
-	// 削除る, delete
+	// delete, delete
 	if( s.tl == e.tl )
 	{
-		// 一行内削除, line-by-line deletion
+		// line-by-line deletion
 		text_[s.tl].RemoveAt( s.ad, e.ad-s.ad );
 	}
 	else
 	{
-		// 先頭行の後ろを削除, Remove the end of the first line
+		// Remove the end of the first line
 		text_[s.tl].RemoveToTail( s.ad );
-		// 終了行の残り部分をくっつける, Attach the rest of the end line
+		// Attach the rest of the end line
 		text_[s.tl].InsertToTail( tl(e.tl)+e.ad, len(e.tl)-e.ad );
-		// いらん行を削除, delete a line that doesn't belong
+		// delete a line that doesn't belong
 		text_.RemoveAt( s.tl+1, e.tl-s.tl );
 	}
 
-	// 再解析, Reanalysis
+	// reanalysis, reanalysis
 	return ReParse( s.tl, s.tl );
 }
 
@@ -576,34 +576,34 @@ bool Document::InsertingOperation
 {
 	AutoLock lk( this );
 
-	// 位置補正, Position correction
+	// position correction, position correction
 	CorrectPos( s );
 
-	// よーい、どん！, All right, Go!
+	// Okay, boom! , All right, Go!
 	e.ad = s.ad;
 	e.tl = s.tl;
 
-	// 指定文字列を改行で切り分ける準備
+	// Preparing to separate the specified string at line breaks
 	// Prepare to separate the specified string with a newline.
 	const unicode* lineStr=NULL;
 	size_t lineLen=0;
 	UniReader r( str, len, &lineStr, &lineLen );
 
-	// 一行目…, The first line...
+	// The first line..., The first line...
 	r.getLine();
 	text_[e.tl].InsertAt( e.ad, lineStr, lineLen );
 	e.ad += lineLen;
 
 	if( !r.isEmpty() )
 	{
-		// 二行目～最終行, Second to last line
+		// Second to last line, Second to last line
 		do
 		{
 			r.getLine();
 			text_.InsertAt( ++e.tl, Line(lineStr, lineLen) );
 		} while( !r.isEmpty() );
 
-		// 一行目の最後尾に残ってた文字列を最終行へ
+		// Move the string remaining at the end of the first line to the last line
 		// Move the remaining string from the end
 		// of the first line to the last line.
 		Line& fl = text_[s.tl];
@@ -615,17 +615,17 @@ bool Document::InsertingOperation
 			fl.RemoveToTail( e.ad );
 		}
 
-		// 終了位置記録, Record end position
+		// Record end position
 		e.ad = lineLen;
 	}
 
-	// 再解析, Reanalysis
+	// reanalysis, reanalysis
 	return reparse && ReParse( s.tl, e.tl );
 }
 
 
 //-------------------------------------------------------------------------
-// 挿入コマンド, Insert command
+// insert command, insert command
 //-------------------------------------------------------------------------
 
 Insert::Insert( const DPos& s, const unicode* str, ulong len, bool del )
@@ -644,21 +644,21 @@ Insert::~Insert()
 
 Command* Insert::operator()( Document& d ) const
 {
-	// 挿入, Insertion
+	// insertion
 	DPos s=stt_, e;
 	bool aa = d.InsertingOperation( s, buf_, len_, e );
 
-	// イベント発火, Event firing
+	// event firing, event firing
 	d.Fire_TEXTUPDATE( s, s, e, aa, true );
 
-	// 逆操作オブジェクトを返す, Return the reverse operation object
+	// Return the reverse operation object
 	return new Delete( s, e );
 }
 
 
 
 //-------------------------------------------------------------------------
-// 削除コマンド, delete command
+// delete command, delete command
 //-------------------------------------------------------------------------
 
 Delete::Delete( const DPos& s, const DPos& e )
@@ -669,16 +669,16 @@ Delete::Delete( const DPos& s, const DPos& e )
 
 Command* Delete::operator()( Document& d ) const
 {
-	// 削除, Deletion
+	// deletion
 	unicode* buf;
 	ulong    siz;
 	DPos s = stt_, e=end_;
 	bool aa = d.DeletingOperation( s, e, buf, siz );
 
-	// イベント発火, Event firing
+	// event firing, event firing
 	d.Fire_TEXTUPDATE( s, e, s, aa, true );
 
-	// 逆操作オブジェクトを返す, Return the reverse operation object
+	// Return the reverse operation object
 	Insert *rev = NULL;
 	if( buf != NULL )
 	{	// Make reverse operation...
@@ -692,7 +692,7 @@ Command* Delete::operator()( Document& d ) const
 
 
 //-------------------------------------------------------------------------
-// 置換コマンド, Replace command
+// Replace command, Replace command
 //-------------------------------------------------------------------------
 
 Replace::Replace(
@@ -713,20 +713,20 @@ Replace::~Replace()
 
 Command* Replace::operator()( Document& d ) const
 {
-	// 削除, Deletion
+	// deletion
 	unicode* buf;
 	ulong    siz;
 	DPos s=stt_, e=end_;
 	bool aa = d.DeletingOperation( s, e, buf, siz );
 
-	// 挿入, Insertion
+	// insertion
 	DPos e2;
 	aa = (d.InsertingOperation( s, buf_, len_, e2 ) || aa);
 
-	// イベント発火, event firing
+	// event firing, event firing
 	d.Fire_TEXTUPDATE( s, e, e2, aa, true );
 
-	// 逆操作オブジェクトを返す, Return the reverse operation object
+	// Return the reverse operation object
 	Replace *rev = NULL;
 	if( buf )
 	{	// Make reverse operation...
@@ -740,7 +740,7 @@ Command* Replace::operator()( Document& d ) const
 
 
 //-------------------------------------------------------------------------
-// マクロコマンド, macro command
+// macro command, macro command
 //-------------------------------------------------------------------------
 
 Command* MacroCommand::operator()( Document& doc ) const
@@ -779,7 +779,7 @@ Command* MacroCommand::operator()( Document& doc ) const
 
 
 //-------------------------------------------------------------------------
-// ファイルに保存, Save to file
+// Save to file, Save to file
 //-------------------------------------------------------------------------
 
 void Document::SaveFile( ki::TextFileW& tf )
@@ -792,15 +792,15 @@ void Document::SaveFile( ki::TextFileW& tf )
 
 
 //-------------------------------------------------------------------------
-// バッファの内容を全部破棄（暫定）, Destroy all buffer contents (temporary)
+// Destroy all buffer contents (temporary)
 //-------------------------------------------------------------------------
 
 void Document::ClearAll()
 {
-	// 全部削除, delete everything
+	// delete everything, delete everything
 	Execute( Delete( DPos(0,0), DPos(0xffffffff,0xffffffff) ) );
 
-	// Undo-Redoチェインをクリア
+	// Clear Undo-Redo chain
 	// Clear the Undo-Redo chain
 	urdo_.Clear();
 	urdo_.SavedHere();
@@ -810,15 +810,15 @@ void Document::ClearAll()
 
 
 //-------------------------------------------------------------------------
-// ファイルを開く（暫定）, Open a file (temporary)
+// Open a file (temporary)
 //-------------------------------------------------------------------------
 
 void Document::OpenFile( TextFileR& tf )
 {
-	// ToDo: マルチスレッド化, ToDo: multi-threaded
+	// ToDo: multi-threaded, ToDo: multi-threaded
 	//currentOpeningFile_ = tf;
 	//thd().Run( *this );
-	// 挿入, Insertion
+	// insertion
 	DPos e(0,0);
 
 	// Super small stack buffer in case the malloc fails
@@ -882,7 +882,7 @@ void Document::OpenFile( TextFileR& tf )
 		TS.freelast( buf, sizeof(unicode) * buf_sz );
 
 //	MessageBox(GetActiveWindow(),  SInt2Str(GetTickCount()-otime).c_str(), TEXT("Time in ms:"), 0);
-	// イベント発火, Event firing
+	// event firing, event firing
 	Fire_TEXTUPDATE( DPos(0,0), DPos(0,0), e, true, false );
 }
 
@@ -893,7 +893,7 @@ void Document::StartThread()
 	// ToDo:
 	aptr<TextFileR> tf = currentOpeningFile_;
 
-	// 挿入
+	// insert
 	unicode buf[1024];
 	while( !isExitRequested() && tf->state() )
 	{
@@ -904,7 +904,7 @@ void Document::StartThread()
 		if( tf->state() == 1 )
 			InsertingOperation( DPos(i,0xffffffff), L"\n", 1, e );
 
-		// イベント発火
+		// event firing
 		Fire_TEXTUPDATE( s, s, e, true, false );
 	}
 

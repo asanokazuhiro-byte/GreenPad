@@ -16,12 +16,12 @@ class Parser;
 
 //=========================================================================
 //@{
-//	行バッファ構造体
+//	row buffer structure
 //
-//	UCS-2ベタの形式でテキストデータを保持する。またそれと同時に、
-//	キーワードファイルによって指定された強調語を区別するための
-//	解析処理結果用バッファも管理する。文字データに終端NULは
-//	付けないが、解析作業の高速化のため、終端 U+007f が入る。
+//	Store text data in UCS-2 solid format. Also, at the same time,
+//	for distinguishing between emphasized words specified by a keyword file.
+//	It also manages the buffer for analysis processing results. Terminating NUL in character data
+//	Although not included, the terminating U+007f is included to speed up analysis work.
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Row buffer structure
 //
@@ -46,7 +46,7 @@ class Line //: public ki::Object
 {
 public:
 
-	//@{ 指定テキストで初期化, Initialize with specified text //@}
+	//@{ Initialize with specified text //@}
 	Line( const unicode* str, size_t len )
 		: commentBitReady_( 0 )
 		, isLineHeadCommented_( 0 )
@@ -72,13 +72,13 @@ public:
 			ki::mem().DeAlloc( str_, EVEN((alen_+1)*2+alen_) );
 	}
 
-	//@{ テキスト挿入(指定位置に指定サイズ), Insert text (specified position, specified size)  //@}
+	//@{ Insert text (specified position, specified size) //@}
 	void InsertAt( size_t at, const unicode* buf, size_t siz )
 	{
 		uchar *flgs = flg(); // str_+alen_+1;
 		if( len_+siz > alen_ )
 		{
-			// バッファ拡張
+			// buffer expansion
 			size_t psiz = (alen_+1)*2+alen_;
 			size_t nalen = Max( (size_t)(alen_+(alen_>>1)), len_+siz ); // len_+siz;
 			unicode* tmpS;
@@ -96,11 +96,11 @@ public:
 			uchar*   tmpF =
 				reinterpret_cast<uchar*>(tmpS+nalen+1);
 			alen_ = nalen;
-			// コピー
+			// copy
 			memmove( tmpS,        str_,             at*2 );
 			memmove( tmpS+at+siz, str_+at, (len_-at+1)*2 );
 			memmove( tmpF,        flgs,             at   );
-			// 古いのを削除
+			// delete old
 			if( str_ != empty_buf() )
 				ki::mem().DeAlloc( str_, EVEN(psiz) );
 			str_ = tmpS;
@@ -114,13 +114,13 @@ public:
 		len_ += siz;
 	}
 
-	//@{ テキスト挿入(末尾に) //@}
+	//@{ Insert text (at the end) //@}
 	void InsertToTail( const unicode* buf, size_t siz )
 	{
 		InsertAt( len_, buf, siz );
 	}
 
-	//@{ テキスト削除(指定位置から指定サイズ) //@}
+	//@{ Delete text (specified size from specified position) //@}
 	void RemoveAt( size_t at, size_t siz )
 	{
 		uchar *flgs = flg();
@@ -129,43 +129,43 @@ public:
 		len_ -= siz;
 	}
 
-	//@{ テキスト削除(指定位置から末尾まで) //@}
+	//@{ Delete text (from specified position to end) //@}
 	void RemoveToTail( size_t at )
 	{
 		if( at < len_ )
 			str_[ len_=at ] = 0x007f;
 	}
 
-	//@{ バッファにコピー(指定位置から指定サイズ) //@}
+	//@{ Copy to buffer (specified size from specified position) //@}
 	size_t CopyAt( size_t at, size_t siz, unicode* buf )
 	{
 		memmove( buf, str_+at, siz*sizeof(unicode) );
 		return siz;
 	}
 
-	//@{ バッファにコピー(指定位置から末尾まで) //@}
+	//@{ Copy to buffer (from specified position to end) //@}
 	size_t CopyToTail( size_t at, unicode* buf )
 	{
 		return CopyAt( at, len_-at, buf );
 	}
 
-	//@{ 長さ //@}
+	//@{ length //@}
 	size_t size() const
 		{ return len_; }
 
-	//@{ テキスト //@}
+	//@{ text //@}
 	unicode* str()
 		{ return str_; }
 
-	//@{ テキスト(const) //@}
+	//@{ text(const) //@}
 	const unicode* str() const
 		{ return str_; }
 
-	//@{ 解析結果 //@}
+	//@{ Analysis result //@}
 	uchar* flg()
 		{ return reinterpret_cast<uchar*>(str_+alen_+1); }
 
-	//@{ 解析結果(const) //@}
+	//@{ Analysis result (const) //@}
 	const uchar* flg() const
 		{ return reinterpret_cast<const uchar*>(str_+alen_+1); }
 
@@ -206,11 +206,11 @@ private:
 
 //=========================================================================
 //@{
-//	Unicodeテキスト切り分け君
+//	Unicode text segmenter
 //
-//	行単位で処理を行うことが多いので、その行毎に分ける処理を
-//	切り出した。getLine() するたびに、指定したポインタと整数変数へ
-//	先頭から順に行のデータを格納して行く。
+//	Since processing is often performed on a line-by-line basis, separate processing for each line is
+//	I cut it out. getLine() to the specified pointer and integer variable.
+//	Row data is stored sequentially from the beginning.
 //@}
 //=========================================================================
 
@@ -218,7 +218,7 @@ class UniReader
 {
 public:
 
-	//@{ 読みとり元バッファを与えて初期化 //@}
+	//@{ Initialize by giving the source buffer //@}
 	UniReader(
 		const unicode*     str, size_t     len,
 		const unicode** ansstr, size_t* anslen )
@@ -228,22 +228,22 @@ public:
 		, aln_  ( anslen )
 		, empty_( false ) {}
 
-	//@{ 読み終わったかどうかチェック //@}
+	//@{Check if you have finished reading //@}
 	bool isEmpty()
 		{ return empty_; }
 
-	//@{ 一行取得 //@}
+	//@{ Get one line //@}
 	void A_HOT getLine()
 	{
-		// 次の改行の位置を取得
+		// Get the position of the next line break
 		const unicode *p=ptr_, *e=end_;
 		for( ; p<e; ++p )
 			if( *p == L'\r' || *p == L'\n' )
 				break;
-		// 記録
+		// record
 		*ans_  = ptr_;
 		*aln_  = int(p-ptr_);
-		// 改行コードスキップ
+		// Line break code skip
 		if( p == e )
 			empty_ = true;
 		else
@@ -262,7 +262,7 @@ private:
 
 //=========================================================================
 //@{
-//	Undo/Redo用に、Commandオブジェクトを保存しておくクラス
+//	A class that stores Command objects for Undo/Redo.
 //@}
 //=========================================================================
 
@@ -270,39 +270,39 @@ class UnReDoChain : public ki::Object
 {
 public:
 
-	//@{ コンストラクタ //@}
+	//@{ constructor //@}
 	UnReDoChain();
 
-	//@{ デストラクタ //@}
+	//@{ destructor //@}
 	~UnReDoChain();
 
-	//@{ Undo実行 //@}
+	//@{ Execute Undo //@}
 	void Undo( Document& doc );
 
-	//@{ Redo実行 //@}
+	//@{ Execute Redo //@}
 	void Redo( Document& doc );
 
-	//@{ 新しいコマンドを実行 //@}
+	//@{ Execute new command //@}
 	void NewlyExec( const Command& cmd, Document& doc );
 
-	//@{ 初期状態に戻す //@}
+	//@{Return to initial state //@}
 	void Clear();
 
-	//@{ 保存位置フラグを現在位置にセット //@}
+	//@{Set save position flag to current position //@}
 	inline void SavedHere() { savedPos_ = lastOp_; }
 
-	//@{ Undo/Redoの回数制限を指定。-1 = Infinite //@}
+	//@{ Specify the Undo/Redo count limit. -1 = Infinite //@}
 	void SetLimit( long lim );
 
 public:
 
-	//@{ Undo操作が可能か？ //@}
+	//@{ Is Undo operation possible? //@}
 	inline bool isUndoAble() const { return (lastOp_ != &headTail_); }
 
-	//@{ Redo操作が可能か？ //@}
+	//@{ Is Redo operation possible? //@}
 	inline bool isRedoAble() const { return (lastOp_->next_ != &headTail_); }
 
-	//@{ 保存後、変更されているか？ //@}
+	//@{ Has it changed after saving? //@}
 	inline bool isModified() const { return (lastOp_ != savedPos_); }
 
 private:
@@ -334,7 +334,7 @@ private:
 
 //=========================================================================
 //@{
-//	Documentクラスの実装部分
+//	Implementation part of Document class
 //@}
 //=========================================================================
 
@@ -351,48 +351,48 @@ public:
 	Document();
 	~Document();
 
-	//@{ 操作コマンド実行 //@}
+	//@{Execute operation command //@}
 	void Execute( const Command& cmd );
 
-	//@{ キーワード定義切り替え //@}
+	//@{ Switch keyword definition //@}
 	void SetKeyword( const unicode* defbuf, size_t siz );
 
-	//@{ イベントハンドラ登録 //@}
+	//@{Event handler registration //@}
 	void AddHandler( DocEvHandler* eh );
 
-	//@{ イベントハンドラ解除 //@}
+	//@{ Release event handler //@}
 	void DelHandler( const DocEvHandler* eh );
 
-	//@{ ファイルを開く //@}
+	//@{ Open file //@}
 	void OpenFile( ki::TextFileR& tf );
 
-	//@{ ファイルを保存 //@}
+	//@{Save file //@}
 	void SaveFile( ki::TextFileW& tf );
 
-	//@{ 内容破棄 //@}
+	//@{Discard contents //@}
 	void ClearAll();
 
-	//@{ アンドゥ //@]
+	//@{ undo //@]
 	void Undo();
 
-	//@{ リドゥ //@]
+	//@{Redo //@]
 	void Redo();
 
-	//@{ アンドゥ回数制限 //@]
+	//@{ Undo count limit //@]
 	void SetUndoLimit( long lim );
 
-	//@{ 変更フラグをクリア //@}
+	//@{ Clear change flag //@}
 	void ClearModifyFlag();
 
 public:
 
-	//@{ 行数 //@}
+	//@{number of lines //@}
 	inline ulong tln() const { return text_.size(); }
 
-	//@{ 行バッファ //@}
+	//@{ line buffer //@}
 	inline const unicode* tl( ulong i ) const { return text_[i].str(); }
 
-	//@{ 行解析結果バッファ //@}
+	//@{ Row parsing result buffer //@}
 	const uchar* pl( ulong i ) const
 	{
 		const Line& x = text_[i];
@@ -401,53 +401,53 @@ public:
 		return x.flg();
 	}
 
-	//@{ 行文字数 //@}
+	//@{ Number of line characters //@}
 	ulong len( ulong i ) const { return text_[i].size(); }
 
-	//@{ 指定範囲のテキストの長さ //@}
+	//@{ Length of text in specified range //@}
 	ulong getRangeLength( const DPos& stt, const DPos& end );
 
-	//@{ 指定範囲のテキスト //@}
+	//@{ Range of text //@}
 	void getText( unicode* buf, const DPos& stt, const DPos& end );
 
-	//@{ 指定位置の単語の先頭を取得 //@}
+	//@{ Get the beginning of the word at the specified position //@}
 	DPos wordStartOf( const DPos& dp ) const;
 
 	unicode findNextBrace( DPos &dp, unicode q, unicode p ) const;
 	unicode findPrevBrace( DPos &dp, unicode q, unicode p ) const;
 	DPos findMatchingBrace( const DPos &dp ) const;
 
-	//@{ 指定位置の一つ左の位置を取得 //@}
+	//@{ Get the position one position to the left of the specified position //@}
 	DPos leftOf( const DPos& dp, bool wide=false ) const;
 
-	//@{ 指定位置の一つ右の位置を取得 //@}
+	//@{ Get the position one position to the right of the specified position //@}
 	DPos rightOf( const DPos& dp, bool wide=false ) const;
 
-	//@{ アンドゥ可能？ //@}
+	//@{ Is it possible to undo? //@}
 	bool isUndoAble() const;
 
-	//@{ リドゥ可能？ //@}
+	//@{ Is it possible to redo? //@}
 	bool isRedoAble() const;
 
-	//@{ 変更済み？ //@}
+	//@{ Modified? //@}
 	bool isModified() const;
 
 	const unicode* getCommentStr() const { return CommentStr_; }
 
-	//@{ ビジーフラグ（マクロコマンド実行中のみ成立） //@}
+	//@{ Busy flag (satisfied only during macro command execution) //@}
 	void setBusyFlag( bool b ) { busy_ = b; }
 	bool isBusy() const { return busy_; }
 
 private:
 
 	enum { MAX_EVHAN = 4 };
-	ki::uptr<Parser>             parser_; // 文字列解析役
+	ki::uptr<Parser>             parser_; // string analyzer
 
 	unicode               CommentStr_[8];
-	ki::gapbufobjnoref<Line>       text_;   // テキストデータ
+	ki::gapbufobjnoref<Line>       text_;   // text data
 	size_t                     evHanNum_;
-	DocEvHandler*     pEvHan_[MAX_EVHAN]; // イベント通知先
-	UnReDoChain                    urdo_;   // アンドゥリドゥ
+	DocEvHandler*     pEvHan_[MAX_EVHAN]; // Event notification destination
+	UnReDoChain                    urdo_;   // Undurido
 	editwing::DPos acc_s_, acc_e2_;
 	bool busy_;
 	bool acc_textupdate_mode_;
@@ -459,25 +459,25 @@ public:
 	void acc_Fire_TEXTUPDATE_end();
 private:
 
-	// 変更通知
+	// Change notification
 	void Fire_KEYWORDCHANGE();
 	void Fire_MODIFYFLAGCHANGE();
 	void Fire_TEXTUPDATE( const DPos& s,
 		const DPos& e, const DPos& e2, bool reparsed, bool nmlcmd );
 
-	// ヘルパー関数
+	// helper function
 	bool ReParse( ulong s, ulong e );
 	void SetCommentBit( const Line& x ) const;
 	void CorrectPos( DPos& pos );
 	void CorrectPos( DPos& stt, DPos& end );
 
-	// 挿入・削除作業
+	// Insertion/deletion work
 	bool InsertingOperation(
 		DPos& stt, const unicode* str, ulong len, DPos& undoend, bool reparse=true );
 	bool DeletingOperation(
 		DPos& stt, DPos& end, unicode*& undobuf, ulong& undosiz );
 
-	// パラレルリード
+	// parallel lead
 	//virtual void StartThread();
 
 private:

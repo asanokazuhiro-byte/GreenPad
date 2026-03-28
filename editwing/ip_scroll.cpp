@@ -8,23 +8,23 @@ using namespace editwing::view;
 
 
 //=========================================================================
-//---- ip_scroll.cpp スクロール
+//---- ip_scroll.cpp Scroll
 //
-//		ウインドウサイズはスクロールバーの位置によって
-//		描画位置を適当に更新していく処理がここ。
+//		Window size depends on scrollbar position
+//		Here is the process to update the drawing position appropriately.
 //
-//---- ip_text.cpp   文字列操作・他
-//---- ip_parse.cpp  キーワード解析
-//---- ip_wrap.cpp   折り返し
-//---- ip_draw.cpp   描画・他
-//---- ip_cursor.cpp カーソルコントロール
+//---- ip_text.cpp String manipulation/etc.
+//---- ip_parse.cpp Keyword parsing
+//---- ip_wrap.cpp wrapping
+//---- ip_draw.cpp Drawing/etc.
+//---- ip_cursor.cpp Cursor control
 //=========================================================================
 
 #define MyGetScrollInfo GetScrollInfo
 #define MySetScrollInfo SetScrollInfo
 
 //-------------------------------------------------------------------------
-// 描画領域サイズ管理
+// Drawing area size management
 //-------------------------------------------------------------------------
 
 namespace
@@ -50,7 +50,7 @@ bool Canvas::CalcLNAreaWidth()
 	{
 		txtZone_.left  = (1 + figNum_) * font_.F();
 		if( txtZone_.left+4*font_.W() >= txtZone_.right )
-			txtZone_.left = 0; // 行番号ゾーンがデカすぎるときは表示しない
+			txtZone_.left = 0; // Do not display if the line number zone is too large
 	}
 	else
 	{
@@ -69,7 +69,7 @@ void Canvas::CalcWrapWidth()
 		break;
 	case RIGHTEDGE:
 		wrapWidth_ = txtZone_.right - txtZone_.left - font_.W()/2 - 1;
-		break; //Caretの分-3補正
+		break; //Caret Min-3 Correction
 	default:
 		wrapWidth_ = wrapType_ * font_.W();
 		break;
@@ -112,8 +112,8 @@ bool Canvas::on_view_resize( int cx, int cy )
 void Canvas::on_font_change( const VConfig& vc )
 {
 	//HWND hwnd = font_->getWHND();
-	//delete font_; // 先にデストラクタを呼ばねばならない…
-	              // ってうわー格好悪ぃーーー(T_T)
+	//delete font_; // Must call destructor first...
+	              // Wow, that's so cool (T_T)
 	//font_ = new Painter( hwnd, vc );
 	font_.Destroy();
 	font_.Init(vc);
@@ -141,7 +141,7 @@ void Canvas::on_config_change_nocalc( short wrap, bool showln, bool wrapsmart )
 
 bool Canvas::on_tln_change( ulong tln )
 {
-	figNum_ = Log10( tln ); // 桁数計算
+	figNum_ = Log10( tln ); // Digit calculation
 
 	if( CalcLNAreaWidth() )
 	{
@@ -155,18 +155,18 @@ bool Canvas::on_tln_change( ulong tln )
 
 
 //-------------------------------------------------------------------------
-// スクロールバー計算ルーチン
+// Scrollbar calculation routine
 //-------------------------------------------------------------------------
-// rl (横スクロール情報)
+// rl (horizontal scroll information)
 // max:  view.txt.txtwidth()
 // page: view.cx()
 // pos:  0～max-page
 
-// ud (縦スクロール情報)
+// ud (vertical scroll information)
 // max:   view.txt.vln() + page - 1
 // page:  view.cy() / view.fnt.H()
 // delta: 0～view.fnt.H()
-// pos:   0～max-page (topの行番号)
+// pos: 0~max-page (top line number)
 
 bool ViewImpl::ReSetScrollInfo()
 {
@@ -174,7 +174,7 @@ bool ViewImpl::ReSetScrollInfo()
 	const ulong cx = cvs_.zone().right - cvs_.zone().left;
 	const ulong cy = cvs_.zone().bottom;
 
-	// 横は変な値にならないよう補正するだけでよい
+	// You only need to correct the horizontal values ​​so that they do not become strange values.
 //	rlScr_.nPage = cx + 1;
 //	rlScr_.nMax  = Max( textCx_, cx );
 //	rlScr_.nPos  = Min<int>( rlScr_.nPos, rlScr_.nMax-rlScr_.nPage+1 );
@@ -182,8 +182,8 @@ bool ViewImpl::ReSetScrollInfo()
 	rlScr_.nMax  = Max( textCx_+cvs_.font_.W()/2+1, cx );
 	rlScr_.nPos  = Min( rlScr_.nPos, (int)(rlScr_.nMax-rlScr_.nPage+1) );
 
-	// 縦はnPageとnMaxはとりあえず補正
-	// nPosは場合によって直し方が異なるので別ルーチンにて
+	// For the vertical, nPage and nMax are corrected for now.
+	// The way to fix nPos differs depending on the case, so use a separate routine.
 	udScr_.nPage = cy / NZero(cvs_.font_.H()) + 1;
 	//udScr_.nMax  = vln() + udScr_.nPage - 2; // Old code (not so nice)
 
@@ -198,7 +198,7 @@ bool ViewImpl::ReSetScrollInfo()
 	else
 		udScr_.nMax  = vln() + udScr_.nPage - Max( 2, (int)Min( udScr_.nPage-1, (uint)(vln()+1) ) );
 
-	// 横スクロールが起きたらtrue
+	// true if horizontal scrolling occurs
 	return (prevRlPos != rlScr_.nPos);
 }
 
@@ -237,18 +237,18 @@ ReDrawType ViewImpl::TextUpdate_ScrollBar
 
 	if( udScr_tl_ < s.tl )
 	{
-		// パターン１：現在の画面上端より下で更新された場合
-		// スクロールしない
+		// Pattern 1: When updated below the top of the current screen
+		// don't scroll
 	}
 	else if( udScr_tl_ == s.tl )
 	{
-		// パターン２：現在の画面上端と同じ行で更新された場合
-		// 出来るだけ同じ位置を表示し続けようと試みる。
+		// Pattern 2: When updated on the same line as the top of the current screen
+		// Try to keep displaying the same location as much as possible.
 
 		if( static_cast<ulong>(udScr_.nPos) >= vln() )
 		{
-			// パターン2-1：しかしそこはすでにEOFよりも下だ！
-			// しゃーないので一番下の行を表示
+			// Pattern 2-1: But it's already below EOF!
+			// I can't help it, so display the bottom line
 			udScr_.nPos = vln()-1;
 			udScr_tl_   = doc_.tln()-1;
 			udScr_vrl_  = rln(udScr_tl_)-1;
@@ -257,8 +257,8 @@ ReDrawType ViewImpl::TextUpdate_ScrollBar
 		else
 		{
 
-			// パターン2-2：
-			// スクロール無し
+			// Pattern 2-2:
+			// No scrolling
 			while( udScr_vrl_ >= rln(udScr_tl_) )
 			{
 				udScr_vrl_ -= rln(udScr_tl_);
@@ -268,33 +268,33 @@ ReDrawType ViewImpl::TextUpdate_ScrollBar
 	}
 	else
 	{
-		// パターン３：現在の画面上端より上で更新された場合
-		// 表示内容を変えないように頑張る
+		// Pattern 3: When updated above the top of the current screen
+		// Try not to change the displayed content
 
 		if( e.tl < udScr_tl_ )
 		{
-			// パターン3-1：変更範囲の終端も、現在行より上の場合
-			// 行番号は変わるが表示内容は変わらないで済む
+			// Pattern 3-1: When the end of the change range is also above the current line
+			// The line number will change, but the displayed content will remain the same.
 			udScr_.nPos += vl_dif;
 			udScr_tl_   += (e2.tl - e.tl);
 			ans = LNAREA;
 		}
 		else
 		{
-			// パターン3-2：
-			// どうしよーもないので適当な位置にスクロール
+			// Pattern 3-2:
+			// There's nothing I can do, so I scroll to an appropriate position.
 			ForceScrollTo( e2.tl );
 			ans = ALL;
 		}
 	}
 
-	// どんな再描画をすればよいか返す
+	// Returns what kind of redrawing should be done
 	return (rlScrolled ? ALL : ans);
 }
 
 void ViewImpl::ScrollTo( const VPos& vp )
 {
-	// 横フォーカス
+	// horizontal focus
 	int dx=0;
 	if( vp.vx < (signed)rlScr_.nPos )
 	{
@@ -307,14 +307,14 @@ void ViewImpl::ScrollTo( const VPos& vp )
 			dx = vp.vx - (rlScr_.nPos + rlScr_.nPage) + W;
 	}
 
-	// 縦フォーカス
+	// vertical focus
 	int dy=0;
 	if( vp.vl < (unsigned)udScr_.nPos )
 		dy = vp.vl - udScr_.nPos;
 	else if( udScr_.nPos + (udScr_.nPage-1) <= vp.vl )
 		dy = vp.vl - (udScr_.nPos + udScr_.nPage) + 2;
 
-	// スクロール
+	// scroll
 	if( dy!=0 )	UpDown( dy, dx==0 );
 	if( dx!=0 )	ScrollView( dx, 0, true );
 }
@@ -337,17 +337,17 @@ void ViewImpl::GetDrawPosInfo( VDrawInfo& v ) const
 		while( y + (signed)rln(tl) <= top )
 			y += rln( tl++ );
 
-		// 縦座標, Vertical coordinates
+		// vertical coordinates
 		v.YMIN  = y * H;
 		v.YMAX  = Min( v.rc.bottom, most_under );
 		v.TLMIN = tl;
 
-		// 横座標, Horizontal coordinates
+		// horizontal coordinates
 		v.XBASE = left() - rlScr_.nPos;
 		v.XMIN  = v.rc.left  - v.XBASE;
 		v.XMAX  = v.rc.right - v.XBASE;
 
-		// 選択範囲, Selection range
+		// selection range, selection range
 		v.SXB = v.SXE = v.SYB = v.SYE = 0x7fffffff;
 
 		const VPos *bg, *ed;
@@ -363,16 +363,16 @@ void ViewImpl::GetDrawPosInfo( VDrawInfo& v ) const
 
 void ViewImpl::ScrollView( int dx, int dy, bool update )
 {
-	// スクロール開始通知, Scroll notification start
+	// Scroll notification start, Scroll notification start
 	cur_.on_scroll_begin();
 
 	const RECT* clip = (dy==0 ? &cvs_.zone() : NULL);
 	const int H = cvs_.font_.H();
 
-	// スクロールバー更新, Scrollbar updated
+	// Scrollbar updated, Scrollbar updated
 	if( dx != 0 )
 	{
-		// 範囲チェック, range check
+		// range check, range check
 		if( rlScr_.nPos+dx < 0 )
 			dx = -rlScr_.nPos;
 		else if( rlScr_.nMax-(signed)rlScr_.nPage < rlScr_.nPos+dx )
@@ -384,7 +384,7 @@ void ViewImpl::ScrollView( int dx, int dy, bool update )
 	}
 	if( dy != 0 )
 	{
-		// 範囲チェック…は前処理で終わってる。
+		// Range check... is finished with preprocessing.
 		udScr_.nPos += dy;
 		::MySetScrollInfo( hwnd_, SB_VERT, &udScr_, TRUE );
 		dy *= -H;
@@ -394,32 +394,32 @@ void ViewImpl::ScrollView( int dx, int dy, bool update )
 		if( -dx>=right() || dx>=right()
 		 || -dy>=bottom() || dy>=bottom() )
 		{
-			// 全画面再描画
-			// ちょうど65536の倍数くらいスクロールしたときに、
+			// Full screen redraw
+			// When I scrolled exactly a multiple of 65536,
 			::InvalidateRect( hwnd_, NULL, FALSE );
 		}
 		else
 		{
-			// 再描画の不要な領域をスクロール
+			// Scroll areas that do not need to be redrawn
 			// Scroll through areas that do not need redrawing
 			::ScrollWindowEx( hwnd_, dx, dy, NULL,
 					clip, NULL, NULL, SW_INVALIDATE );
 
-			// 即時再描画？, Immediate redraw?
+			// Instant redraw? , Immediate redraw?
 			if( update )
 			{
-				// 縦スクロールは高速化したいので一工夫, Vertical scrolling is one way to speed up the process.
+				// Vertical scrolling is one way to speed up the process.
 				if( dy != 0 )
 				{
-					// 再描画の必要な領域を自分で計算
+					// Calculate the areas that need redrawing yourself
 					// Calculate the area that needs to be redrawn
 					RECT rc = { 0, 0, right(), bottom() };
 					if( dy < 0 ) rc.top  = rc.bottom + dy;
 					else         rc.bottom = dy;
 
-					// インテリマウスの中ボタンクリックによる
-					// オートスクロール用カーソルの下の部分を先に描く
-					// ２回に分けることで、小さな矩形部分二つで済むので高速
+					// by IntelliMouse middle button click
+					// Draw the part below the autoscroll cursor first
+					// By dividing it into two parts, only two small rectangular parts are required, making it faster.
 					// By clicking the middle button of the IntelliMouse
 					// Draw the area under the cursor for auto scrolling first.
 					// By splitting it into two parts,
@@ -438,13 +438,13 @@ void ViewImpl::ScrollView( int dx, int dy, bool update )
 		}
 	}
 
-	// スクロール終了通知
+	// Scroll end notification
 	cur_.on_scroll_end();
 }
 
 void ViewImpl::on_hscroll( int code, int pos )
 {
-	// 変化量を計算
+	// Calculate the amount of change
 	int dx;
 	switch( code )
 	{
@@ -465,13 +465,13 @@ void ViewImpl::on_hscroll( int code, int pos )
 	case SB_RIGHT:   dx = rlScr_.nMax+1-(signed)rlScr_.nPage-rlScr_.nPos; break;
 	}
 
-	// スクロール
+	// scroll
 	ScrollView( dx, 0, code!=SB_THUMBTRACK );
 }
 
 void ViewImpl::on_vscroll( int code, int pos )
 {
-	// 変化量を計算
+	// Calculate the amount of change
 	int dy;
 	switch( code )
 	{
@@ -492,7 +492,7 @@ void ViewImpl::on_vscroll( int code, int pos )
 	case SB_BOTTOM:   dy = udScr_.nMax+1-(signed)udScr_.nPage-udScr_.nPos; break;
 	}
 
-	// スクロール
+	// scroll
 	UpDown( dy, code==SB_THUMBTRACK );
 }
 
@@ -515,7 +515,7 @@ int ViewImpl::getNumScrollLines( void )
 
 void ViewImpl::on_wheel( short delta )
 {
-	// スクロール
+	// scroll
 	int nl = getNumScrollLines();
 	int step = (-(int)delta * nl) / WHEEL_DELTA;
 
@@ -575,7 +575,7 @@ void ViewImpl::on_hwheel( short delta )
 
 void ViewImpl::UpDown( int dy, bool thumb )
 {
-  // １．udScr_.nPos + dy が正常範囲に収まるように補正
+  // 1. Corrected so that udScr_.nPos + dy falls within the normal range
 	if( udScr_.nPos+dy < 0 )
 		dy = -udScr_.nPos;
 	else if( udScr_.nMax+1-(signed)udScr_.nPage < udScr_.nPos+dy )
@@ -584,40 +584,40 @@ void ViewImpl::UpDown( int dy, bool thumb )
 	if( dy==0 )
 		return;
 
-  // ２－１．折り返し無しの場合は一気にジャンプ出来る
+  // 2-1. If there is no turnaround, you can jump at once.
 	if( !wrapexists() )
 	{
 		udScr_tl_ = udScr_.nPos + dy;
 	}
 
-  // ２－２．でなけりゃ、現在位置からの相対サーチ
-  // ScrollBarを連続的にドラッグせず一度に一気に飛んだ場合は
-  // 1行目や最終行からの相対サーチの方が有効な可能性があるが、
-  // その場合は多少速度が遅くなっても描画が引っかかることはないのでＯＫ
+  // 2-2. Otherwise, search relative to current position
+  // If you jump at once without dragging the ScrollBar continuously,
+  // A relative search from the first or last line may be more effective, but
+  // In that case, even if the speed becomes a little slower, the drawing will not get stuck, so it is OK.
 	else
 	{
 		int   rl = dy + udScr_vrl_;
 		ulong tl = udScr_tl_;
 
-		if( dy<0 ) // 上へ戻る場合
+		if( dy<0 ) // Return to top
 		{
-			// ジャンプ先論理行の行頭へDash!
+			// Dash to the beginning of the jump destination logical line!
 			while( rl < 0 )
 				rl += rln(--tl);
 		}
-		else/*if( dy>0 )*/ // 下へ進む場合
+		else/*if( dy>0 )*/ // If you go down
 		{
-			// ジャンプ先論理行の行頭へDash!
+			// Dash to the beginning of the jump destination logical line!
 			while( rl > 0 )
 				rl -= rln(tl++);
 			if( rl < 0 )
-				rl += rln(--tl); //行き過ぎ修正
+				rl += rln(--tl); //Excessive correction
 		}
 		udScr_tl_ = tl;
 		udScr_vrl_= static_cast<ulong>(rl);
 	}
 
-  // ４．画面をスクロール
+  // 4. scroll the screen
 	ScrollView( 0, dy, !thumb );
 }
 
@@ -625,7 +625,7 @@ void ViewImpl::InvalidateView( const DPos& dp, bool afterall ) const
 {
 	const int H = cvs_.font_.H();
 
-	// 表示域より上での更新, Update above the display area
+	// Update above the display area
 	if( dp.tl < udScr_tl_ )
 	{
 		if( afterall )
@@ -633,17 +633,17 @@ void ViewImpl::InvalidateView( const DPos& dp, bool afterall ) const
 		return;
 	}
 
-	// 開始y座標計算, Start y-coordinate calculation
+	// Start y-coordinate calculation, Start y-coordinate calculation
 	int r=0, yb=-(signed)udScr_vrl_;
 	for( int t=udScr_tl_, ybe=cy() / NZero(H); (unsigned)t<dp.tl; yb+=rln(t++) )
 		if( yb >= ybe )
 			return;
 	for( ; dp.ad>rlend(dp.tl,r); ++r,++yb );
-	yb = H * Max( yb, -100 ); // 上にはみ出し過ぎないよう調整, Adjustment to avoid overhang on top
+	yb = H * Max( yb, -100 ); // Adjustment to avoid overhang on top
 	if( yb >= cy() )
 		return;
 
-	// １行目を再描画, Redraw the first line
+	// Redraw the first line
 	int rb = (r==0 ? 0 : rlend(dp.tl,r-1));
  	int xb = left() + Max( (ulong)0,
 		CalcLineWidth(doc_.tl(dp.tl)+rb, (ulong) (dp.ad-rb)) - rlScr_.nPos );
@@ -653,7 +653,7 @@ void ViewImpl::InvalidateView( const DPos& dp, bool afterall ) const
 		::InvalidateRect( hwnd_, &rc, FALSE );
 	}
 
-	// 残り, remaining
+	// remaining
 	int ye;
 	yb += H;
 	if( afterall )

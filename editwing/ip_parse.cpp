@@ -8,61 +8,61 @@ using namespace editwing::doc;
 
 
 //=========================================================================
-//---- ip_parse.cpp キーワード解析
+//---- ip_parse.cpp Keyword parsing
 //
-//		キーワード定義ファイルに従って、保持する文字列を
-//		適切に切り分ける作業がここ。
+//		Set the string to be retained according to the keyword definition file.
+//		Now is the time to properly separate them.
 //
-//---- ip_text.cpp   文字列操作・他
-//---- ip_wrap.cpp   折り返し
-//---- ip_scroll.cpp スクロール
-//---- ip_draw.cpp   描画・他
-//---- ip_cursor.cpp カーソルコントロール
+//---- ip_text.cpp String manipulation/etc.
+//---- ip_wrap.cpp wrapping
+//---- ip_scroll.cpp Scroll
+//---- ip_draw.cpp Drawing/etc.
+//---- ip_cursor.cpp Cursor control
 //=========================================================================
 
 
 
 //=========================================================================
 //
-// 解析結果データ仕様
-// これだけ色々姑息な手段を持ち込んで本当に
-// 速くなっているのかどうかは不明…(^^;
+// Analysis result data specifications
+// It's true that they brought in so many palliative methods.
+// I don't know if it's faster or not...(^^;
 //
 // -----------------------------------------------
 //
 // Line::isLineHeadCommented_
-//    0: 行頭がブロックコメントの内部ではない, The beginning of the line is not inside the block comment
-//    1: 行頭がブロックコメントの内部,
+//    0: The beginning of the line is not inside the block comment
+//    1: The beginning of the line is inside a block comment,
 //
 // -----------------------------------------------
 //
 // Line::commentTransition_
-//   00: 行末は常にコメントの外, End of line always out of comment
-//   01: 行頭と行末はコメント状態が逆転, Comment state is reversed at the beginning of a line and at the end of a line
-//   10: 行頭と行末はコメント状態が同じ, Comment state is the same at the beginning of a line and at the end of a line
-//   11: 行末は常にコメントの中, The end of the line is always in the comment
+//   00: End of line always out of comment
+//   01: Comment state is reversed at the beginning of a line and at the end of a line
+//   10: Comment state is the same at the beginning of a line and at the end of a line
+//   11: The end of the line is always in the comment
 //
 // -----------------------------------------------
 //
-// 以上二つのフラグを元に、前の行の情報から今の行の情報を
+// Based on the above two flags, the information of the current line is extracted from the information of the previous line.
 //   this.head = (prev.trans >> prev.head)&1;
-// で順次計算していくことが出来る。
-// この計算の際に内部バッファの状態まで書き換えるのは
-// コストがでかすぎるので、次に示すフラグを見ながら
-// 描画寸前に適宜調整する。
+// You can calculate it sequentially.
+// The state of the internal buffer is rewritten during this calculation.
+// The cost is too high, so while looking at the flags shown below,
+// Adjust as appropriate just before drawing.
 //
 // -----------------------------------------------
 //
 // Line::commentBitReady_
-//   コメントビットが調整済みかどうか
+//   Is the comment bit adjusted?
 //   Whether the comment bits have been adjusted or not
 //
 // -----------------------------------------------
 //
 // Line::str_[]
-//   UCS-2ベタで、文字列データがそのまま格納される。
-//   ただし、パーサの高速化のために最終文字の後ろに
-//   0x007fが付加される。
+//   String data is stored as is in UCS-2 solid.
+//   However, to speed up the parser, after the final character
+//   0x007f is added.
 //   UCS-2 solid, string data is stored as is.
 //   However, to speed up the parser, the last character is followed by
 //   0x007f is appended.
@@ -70,40 +70,40 @@ using namespace editwing::doc;
 // -----------------------------------------------
 //
 // Line::flg_
-//   一文字毎に、下のような8bitのフラグを割り当てる
+//   Assign an 8-bit flag to each character as shown below.
 //   Assign an 8-bit flag as shown below for each character
 //   | aaabbbcd |
 //
 // -----------------------------------------------
 //
 // aaa == "PosInToken"
-//     0: トークンの途中, Token on the way
-//   1-6: トークンの頭。次の頭は1-6文字先。, Token head. The next head is 1-6 characters ahead.
-//     7: トークンの頭。次の頭は7文字以上先。, Token head. The next head is at least 7 characters ahead.
+//     0: Token on the way
+//   1-6: Token head. The next head is 1-6 characters ahead. , Token head. The next head is 1-6 characters ahead.
+//     7: Token head. The next beginning is at least 7 characters ahead. , Token head. The next head is at least 7 characters ahead.
 //
 // -----------------------------------------------
 //
 // bbb == "TokenType"
-//     0: TAB: タブ文字, tab cahar
-//     1: WSP: ホワイトスペース, white space char
-//     2: TXT: 普通の文字, normal text
-//     3:  CE: コメント開始タグ, comment-start tag
-//     4:  CB: コメント終了タグ, end-of-comment tag
-//     5:  LB: 行コメント開始タグ, line comment start tag
-//     6:  Q1: '' 引用符1, Sinlge Quote
-//     7:  Q2: "" 引用符2, Double Quote
+//     0: TAB: tab character, tab cahar
+//     1: WSP: white space, white space char
+//     2: TXT: normal text, normal text
+//     3: CE: comment start tag, comment-start tag
+//     4: CB: end-of-comment tag, end-of-comment tag
+//     5: LB: line comment start tag, line comment start tag
+//     6: Q1: '' Quote 1, Sinlge Quote
+//     7: Q2: "" Quote2, Double Quote
 //
 // -----------------------------------------------
 //
 //  c  == "isKeyword?"
-//     0: キーワードではない, Not a keyword.
-//     1: キーワード, Keyword
+//     0: Not a keyword.
+//     1: Keyword
 //
 // -----------------------------------------------
 //
 //  d  == "inComment?"
-//     0: コメントの中ではない, not in a comment
-//     1: コメントの中, in a comment
+//     0: not in a comment, not in a comment
+//     1: in a comment, in a comment
 //
 // -----------------------------------------------
 
@@ -111,43 +111,43 @@ using namespace editwing::doc;
 
 namespace {
 //-------------------------------------------------------------------------
-// コメントの中なのか外なのか等を判定するためのオートマトン
+// Automaton for determining whether it is inside or outside a comment, etc.
 //
-// /* が出たらその後ろはコメントで */ が出たらその後ろはノーマルゾーン
-// …という単純な規則では上手く行かない。例えば str"/*"str なんてものが
-// 出現した場合に困ってしまう。そこで、
-//   ・普通のテキスト
-//   ・ブロックコメントの中
-//   ・行コメントの中
-//   ・一重引用符の中
-//   ・二重引用符の中
-// の５種類の状態に分けて、それぞれの場合について、どの記号が出たら
-// 次にどの状態に移るのか…を処理する必要がある。その状態変化の規則を
-// 5x5の２次元配列で与えて管理する。
+// If /* appears, the area after it is a comment, and if */ appears, the area after it is a normal zone.
+// A simple rule like... won't work. For example, str"/*"str
+// You will be in trouble if it appears. So,
+//   - Normal text
+//   - Inside a block comment
+//   - Inside a line comment
+//   - Inside single quotes
+//   - Inside double quotes
+// Divided into 5 types of situations, and in each case, which symbol appears
+// It is necessary to process which state to move to next. The rules for that state change
+// It is given and managed as a 5x5 two-dimensional array.
 //-------------------------------------------------------------------------
 
 enum CommentDFASymbol{ sCE, sCB, sLB, sQ1, sQ2, sXXX };
 struct CommentDFA
 {
-	// <状態>
-	// 最下位bitが、現在コメント内かどうかのフラグになります。
-	// ブロックコメント中かどうかは (state>>1)&(state) で。
+	// <Status>
+	// The lowest bit is a flag indicating whether it is currently in a comment.
+	// Use (state>>1)&(state) to check whether it is in a block comment.
 	//   000: normal text        011: in BlockComment
 	//   001: in LineComment     100: in Quote2
 	//   010: in Quote1
 	//
-	// <シンボル>
-	// C++で言うと下の通り
-	// 値はTokenTypeフラグとシンクロするようになってます。
+	// <symbol>
+	// In C++, it is as follows
+	// The value is now synchronized with the TokenType flag.
 	//   000: CE */              011: Q1 '
 	//   001: CB /*              100: Q2 "
 	//   010: LB //
 
-	// 初期状態を指定。コメント内かコメント外か
+	// Specify the initial state. In comments or outside comments?
 	CommentDFA( bool inComment )
 		: state( inComment ? 3 : 0 ) {}
 
-	// 入力符号を与えて状態遷移
+	// State transition by giving input sign
 	void transit( uchar sym )
 		{ state = tr_table[state][sym]; }
 
@@ -158,10 +158,10 @@ struct CommentDFA
 		tr_table[/*iBc*/3][/*QB*/1] = set? 0: 3;
 	}
 
-	// 現在の状態
+	// current status
 	uchar state;
 
-	// 状態遷移テーブル
+	// state transition table
 	static uchar tr_table[5][5];
 };
 
@@ -177,8 +177,8 @@ uchar CommentDFA::tr_table[5][5] = {
 
 
 //-------------------------------------------------------------------------
-// 単純な、キーワード格納構造体。
-// ChainHashの要素にするためnextポインタがつけてあります。
+// A simple keyword storage structure.
+// A next pointer is attached to make it an element of ChainHash.
 // DO NOT USE new/delete for Keyword, stick to Keyword::New
 //-------------------------------------------------------------------------
 struct Keyword
@@ -207,12 +207,12 @@ struct Keyword
 
 
 //-------------------------------------------------------------------------
-// サポート関数。Unicodeテキスト同士の比較
+// Support functions. Comparing Unicode text to each other
 //-------------------------------------------------------------------------
 
 static bool compare_s(const unicode* a,const unicode* b, size_t l)
 {
-	// 大文字小文字を区別, Case sensitive
+	// Case sensitive, Case sensitive
 	while( l-- )
 		if( *a++ != *b++ )
 			return false;
@@ -221,7 +221,7 @@ static bool compare_s(const unicode* a,const unicode* b, size_t l)
 
 static bool compare_i(const unicode* a,const unicode* b,size_t l)
 {
-	// 大文字小文字を区別しない（雑）, Case insensitive (misc)
+	// Case insensitive (misc)
 	while( l-- )
 		if( ((*a++) ^ (*b++)) & 0xdf )
 			return false;
@@ -231,8 +231,8 @@ static bool compare_i(const unicode* a,const unicode* b,size_t l)
 
 
 //-------------------------------------------------------------------------
-// 与えられた記号文字列から、コメント開始等の意味のあるトークンを
-// 切り出してくるための構造。
+// From the given symbol string, extract a meaningful token such as the start of a comment.
+// Structure for cutting out.
 // meaningful tokens from a given symbol string, such as the start of a comment.
 // Structure to cut out.
 //-------------------------------------------------------------------------
@@ -255,8 +255,8 @@ public:
 		, q2_ ( q2 )
 		, ar ( arbuf, sizeof(arbuf) )
 	{
-		// '/' で始まる記号は使われているか…？
-		// みたいな、１文字目のみのチェックに使う表を作成
+		// Are symbols starting with '/' used?
+		// Create a table that is used to check only the first character, such as
 		tag_[0] = tag_[1] = tag_[2] = NULL;
 		mem00( map_, sizeof(map_) );
 		map_[L'\''] = q1;
@@ -269,7 +269,7 @@ public:
 
 //	~TagMap()
 //	{
-//		// キーワード解放,
+//		// keyword release,
 //		Keyword::Delete( tag_[0] );
 //		Keyword::Delete( tag_[1] );
 //		Keyword::Delete( tag_[2] );
@@ -277,16 +277,16 @@ public:
 
 	bool does_esc()
 	{
-		// \ によるエスケープをするかどうか
+		// Whether to escape with \
 		return esc_;
 	}
 
 	ulong SymbolLoop(
 		const unicode* str, ulong len, ulong& mlen, uchar& sym )
 	{
-		// 有意味な記号にマッチするまでループ
-		// 返値に、マッチするまでに飛ばした文字数、
-		// mlen,symに、マッチした記号の情報を返す
+		// Loop until a meaningful symbol is matched
+		// The return value is the number of characters skipped before matching,
+		// Returns information about the matched symbol to mlen,sym
 		// Loop until a meaningful symbol is matched.
 		// Return value is the number of characters skipped before the match.
 		// And the matched length/symbol are copied in mlen and sym.
@@ -309,7 +309,7 @@ public:
 					}
 				}
 
-				if( str[ans] == L'\'' ) // 一重引用符 - single quote
+				if( str[ans] == L'\'' ) // single quote - single quote
 				{
 					if( q1_ )
 					{
@@ -317,7 +317,7 @@ public:
 						goto symbolfound;
 					}
 				}
-				else if( str[ans] == L'\"' ) // 二重引用符 - double quote
+				else if( str[ans] == L'\"' ) // double quote - double quote
 				{
 					if( q2_ )
 					{
@@ -325,7 +325,7 @@ public:
 						goto symbolfound;
 					}
 				}
-				else if( str[ans] == L'\\' ) // \ の後の文字はSkip
+				else if( str[ans] == L'\\' ) // Skip the character after \
 				{
 					if( esc_ && ans+1<len )
 						++ans;
@@ -341,7 +341,7 @@ public:
 
 
 //-------------------------------------------------------------------------
-// 与えられた文字列がキーワードかどうか高速判定するためのハッシュ表
+// Hash table for quickly determining whether a given string is a keyword
 // Hash table for fast determination of whether a given string is a keyword
 //-------------------------------------------------------------------------
 class KeywordMap
@@ -361,7 +361,7 @@ public:
 		, compare_( bCaseSensitive ? compare_s : compare_i )
 		, hash    ( bCaseSensitive ? hash_s : hash_i )
 	{
-		// ハッシュ表初期化
+		// Hash table initialization
 		mem00( backet_, sizeof(backet_) );
 	}
 
@@ -381,7 +381,7 @@ public:
 
 	~KeywordMap()
 	{
-		// 解放
+		// release
 		free( ar.sta );
 //	#ifdef _DEBUG
 //		if( elems_ )
@@ -396,18 +396,18 @@ public:
 
 	void AddKeyword( const unicode* str, size_t len )
 	{
-		// データ登録
+		// Data registration
 		ushort x = (ushort)((BYTE*)Keyword::New(&ar, str,len) - ar.sta);
 		int      h = hash(str,len);
 
 		if( backet_[h] == 0 )
 		{
-			// ハッシュテーブルが空の場合, Hash table slot is free.
+			// If the hash table is empty, Hash table slot is free.
 			backet_[h] = x;
 		}
 		else
 		{
-			// チェイン末尾に繋ぐ場合, chain to the existing element
+			// When connecting to the end of a chain, chain to the existing element
 			//MessageBoxW(NULL, backet_[h]->str, x->str , MB_OK);
 			ushort q=backet_[h], p=KW(q)->next;
 			while( p!=0 )
@@ -416,14 +416,14 @@ public:
 			KW(q)->next = x;
 		}
 
-		// データクリア用のリストにも入れておく
+		// Also add it to the list for clearing data.
 		//dustbox_.Add(x);
 		++elems_;
 	}
 
 	uchar inline isKeyword( const unicode* str, size_t len ) const
 	{
-		// 登録されているキーワードと一致するか？
+		// Does it match the registered keyword?
 		if( elems_ ) // Nothing to do for empty keyword list.
 			for( ushort p=backet_[hash(str,len)]; p!=0; p=KW(p)->next )
 				if( KW(p)->len==len && compare_( KW(p)->str, str, len ) )
@@ -435,8 +435,8 @@ private:
 
 	static uint hash_i( const unicode* a, size_t al )
 	{
-		// 12bitに潰すめっちゃ雑なハッシュ関数
-		// ルーチン分けるの面倒なので、大文字小文字は常に区別されない。(^^;
+		// A very crude hash function that collapses to 12 bits
+		// Because it is troublesome to separate routines, uppercase and lowercase letters are not always distinguished. (^^;
 		// Very messy hash function that collapses to 12 bits.
 		// case-insensitive.
 		uint h=0,i=0;
@@ -464,7 +464,7 @@ private:
 
 
 //-------------------------------------------------------------------------
-// 以上の道具立てでもって、テキストの解析を行うParser
+// Parser that analyzes text using the above tools
 //-------------------------------------------------------------------------
 }
 class editwing::doc::Parser
@@ -474,7 +474,7 @@ public:
 	TagMap     tag_;
 
 public:
-	// 初期化１
+	// Initialization 1
 	Parser(
 		const unicode* cb, size_t cblen,
 		const unicode* ce, size_t celen,
@@ -495,20 +495,20 @@ public:
 		kwd_.SetArenaBufSize(count);
 	}
 
-	// 初期化２：キーワード追加
+	// Initialization 2: Add keywords
 	void AddKeyword( const unicode* str, size_t len )
 	{
 		kwd_.AddKeyword( str, len );
 	}
 
-	// 行データ解析
+	// Row data analysis
 	uchar Parse( Line& line, uchar cmst )
 	{
 		line.TransitCmt( cmst );
 
-		// ASCII振り分けテーブル。
-		// シフト無しでTokenTypeに流用出来るようにするため、
-		// 値が４飛びになってます
+		// ASCII sorting table.
+		// In order to be able to use it for TokenType without shifting,
+		// The value jumps by 4
 		// We want to separate the tabs from other non printable characters.
 		enum { T=1, W=4, A=8, S=12, O=0 };
 		static const uchar letter_type[768] = {
@@ -524,7 +524,7 @@ public:
 			O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O, // C1 Controls
 			O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O, // C1 Controls
 			S,A,A,A,A,A,S,A,A,A,A,S,A,A,A,S, //  !￠￡?\|§¨ca≪￢[SHY-]R￣
-			A,S,A,A,A,A,S,S,A,S,A,S,A,A,A,S, // °±23´μ¶・，1o≫????
+			A,S,A,A,A,A,S,S,A,S,A,S,A,A,A,S, // 0x00B0-0x00BF symbol range
 			A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A, // AAAAAAACEEEEIIII
 			A,A,A,A,A,A,A,S,A,A,A,A,A,A,A,A, // DNOOOOO×OUUUUYTs
 			A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A, // aaaaaaaceeeeiiii
@@ -567,22 +567,22 @@ public:
 			A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,
 		};
 
-		// PosInToken算出用の距離エンコーダ( 5bitシフト済み )
+		// Distance encoder for PosInToken calculation (5bit shifted)
 		// Distance encoder for PosInToken calculation ( 5bit shifted )
 		//  ( _d>7 ? 7<<5 : _d<<5 )
 		#define tkenc(_d) ( (_d)>7 ? 0xe0 : (_d)<<5 )
 
-		// コメント状態遷移追跡用オートマトン
+		// Comment state transition tracking automaton
 		CommentDFA dfa[2] = {CommentDFA(false), CommentDFA(true)};
 		const uchar& cmtState  = dfa[line.isLineHeadCmt()].state;
 		uchar commentbit = cmtState&1;
 
-		// 作業領域, workspace
+		// work area, workspace
 		uchar sym;
 		ulong j, k, um, m;
 		uchar t, f;
 
-		// ループ～
+		// Loop~
 		const unicode* str = line.str();
 		uchar*         flg = line.flg();
 		ulong           ie = line.size();
@@ -590,7 +590,7 @@ public:
 		{
 			j = i;
 
-			// ASCII文字でない場合 (Not ASCII char)
+			// Not ASCII char
 			// was 0x007f (ASCII) I replaced by 0x02ff
 			// that corresponds to all extended latin charatcter.
 			// This is needed if yu want to ctrl+select words that
@@ -606,7 +606,7 @@ public:
 						flg[j] = f;
 				flg[i] = static_cast<uchar>(tkenc(j-i) | f);
 			}
-			// ASCII文字の場合?? (ASCII char?)
+			// For ASCII characters?? (ASCII char?)
 			// All latin chars up to IPA Extensions 0x0000-0x02ff
 			else
 			{
@@ -623,7 +623,7 @@ public:
 
 				switch( t ) // letter type:
 				{
-				// アルファベット＆数字, Alphabets & Numbers (a-Z, 0-9)
+				// Alphabets & Numbers (a-Z, 0-9)
 				case A:
 					if( str[i] < 0x007f ) // ASCII only
 						f |= kwd_.isKeyword( str+i, j-i );
@@ -631,23 +631,23 @@ public:
 
 				// CTL characters (0-32 + 127-160)
 				case O:
-				// タブ・制御文字, Tabs
+				// Tabs/control characters, Tabs
 				case T:
 					// fall...
 
-				// 半角空白 (space, 32)
+				// Half-width space (space, 32)
 				case W:
 					for( k=i+1; k<j; ++k )
 						flg[k] = f;
 					flg[i] = (uchar)(tkenc(j-i)|f);
 					break;
 
-				// 記号 (Symbol, 33-47, 58-64, 91-94, 96, 123-126)
+				// Symbol (Symbol, 33-47, 58-64, 91-94, 96, 123-126)
 				case S:
 					k = i;
 					while( k < j )
 					{
-						// マッチしなかった部分, The part that did not match
+						// The part that did not match
 						um = tag_.SymbolLoop( str+k, j-k, m, sym );
 						f = (0x20 | ALP | commentbit);
 						while( um-- )
@@ -655,7 +655,7 @@ public:
 						if( k >= j )
 							break;
 
-						// マッチした部分, Matched part
+						// matched part, matched part
 						f = (CE | commentbit);
 						dfa[0].transit( sym );
 						dfa[1].transit( sym );
@@ -671,7 +671,7 @@ public:
 			}
 		}
 
-		// transitフラグ更新 Update transit flag
+		// Update transit flag
 		line.SetTransitFlag(
 			(dfa[1].state & (dfa[1].state<<1)) |
 			((dfa[0].state>>1) & dfa[0].state)
@@ -680,19 +680,19 @@ public:
 		return line.TransitCmt( cmst );
 	}
 
-	// コメントビットを正しく調整
+	// Adjust comment bit correctly
 	void SetCommentBit( Line& line )
 	{
 		CommentDFA dfa( line.isLineHeadCmt()==1 );
 		uchar commentbit = dfa.state&1;
 
-		// ループ～
+		// Loop~
 		// const unicode* str = line.str();
 		uchar*         flg = line.flg();
 		ulong         j,ie = line.size();
 		for( ulong i=0; i<ie; i=j )
 		{
-			// Tokenの終端を得る, Get the end of the Token
+			// Get the end of the Token
 			uchar k = (flg[i]>>5);
 			j = i + k;
 			if( j >= ie )
@@ -723,7 +723,7 @@ public:
 
 
 //-------------------------------------------------------------------------
-// 定義ファイル読みとり処理とか
+// Definition file reading process
 //-------------------------------------------------------------------------
 
 Document::Document( )
@@ -733,23 +733,23 @@ Document::Document( )
 	, acc_reparsed_ ( false )
 	, acc_nmlcmd_ (false )
 {
-	text_.Add( Line(L"",0) ); // 最初は一行だけ
-	SetKeyword( NULL, 0 );        // キーワード無し
+	text_.Add( Line(L"",0) ); // Only one line at first
+	SetKeyword( NULL, 0 );        // No keyword
 }
 
 Document::~Document()
 {
-	// このファイルにデストラクタを入れておかないと、
-	// delete parser_ が出来なくなる。^^;
+	// If you don't put a destructor in this file,
+	// delete parser_ is no longer possible. ^^;
 }
 
 void Document::SetKeyword( const unicode* defbuf, size_t siz )
 {
-	// BOMがあったらスキップ
+	// Skip if there is a BOM
 	if( siz!=0 && *defbuf==0xfeff )
 		++defbuf, --siz;
 
-	// 読み込み準備
+	// Ready to load
 	const unicode* str=NULL;
 	size_t       len=0;
 	UniReader r( defbuf, siz, &str, &len );
@@ -764,14 +764,14 @@ void Document::SetKeyword( const unicode* defbuf, size_t siz )
 			return;
 		}
 
-		// １行目:フラグ
+		// 1st line: Flag
 		//   case? q1? q2? esc?
 		r.getLine();
 		for( size_t i=0; i<len; ++i )
 			flags[i] = (str[i]==L'1');
 
-		// ２～４行目
-		//   ブロコメ開始記号、ブロコメ終了記号、行コメ記号
+		// 2nd to 4th lines
+		//   Brocome start symbol, Brocome end symbol, Line comedy symbol
 		// comment start symbol, end symbol line comment symbol
 		for( int j=0; j<3; ++j )
 		{
@@ -793,7 +793,7 @@ void Document::SetKeyword( const unicode* defbuf, size_t siz )
 	}
 
 
-	// パーサー作成
+	// Parser creation
 	void *pp = parser_.get();
 	if( pp )
 	{
@@ -830,7 +830,7 @@ void Document::SetKeyword( const unicode* defbuf, size_t siz )
 		}
 
 		parser_->SetKeywordArenaSize( totsz );
-		// ５行目以降：キーワードリスト
+		// 5th line onwards: Keyword list
 		while( !r.isEmpty() )
 		{
 			r.getLine();
@@ -839,7 +839,7 @@ void Document::SetKeyword( const unicode* defbuf, size_t siz )
 		}
 	}
 
-	// 全行解析し直し
+	// Parse all lines again
 	//DWORD otime = GetTickCount();
 	ReParse( 0, tln()-1 );
 
@@ -847,7 +847,7 @@ void Document::SetKeyword( const unicode* defbuf, size_t siz )
 	//wsprintf(buf, TEXT("%lu ms"), GetTickCount() - otime);
 	//MessageBox(NULL, NULL, buf, 0);
 
-	// 変更通知
+	// Change notification
 	Fire_KEYWORDCHANGE();
 }
 
@@ -856,17 +856,17 @@ bool A_HOT Document::ReParse( ulong s, ulong e )
 	ulong i;
 	uchar cmt = text_[s].isLineHeadCmt();
 
-	// まずは変更範囲を再解析, First, reanalyze the scope of the change
+	// First, reanalyze the scope of the change
 	for( i=s; i<=e; ++i )
 		cmt = parser_->Parse( text_[i], cmt );
 
-	// コメントアウト状態に変化がなかったらここでお終い。
+	// If there is no change in the commented out status, end here.
 	// If there is no change in the commented-out status, we are done here.
 	if( i==tln() || text_[i].isLineHeadCmt()==cmt )
 		return false;
 
-	// 例えば、/* が入力された場合などは、下の方の行まで
-	// コメントアウト状態の変化を伝達する必要がある。
+	// For example, if /* is entered, the line below
+	// It is necessary to communicate changes in the commented out state.
 	// For example, if a /* is entered, then down to the bottom line.
 	// need to communicate the change in commented-out status.
 	do

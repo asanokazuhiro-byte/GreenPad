@@ -76,14 +76,14 @@ inline App::App()
 	, hOle32_      ((HINSTANCE)(-1))
 	, hInstComCtl_ (NULL)
 {
-	// 唯一のインスタンスは私です。
+	// The only instance is me.
 	pUniqueInstance_ = this;
 }
 
-#pragma warning( disable : 4722 ) // 警告：デストラクタに値が戻りません
+#pragma warning( disable : 4722 ) // Warning: No value returned to destructor
 App::~App()
 {
-	// ロード済みモジュールがあれば閉じておく
+	// Close any loaded modules
 #ifndef NO_OLE32
 	if( hOle32_ && hOle32_ != (HINSTANCE)(-1) )
 	{
@@ -99,13 +99,13 @@ App::~App()
 		::FreeLibrary( hInstComCtl_ );
 #endif
 
-	// 終～了～
+	// End~end~
 	::ExitProcess( exitcode_ );
 }
 
 inline void App::SetExitCode( int code )
 {
-	// 終了コードを設定
+	// Set exit code
 	exitcode_ = code;
 }
 
@@ -115,7 +115,7 @@ void App::InitModule( imflag what )
 	if (hOle32_ == (HINSTANCE)(-1) && what&(OLE|COM|OLEDLL))
 		hOle32_ = hasSysDLL(TEXT("OLE32.DLL"))? ::LoadLibrary(TEXT("OLE32.DLL")): NULL;
 #endif
-	// 初期化済みでなければ初期化する
+	// Initialize if not already initialized
 	bool ret = true;
 	if( !(loadedModule_ & what) )
 		switch( what )
@@ -147,7 +147,7 @@ void App::InitModule( imflag what )
 		default: break;
 		}
 
-	// 今回初期化したモノを記憶
+	// Remember what you initialized this time
 	if (ret) loadedModule_ |= what;
 }
 bool App::hasSysDLL(const TCHAR *dllname) const
@@ -156,10 +156,10 @@ bool App::hasSysDLL(const TCHAR *dllname) const
 }
 void App::Exit( int code )
 {
-	// 終了コードを設定して
+	// set the exit code
 	SetExitCode( code );
 
-	// 自殺
+	// suicide
 	this->~App();
 }
 
@@ -217,11 +217,11 @@ namespace ki
 	void APIENTRY Startup()
 	{
 		// Startup :
-		// プログラム開始すると、真っ先にここに来ます。
+		// When you start the program, it will come here first.
 
-		// C++のローカルオブジェクトの破棄順序の仕様に
-		// 自信がないので(^^;、スコープを利用して順番を強制
-		// たぶん宣言の逆順だとは思うんだけど…
+		// C++ local object destruction order specification
+		// Since I'm not confident (^^;), I used scope to force the order.
+		// I think it's probably in the reverse order of the declaration...
 		TS.Init( ARENA_RES );
 
 		LOGGER( "StartUp" );

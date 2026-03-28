@@ -16,9 +16,9 @@ class OleDnDTarget;
 
 //=========================================================================
 //@{
-//	イベントハンドラインターフェイス
+//	event handler interface
 //
-//	カーソルから発生するイベント色々を
+//	Various events that occur from the cursor
 //@}
 //=========================================================================
 
@@ -99,7 +99,7 @@ private:
 
 //=========================================================================
 //@{
-//	表示位置情報まで含めたDPos
+//	DPos including display location information
 //@}
 //=========================================================================
 
@@ -107,10 +107,10 @@ struct VPos : public DPos
 {
 	ulong vl; // VLine-Index
 	ulong rl; // RLine-Index
-	int   vx; // スクロールを考慮しない仮想スクリーン上のx座標(pixel)
-	int   rx; // 文字の並びに左右されてないx座標(pixel)
-		      //   == 長い行のしっぽから短い行に [↑] で移動して
-		      //   == その後 [↓] で戻れるようなアレです。
+	int   vx; // x coordinate (pixel) on the virtual screen without considering scrolling
+	int   rx; // x coordinate (pixel) that is not affected by the arrangement of characters
+		      //   == Move from the tail of the long line to the short line with [↑]
+		      //   == After that, you can go back with [↓].
 	void operator=( const DPos& dp ) { tl=dp.tl, ad=dp.ad; }
 
 	VPos(bool) : DPos(0,0),vl(0),rl(0),vx(0),rx(0) {}
@@ -119,7 +119,7 @@ struct VPos : public DPos
 
 
 //-------------------------------------------------------------------------
-// Caret制御用ラッパー
+// Caret control wrapper
 //-------------------------------------------------------------------------
 class Caret
 {
@@ -165,23 +165,23 @@ private:
 
 //=========================================================================
 //@{
-//	カーソル
+//	cursor
 //@}
 //=========================================================================
 class Cursor
 {
 public:
 
-	// 初期化とか
+	// Initialization etc.
 	Cursor( HWND wnd, ViewImpl& vw, doc::Document& dc );
 	~Cursor();
 	void AddHandler( CurEvHandler* ev );
 	void DelHandler( const CurEvHandler* ev );
 
-	// カーソル移動
+	// Move cursor
 	void MoveCur( const DPos& dp, bool select );
 
-	// キーによるカーソル移動
+	// Cursor movement using keys
 	void Left( bool wide, bool select );
 	void Right( bool wide, bool select );
 	void Up( bool wide, bool select );
@@ -192,7 +192,7 @@ public:
 	void PageDown( bool select );
 	void GotoMatchingBrace( bool select );
 
-	// テキスト書き換え
+	// text rewriting
 	void Input( const unicode* str, size_t len );
 	void Input( const char* str, size_t len );
 	void InputAt( const unicode *str, size_t len, int x, int y );
@@ -208,15 +208,15 @@ public:
 	void QuoteSelectionW(const unicode *qs, bool shift);
 	void QuoteSelection(bool unquote);
 
-	// クリップボード
+	// clipboard
 	void Cut();
 	void Copy();
 	void Paste();
 
-	// 選択テキスト取得
+	// Get selected text
 	ki::aarr<unicode> getSelectedStr() const;
 
-	// モード切替
+	// Mode switching
 	void SetInsMode( bool bIns );
 	void SetROMode( bool bRO );
 
@@ -280,17 +280,17 @@ private:
 #ifndef NO_OLEDNDTAR
 	OleDnDTarget    dndtg_;
 #endif
-	VPos cur_;  // カーソル位置
-	VPos sel_;  // 選択時の軸足位置
-	bool bIns_; // 挿入モード？, Insertion mode?
-	bool bRO_;  // 読取専用？, Read Only?
-	bool lineSelectMode_; // 行選択モード？
+	VPos cur_;  // cursor position
+	VPos sel_;  // Pivot position when selected
+	bool bIns_; // Insert mode? , Insertion mode?
+	bool bRO_;  // Read only? , Read Only?
+	bool lineSelectMode_; // Row selection mode?
 //	bool squareSelect_; // Select in square AA mode
 
-	UINT_PTR timerID_;// マウスドラッグ制御用の
-	int  keyRepTime_; // タイマー関係
-	int  dragX_;      // 位置
-	int  dragY_;      // 位置
+	UINT_PTR timerID_;// for mouse drag control
+	int  keyRepTime_; // Timer related
+	int  dragX_;      // position
+	int  dragY_;      // position
 	DWORD lastDblClkTick_;
 	ulong lastDblClkLine_;
 	short lastDblClkX_;

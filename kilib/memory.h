@@ -11,15 +11,15 @@ inline void operator delete[](void*, void*) { } */
 namespace ki {
 #endif
 
-// W版ではHeapAllocを直接呼び出すバージョンを使う
+// The W version uses a version that calls HeapAlloc directly.
 //#if !defined(_UNICODE) && defined(SUPERTINY)
 //	#define USE_ORIGINAL_MEMMAN
 //#endif
 
 #ifdef WIN64
-	// 小規模と見なすオブジェクトの最大サイズ, Maximum size of objects considered small
+	// Maximum size of objects considered small, Maximum size of objects considered small
 	#define SMALL_MAX 254
-	// 一度に確保するヒープブロックのサイズ, Size of heap block to be allocated at one time
+	// Size of heap block to be allocated at one time
 	#define BLOCK_SIZ 8192
 #else
 	#ifdef STACK_MEM_POOLS
@@ -30,7 +30,7 @@ namespace ki {
 	#define BLOCK_SIZ 4096
 	#endif
 #endif
-// 内部実装
+// internal implementation
 struct MemBlock;
 
 
@@ -38,17 +38,17 @@ struct MemBlock;
 //=========================================================================
 //@{ @pkg ki.Memory //@}
 //@{
-//	メモリ割り当て・解放機構
+//	Memory allocation/release mechanism
 //
-//	SUPERTINYオプションを付けてコンパイルすると、標準の
-//	mallocやfreeを使えなくなるため、HeapAlloc等のAPIを
-//	直接呼び出す必要が出てきます。しかし、こいつらを本当に
-//	毎回直に呼んでいると、遅い。もうアホかと、バカかと、
-//	って勢いで遅い。そこで、主にnewで動的に小規模メモリを
-//	確保することに主眼を据えた簡単なアロケータを使うことにしました。
+//	When compiled with the SUPERTINY option, the standard
+//	APIs such as HeapAlloc cannot be used because malloc and free cannot be used.
+//	You will need to call it directly. But these guys really
+//	If you call directly each time, it will be slow. Are you an idiot or an idiot?
+//	It's so slow. Therefore, I mainly use new to dynamically create a small memory.
+//	I decided to use a simple allocator that focuses on allocating.
 //
 //	<a href="http://cseng.aw.com/book/0,3828,0201704315,00.html">loki</a>
-//	ライブラリほぼそのまんまな実装です。
+//	The library is almost exactly the same implementation.
 //@}
 //=========================================================================
 
@@ -56,10 +56,10 @@ class MemoryManager : private NoLockable // (Ez)Lockable
 {
 public:
 
-	//@{ メモリ割り当て //@}
+	//@{Memory allocation //@}
 	void* Alloc( size_t siz );
 
-	//@{ メモリ解放 //@}
+	//@{ Free memory //@}
 	void DeAlloc( void* ptr, size_t siz );
 
 #ifdef USE_ORIGINAL_MEMMAN
@@ -107,17 +107,17 @@ private:
 
 //-------------------------------------------------------------------------
 
-//@{ 唯一のメモリ管理オブジェクトを返す //@}
+//@{ Returns only one memory management object //@}
 inline MemoryManager& mem()
 	{ return *MemoryManager::pUniqueInstance_; }
 
-//@{ ゼロ埋め作業 //@}
+//@{ Zero filling work //@}
 inline void mem00( void* ptrv, int siz )
 	{ BYTE* ptr = (BYTE*)ptrv;
 	  for(;siz>3;siz-=4,ptr+=4) *(DWORD*)ptr = 0x00000000;
 	  for(;siz;--siz,++ptr) *ptr = 0x00; }
 
-//@{ FF埋め作業 //@}
+//@{ FF filling work //@}
 inline void memFF( void* ptrv, int siz )
 	{ BYTE* ptr = (BYTE*)ptrv;
 	  for(;siz>3;siz-=4,ptr+=4) *(DWORD*)ptr = 0xffffffff;
@@ -144,11 +144,11 @@ inline bool memEQ( const void *s1, const void *s2, size_t siz )
 
 //=========================================================================
 //@{
-//	標準基底クラス
+//	standard base class
 //
-//	JavaのObject や MFCのCObject みたいに使う…わけではなく、
-//	単にここから派生すると自動で operator new/delete が高速版に
-//	なるので便利だよ、という使い方のための基底クラスです。
+//	It is not used like Java's Object or MFC's CObject.
+//	If you simply derive from this, operator new/delete will automatically become a faster version.
+//	This is a base class for convenient usage.
 //
 // Standard Base Class
 //

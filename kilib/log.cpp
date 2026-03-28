@@ -39,17 +39,17 @@ void __cdecl Logger::WriteLineFmtErr(const TCHAR *fmt, ...)
 void Logger::WriteLine( const TCHAR* str, int siz )
 {
 #ifdef DO_LOGGING
-	// Fileクラス自体のデバッグに使うかもしれないので、
-	// Fileクラスを使用することは出来ない。API直叩き
+	// It may be used for debugging the File class itself, so
+	// File class cannot be used. API direct tap
 	static bool st_firsttime = true;
 
-	// ファイル名
+	// file name
 	TCHAR fname[MAX_PATH];
 	DWORD dummy = Path::GetExeName( fname );
 	if( dummy > 3 )
 		my_lstrcpy( fname+dummy-3, TEXT("log") );
 
-	// ファイルを書き込み専用で開く
+	// Open file for writing only
 	HANDLE h = ::CreateFile( fname,
 		FILE_APPEND_DATA
 		, FILE_SHARE_READ, NULL, OPEN_ALWAYS,
@@ -57,7 +57,7 @@ void Logger::WriteLine( const TCHAR* str, int siz )
 	if( h == INVALID_HANDLE_VALUE )
 		return;
 
-	// 初回限定処理
+	// First-time limited processing
 	if( st_firsttime )
 	{
 		::SetEndOfFile( h );
@@ -71,11 +71,11 @@ void Logger::WriteLine( const TCHAR* str, int siz )
 		::SetFilePointer( h, 0, NULL, FILE_END );
 	}
 
-	// 書く
+	// write
 	::WriteFile( h, str, siz, &dummy, NULL );
 	::WriteFile( h, TEXT("\r\n"), sizeof(TEXT("\r")), &dummy, NULL );
 
-	// 閉じる
+	// close
 	::CloseHandle( h );
 
 #endif

@@ -10,7 +10,7 @@ using namespace ki;
 HKL MyGetKeyboardLayout(DWORD dwLayout){ return GetKeyboardLayout(dwLayout); }
 #define myImmSetCompositionFont ImmSetCompositionFont
 //=========================================================================
-// IMEに関するあれこれ
+// All about IME
 //=========================================================================
 static const GUID myIID_IActiveIMMMessagePumpOwner = {0xb5cf2cfa,0x8aeb,0x11d1,{0x93,0x64,0x00,0x60,0xb0,0x67,0xb8,0x6e}};
 static const GUID myIID_IActiveIMMApp = {0x08c0e040, 0x62d1, 0x11d1,{0x93,0x26, 0x00,0x60,0xb0,0x67,0xb8,0x6e}};
@@ -18,13 +18,13 @@ static const GUID myCLSID_CActiveIMM = {0x4955dd33, 0xb159, 0x11d0, {0x8f,0xcf, 
 IMEManager* IMEManager::pUniqueInstance_;
 IMEManager::IMEManager()
 {
-	// 唯一のインスタンスは私です
+	// the only instance is me
 	pUniqueInstance_ = this;
 
 	#ifdef USEGLOBALIME
 		immApp_ = NULL;
 		immMsg_ = NULL;
-		// 色々面倒なのでWin95ではGlobalIME無し
+		// GlobalIME is not available on Win95 because it is a lot of trouble.
 		// No global IME on Win95 because it is buggy...
 		// RamonUnch: I found it is not so buggy so
 		// I re-enabled it unless we are on a DBCS enabled system!
@@ -324,8 +324,8 @@ void IMEManager::SetString( HWND wnd, unicode* str, size_t len )
 		HIMC ime = ::ImmGetContext( wnd );
 		if( !ime ) return;
 		::ImmSetCompositionStringW( ime,SCS_SETSTR,str,len*sizeof(unicode),NULL,0 );
-		::ImmNotifyIME( ime, NI_COMPOSITIONSTR, CPS_CONVERT, 0); // 変換実行
-		::ImmNotifyIME( ime, NI_OPENCANDIDATE, 0, 0 ); // 変換候補リスト表示
+		::ImmNotifyIME( ime, NI_COMPOSITIONSTR, CPS_CONVERT, 0); // Conversion execution
+		::ImmNotifyIME( ime, NI_OPENCANDIDATE, 0, 0 ); // Conversion candidate list display
 		::ImmReleaseContext( wnd, ime );
 	}// end if( hIMM32_ )
 #endif //NO_IME
@@ -333,7 +333,7 @@ void IMEManager::SetString( HWND wnd, unicode* str, size_t len )
 
 
 //=========================================================================
-// Windowに関するあれこれ
+// All about Windows
 //=========================================================================
 
 Window::Window()
@@ -349,8 +349,8 @@ void Window::SetHwnd( HWND wnd )
 
 void Window::MsgLoop()
 {
-	// thisをメインウインドウとして、
-	// メインメッセージループを回す
+	// With this as the main window,
+	// Run main message loop
 	isLooping_ = true;
 	ime().MsgLoopBegin();
 	for( MSG msg; ::GetMessage( &msg, NULL, 0, 0 ); )
@@ -370,8 +370,8 @@ void Window::MsgLoop()
 
 void Window::ProcessMsg()
 {
-	// こっちはグローバル関数。
-	// 未処理メッセージを一掃
+	// This is a global function.
+	// Clear unprocessed messages
 	ime().MsgLoopBegin();
 	for( MSG msg; ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ); )
 	{
@@ -420,11 +420,11 @@ int __cdecl Window::MsgBoxf( HWND hwnd,  LPCTSTR title, LPCTSTR fmt, ... )
 
 void Window::SetCenter( HWND hwnd, HWND rel )
 {
-	// 自分のサイズを取得
+	// get your size
 	RECT rc,pr;
 	::GetWindowRect( hwnd, &rc );
 
-	// 親の位置、ないしは全画面の位置を取得
+	// Get parent position or full screen position
 	if( rel != NULL )
 		::GetWindowRect( rel, &pr );
 	else
@@ -432,7 +432,7 @@ void Window::SetCenter( HWND hwnd, HWND rel )
 
 	long Xdiff = (pr.right-pr.left)-(rc.right-rc.left);
 	long Ydiff = (pr.bottom-pr.top)-(rc.bottom-rc.top);
-	// 中央を計算
+	// calculate center
 	if( Xdiff >= 0 && Ydiff >= 0 )
 	{	// Only center if rc is smaller than pr
 		// Otherwise the window can move out of reach.
@@ -445,7 +445,7 @@ void Window::SetCenter( HWND hwnd, HWND rel )
 
 void Window::SetFront( HWND hwnd )
 {
-	// kazubon氏の TClock のソースを参考にしました。感謝！
+	// I referred to Mr. kazubon's TClock source. Thank you!
 
 	{
 		DWORD pid;
@@ -506,20 +506,20 @@ namespace
 		DWORD oldprotect;
 		::VirtualProtect(thunks_array, TOT_THUNK_SIZE, PAGE_EXECUTE_READWRITE, &oldprotect);
 
-		// ここで動的にx86の命令列
+		// Here, the x86 instruction sequence is dynamically
 		//   | mov dword ptr [esp+4] this
 		//   | jmp MainProc
-		// あるいはAMD64の命令列
+		// Or AMD64 instruction sequence
 		//   | mov rcx this
 		//   | mov rax MainProc
 		//   | jmp rax
-		// を生成し、メッセージプロシージャとして差し替える。
+		// Generate and replace it as a message procedure.
 		//
-		// これで次回からは、第一引数が hwnd のかわりに
-		// thisポインタになった状態でMainProcが呼ばれる
-		// …と見なしたプログラムが書ける。
+		// Now from next time, the first argument will be hwnd instead of
+		// MainProc is called with this pointer
+		// I can write a program that considers...
 		//
-		// 参考資料：ATLのソース
+		// Reference material: ATL source
 
 		#if defined(_M_AMD64) || defined(WIN64)
 		*reinterpret_cast<dbyte*>   (thunk+ 0) = 0xb948;
@@ -580,10 +580,10 @@ WndImpl::WndImpl( LPCTSTR className, DWORD style, DWORD styleEx )
 //=========================================================================
 WndImpl::~WndImpl()
 {
-	// ウインドウを破棄し忘れてたら閉じる
-	// …が、この時点で既に vtable は破棄されかかっているので
-	// 正しい on_destroy が呼ばれる保証は全くない。あくまで
-	// 緊急脱出用(^^; と考えること。
+	// If you forget to destroy the window, close it.
+	// ...but at this point the vtable is already being destroyed, so
+	// There is no guarantee that the correct on_destroy will be called. Just to the last
+	// Think of it as an emergency escape (^^;).
 	Destroy();
 #ifndef NO_ASMTHUNK
 	ReleaseThunk( thunk_ );
@@ -598,8 +598,8 @@ void WndImpl::Destroy()
 
 ATOM WndImpl::Register( WNDCLASS* cls )
 {
-	// WndImpl派生クラスで使うWndClassを登録。
-	// プロシージャはkilib謹製のものに書き換えちゃいます。
+	// Register WndClass to be used in WndImpl derived class.
+	// The procedure will be rewritten to one made by kilib.
 	cls->hInstance   = app().hinst();
 	cls->lpfnWndProc = StartProc;
 #ifdef NO_ASMTHUNK
@@ -610,7 +610,7 @@ ATOM WndImpl::Register( WNDCLASS* cls )
 
 struct ThisAndParam
 {
-	// ユーザ指定のパラメータ以外にも渡したいモノが少々…
+	// There are a few things I want to pass other than user-specified parameters...
 	WndImpl* pThis;
 	void*   pParam;
 };
@@ -618,7 +618,7 @@ struct ThisAndParam
 bool WndImpl::Create(
 	LPCTSTR wndName, HWND parent, int x, int y, int w, int h, void* param )
 {
-	// ここでthisポインタを忍び込ませておく
+	// Let's sneak in the this pointer here
 	ThisAndParam z = { this, param };
 
 	LOGGER("WndImpl::Create before CreateWindowEx API call");
@@ -636,13 +636,13 @@ bool WndImpl::Create(
 LRESULT CALLBACK WndImpl::StartProc(
 	HWND wnd, UINT msg, WPARAM wp, LPARAM lp )
 {
-	// WM_CREATE以外はスルーの方針で
+	// The policy is to ignore everything except WM_CREATE.
 	if( msg != WM_CREATE )
 		return ::DefWindowProc( wnd, msg, wp, lp );
 
 	LOGGER("WndImpl::StartProc WM_CREATE kitaaaaa!!");
 
-	// 忍ばせて置いたthisポインタを取り出し
+	// Retrieve the hidden this pointer
 	CREATESTRUCT* cs   = reinterpret_cast<CREATESTRUCT*>(lp);
 	ThisAndParam* pz   = static_cast<ThisAndParam*>(cs->lpCreateParams);
 	WndImpl*   pThis   = pz->pThis;
@@ -651,11 +651,11 @@ LRESULT CALLBACK WndImpl::StartProc(
 	// Store the this pointer in the cbWndExtra bytes when not using ASM thunking
 	::SetWindowLongPtr(wnd, 0, reinterpret_cast<LONG_PTR>(pThis));
 	#endif
-	// サンク
+	// Thunk
 	pThis->SetUpThunk( wnd );
 	LOGGER("WndImpl::StartProc SetUpThunk( wnd ) OK");
 
-	// WM_CREATE用メッセージを呼ぶ
+	// Call message for WM_CREATE
 	pThis->on_create( cs );
 	return 0;
 }
@@ -717,29 +717,29 @@ LRESULT CALLBACK WndImpl::MainProc(
 
 void WndImpl::on_create( CREATESTRUCT* cs )
 {
-	// 何もしない
+	// do nothing
 }
 
 void WndImpl::on_destroy()
 {
-	// 何もしない
+	// do nothing
 }
 
 bool WndImpl::on_command( UINT, HWND )
 {
-	// 何もしない
+	// do nothing
 	return false;
 }
 
 LRESULT WndImpl::on_message( UINT msg, WPARAM wp, LPARAM lp )
 {
-	// 何もしない
+	// do nothing
 	return ime().DefProc( hwnd(), msg, wp, lp );
 }
 
 bool WndImpl::PreTranslateMessage( MSG* )
 {
-	// 何もしない
+	// do nothing
 	return false;
 }
 
@@ -750,7 +750,7 @@ bool WndImpl::PreTranslateMessage( MSG* )
 
 DlgImpl::~DlgImpl()
 {
-	// ウインドウを破棄し忘れてたら閉じる
+	// If you forget to destroy the window, close it.
 	if( hwnd() != NULL )
 		End( IDCANCEL );
 }
@@ -841,40 +841,40 @@ INT_PTR CALLBACK DlgImpl::MainProc(
 
 void DlgImpl::on_init()
 {
-	// 何もしない
+	// do nothing
 }
 
 void DlgImpl::on_destroy()
 {
-	// 何もしない
+	// do nothing
 }
 
 bool DlgImpl::on_ok()
 {
-	// 何もしない
+	// do nothing
 	return true;
 }
 
 bool DlgImpl::on_cancel()
 {
-	// 何もしない
+	// do nothing
 	return true;
 }
 
 bool DlgImpl::on_command( UINT, UINT, HWND )
 {
-	// 何もしない
+	// do nothing
 	return false;
 }
 
 bool DlgImpl::on_message( UINT, WPARAM, LPARAM )
 {
-	// 何もしない
+	// do nothing
 	return false;
 }
 
 bool DlgImpl::PreTranslateMessage( MSG* msg )
 {
-	// モードレスの時用。ダイアログメッセージ処理。
+	// For modeless use. Dialog message processing.
 	return (FALSE != ::IsDialogMessage( hwnd(), msg ));
 }

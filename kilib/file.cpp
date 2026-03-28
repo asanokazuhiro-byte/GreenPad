@@ -79,7 +79,7 @@ HANDLE CreateFileUNC(
 	UNCPath = GetUNCPath(fname); // may return fname!
 #endif
 
-	// ファイルを読みとり専用で開く
+	// Open file read-only
 	HANDLE hFile = ::CreateFile(
 		UNCPath,
 		dwDesiredAccess,
@@ -119,7 +119,7 @@ bool FileR::Open( const TCHAR* fname, bool always)
 //	MessageBox(NULL, fname, fname, MB_OK);
 	Close();
 
-	// ファイルを読みとり専用で開く
+	// Open file read-only
 	// |FILE_FLAG_NO_BUFFERING
 	handle_ = ::CreateFileUNC(fname, GENERIC_READ,
 		FILE_SHARE_READ|FILE_SHARE_WRITE,
@@ -137,7 +137,7 @@ bool FileR::Open( const TCHAR* fname, bool always)
 		return false;
 	}
 
-	// サイズを取得
+	// get size
 	size_t bytesToMap=0; // 0 => map all
 	DWORD hisize=0;
 	size_ = ::GetFileSize( handle_, &hisize );
@@ -164,12 +164,12 @@ bool FileR::Open( const TCHAR* fname, bool always)
 
 	if( size_==0 )
 	{
-		// 0バイトのファイルはマッピング出来ないので適当に回避
+		// Files with 0 bytes cannot be mapped, so avoid them appropriately.
 		basePtr_ = &size_;
 	}
 	else
 	{
-		// マッピングオブジェクトを作る
+		// Create a mapping object
 		fmo_ = ::CreateFileMapping( handle_, NULL, PAGE_READONLY, 0, 0, NULL );
 		if( fmo_ == NULL )
 		{
@@ -184,7 +184,7 @@ bool FileR::Open( const TCHAR* fname, bool always)
 			return false;
 		}
 
-		// ビュー
+		// view
 		basePtr_ = ::MapViewOfFile( fmo_, FILE_MAP_READ, 0, 0, bytesToMap );
 		if( basePtr_ == NULL )
 		{
@@ -207,7 +207,7 @@ void FileR::Close()
 {
 	if( handle_ != INVALID_HANDLE_VALUE )
 	{
-		// ヘンテコマッピングをしてなければここで解放
+		// If you haven't done weird mapping, release it here.
 		if( basePtr_ != &size_ )
 			::UnmapViewOfFile( const_cast<void*>(basePtr_) );
 		basePtr_ = NULL;
@@ -274,7 +274,7 @@ bool FileW::Open( const TCHAR* fname, bool creat )
 	}
 	// If file does not exist, use normal attributes.
 
-	// ファイルを書き込み専用で開く
+	// Open file for writing only
 	handle_ = ::CreateFile( UNCPath,
 		GENERIC_WRITE, FILE_SHARE_READ, NULL,
 		creat ? CREATE_ALWAYS : OPEN_EXISTING,

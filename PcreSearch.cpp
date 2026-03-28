@@ -68,7 +68,7 @@ bool PcreSearch::GetVersionStr( wchar_t* buf, int bufSize )
 	if( !LoadPcre2Dll() || !s_config ) return false;
 	wchar_t tmp[64];
 	if( s_config( PCRE2_CONFIG_VERSION, tmp ) < 0 ) return false;
-	// バージョン文字列 (例: "10.45 2024-06-18") の日付部分を除去
+	// Remove the date part of the version string (e.g. "10.45 2024-06-18")
 	for( wchar_t* p = tmp; *p; ++p )
 		if( *p == ' ' ) { *p = '\0'; break; }
 	::lstrcpynW( buf, tmp, bufSize );

@@ -70,8 +70,8 @@
 #include <commdlg.h>
 #include <commctrl.h>
 #include <imm.h>
-// dimm.hが無くてエラーになる場合、プロジェクトの設定でUSEGLOBALIMEの定義を
-// 削除するか、最新の Platform SDK を導入すればビルドが通るようになります。
+// If dimm.h is missing and an error occurs, define USEGLOBALIME in the project settings.
+// If you remove it or install the latest Platform SDK, the build will pass.
 #ifdef USEGLOBALIME
 #include <dimm.h>
 #endif

@@ -6,9 +6,9 @@
 //=========================================================================
 //@{ @pkg Gp.Search //@}
 //@{
-//	超簡易正規表現マッチング関数。
+//	Super simple regular expression matching function.
 //
-//	patとstr全体がマッチするならtrue、ダメならfalseを返す
+//	Returns true if the entire pat and str match, otherwise returns false
 //@}
 //=========================================================================
 
@@ -18,7 +18,7 @@ bool reg_match( const wchar_t* pat, const wchar_t* str, bool caseS );
 class RegNFA;
 //=========================================================================
 //@{
-// Searhcableとしての実装
+// Implementation as Seahcable
 //@}
 //=========================================================================
 

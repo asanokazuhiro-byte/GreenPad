@@ -11,12 +11,12 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.KTL //@}
 //@{
-//	基本型専用の可変長配列
+//	Variable-length array for basic types only
 //
-//	非常に簡素な作りです。アクセスは好きなところへ自由に可能ですが、
-//	要素の追加・削除は末尾に対してのみ。ビット毎のコピーだとか、
-//	色々エキセントリックな作業をしてますので、そういうことをして良い
-//	型以外には使わないでください。
+//	It is very simple to make. You are free to access wherever you like,
+//	Add/delete elements only to the end. A bit-by-bit copy
+//	I do a lot of eccentric work, so it's okay to do that kind of work.
+//	Please do not use it for anything other than molds.
 //@}
 //=========================================================================
 
@@ -26,11 +26,11 @@ class A_WUNUSED storage
 public:
 
 	//@{
-	//	コンストラクタ
+	//	constructor
 	//
 	//	@param alloc_size
-	//		最初に確保する"メモリの"サイズ。
-	//		"配列の"サイズではないことに注意。
+	//		The initial "memory" size to allocate.
+	//		Note that this is not the "array's" size.
 	//@}
 	explicit storage( size_t allocSize )
 		: alen_( Max( allocSize, (size_t)1 ) )
@@ -47,7 +47,7 @@ public:
 	void Clear()
 		{ mem().DeAlloc( buf_, alen_*sizeof(T) ); };
 
-	//@{ 末尾に要素を追加 //@}
+	//@{ Add element to end //@}
 	bool Add( const T& obj )
 		{
 			if( len_ >= alen_ )
@@ -58,11 +58,11 @@ public:
 		}
 
 	//@{
-	//	配列サイズを強制変更
+	//	Force array size change
 	//
-	//	縮小/拡大のどちらも可能。コンストラクタと違い、
-	//	指定した値に基づき最大indexが変化します。
-	//	@param new_size 新しいサイズ。
+	//	Both reduction/enlargement is possible. Unlike constructors,
+	//	The maximum index will change based on the specified value.
+	//	@param new_size New size.
 	//@}
 	bool ForceSize( size_t newSize )
 		{
@@ -75,19 +75,19 @@ public:
 
 public:
 
-	//@{ 要素数	//@}
+	//@{Number of elements //@}
 	size_t size() const
 		{ return len_; }
 
-	//@{ 要素取得 //@}
+	//@{get element //@}
 	T& operator[]( size_t i )
 		{ return buf_[i]; }
 
-	//@{ 要素取得(const) //@}
+	//@{ Get element (const) //@}
 	const T& operator[]( size_t i ) const
 		{ return buf_[i]; }
 
-	//@{ 配列先頭のポインタを返す //@}
+	//@{ Return pointer to start of array //@}
 	const T* head() const { return buf_; }
 
 private:
@@ -225,10 +225,10 @@ private:
 
 //=========================================================================
 //@{
-//	オブジェクト型にも使える単方向リスト
+//	Unidirectional list that can also be used as an object type
 //
-//	ほとんど何も出来ません。出来るのは末尾への追加と、独自の
-//	iteratorによるシーケンシャルなアクセスのみ。
+//	I can hardly do anything. All you can do is add to the end and create your own
+//	Sequential access only with iterator.
 //@}
 //=========================================================================
 
@@ -263,27 +263,27 @@ public:
 
 public:
 
-	//@{ コンストラクタ //@}
+	//@{ constructor //@}
 	olist()
 		: top_( NULL ) {}
 
-	//@{ デストラクタ //@}
+	//@{ destructor //@}
 	~olist()
 		{ empty(); }
 
-	//@{ 空にする //@}
+	//@{ empty //@}
 	void empty()
 		{ delete top_; top_ = NULL; }
 
-	//@{ 先頭 //@}
+	//@{ beginning //@}
 	iterator begin()
 		{ return iterator(top_); }
 
-	//@{ 末尾 //@}
+	//@{ trailing //@}
 	iterator end()
 		{ return iterator(); }
 
-	//@{ 末尾に要素を追加 //@}
+	//@{ Add element to end //@}
 	void Add( const T& obj )
 		{
 			Node* pN = new Node( obj );
@@ -291,7 +291,7 @@ public:
 			(top_ == NULL) ? top_=pN : top_->Add( pN );
 		}
 
-	//@{ 指定要素を削除 //@}
+	//@{ Delete specified element //@}
 	void Del( iterator d )
 		{
 			if( d != end() )
@@ -309,7 +309,7 @@ public:
 			}
 		}
 
-	//@{ 指定要素以降全てを削除 //@}
+	//@{ Delete everything after the specified element //@}
 	void DelAfter( iterator d )
 		{
 			if( d != end() )

@@ -10,9 +10,9 @@ namespace ki {
 //=========================================================================
 //@{ @pkg ki.Core //@}
 //@{
-//	マルチスレッドの管理
+//	Managing multithreading
 //
-//	まだ何もしません
+//	nothing yet
 //@}
 //=========================================================================
 
@@ -20,10 +20,10 @@ namespace ki {
 class ThreadManager
 {
 public:
-	//@{ 実行可能オブジェクトをに起動をかける //@}
+	//@{ Launch executable object //@}
 	void Run( class Runnable& r );
 
-	//@{ 複数スレッドが走っているかどうか？ //@}
+	//@{ Are multiple threads running? //@}
 	bool isMT() const;
 
 private:
@@ -50,7 +50,7 @@ private:
 
 //-------------------------------------------------------------------------
 
-//@{ 唯一のスレッド管理オブジェクトを返す //@}
+//@{ Return only one thread management object //@}
 inline ThreadManager& thd()
 	{ return *ThreadManager::pUniqueInstance_; }
 
@@ -61,7 +61,7 @@ inline bool ThreadManager::isMT() const
 
 //=========================================================================
 //@{
-//	実行可能オブジェクト基底
+//	executable object base
 //@}
 //=========================================================================
 
@@ -87,11 +87,11 @@ private:
 
 //=========================================================================
 //@{
-//	マルチスレッド・ポリシー１
+//	Multithread policy 1
 //
-//	このクラスから派生すると、AutoLock クラスを使えるようになります。
-//	このクラスに this ポインタを渡すことで排他状態に入り、デストラクタで
-//	抜け出せるようになります。NoLockable::AutoLock は実際は何もしません。
+//	Deriving from this class allows you to use the AutoLock class.
+//	By passing this pointer to this class, it enters an exclusive state, and in the destructor
+//	You will be able to get out. NoLockable::AutoLock doesn't actually do anything.
 //@}
 //=========================================================================
 
@@ -108,13 +108,13 @@ protected:
 
 //=========================================================================
 //@{
-//	マルチスレッド・ポリシー２
+//	Multithread policy 2
 //
-//	このクラスから派生すると、AutoLock クラスを使えるようになります。
-//	このクラスに this ポインタを渡すことで排他状態に入り、デストラクタで
-//	抜け出せるようになります。EzLockable::AutoLock は、シングルスレッドで
-//	動作するときがほとんどというアプリケーション向けに、高速だけれど
-//	不完全な排他制御を行います。２本目のスレッド立ち上げの瞬間が危ない。
+//	Deriving from this class allows you to use the AutoLock class.
+//	By passing this pointer to this class, it enters an exclusive state, and in the destructor
+//	You will be able to get out. EzLockable::AutoLock is single-threaded
+//	A fast but
+//	Performs incomplete exclusive control. The moment when the second thread is launched is dangerous.
 //@}
 //=========================================================================
 class EzLockable
@@ -171,12 +171,12 @@ private:
 
 //=========================================================================
 //@{
-//	マルチスレッド・ポリシー３
+//	Multithread policy 3
 //
-//	このクラスから派生すると、AutoLock クラスを使えるようになります。
-//	このクラスに this ポインタを渡すことで排他状態に入り、デストラクタで
-//	抜け出せるようになります。Lockable::AutoLock は、完全な排他制御を
-//	行います。万全を期すならかならずこのクラスを用いましょう。
+//	Deriving from this class allows you to use the AutoLock class.
+//	By passing this pointer to this class, it enters an exclusive state, and in the destructor
+//	You will be able to get out. Lockable::AutoLock provides complete exclusive control.
+//	I will do it. If you want to be sure, be sure to use this class.
 //@}
 //=========================================================================
 class Lockable

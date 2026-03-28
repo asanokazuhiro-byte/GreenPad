@@ -11,7 +11,7 @@ ThreadManager* ThreadManager::pUniqueInstance_;
 ThreadManager::ThreadManager()
 	: threadNum_(0)
 {
-	// 唯一のインスタンスは私です。
+	// The only instance is me.
 	pUniqueInstance_ = this;
 }
 
@@ -46,7 +46,7 @@ Runnable::Runnable()
 
 Runnable::~Runnable()
 {
-	PleaseExit(); // あくまで最終手段
+	PleaseExit(); // Only as a last resort
 }
 
 bool Runnable::isRunning() const

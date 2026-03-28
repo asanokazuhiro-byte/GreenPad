@@ -5,13 +5,13 @@
 //@{ @pkg ki.Types //@}
 //=========================================================================
 
-// 変数のサイズを明示的に指示するときに使う名前
+// Name used when explicitly specifying the size of a variable
 typedef unsigned char  byte;
 typedef unsigned short dbyte;
 typedef unsigned long  qbyte;
 typedef wchar_t unicode;
 
-// unsigned って毎回打つの面倒
+// It's a hassle to type unsigned every time.
 typedef unsigned char  uchar;
 typedef unsigned short ushort;
 typedef unsigned int   uint;
@@ -34,10 +34,10 @@ typedef unsigned long ulong;
 #define SIZET_DIGITS 10
 #endif
 
-// 配列の要素数
+// number of elements in array
 #define countof(_array) (sizeof(_array)/sizeof(_array[0]))
 
-// 大きい方、小さい方
+// big one, small one
 template<typename T> inline T Min(T x,T y) { return (x<y ? x : y); }
 template<typename T> inline T Max(T x,T y) { return (y<x ? x : y); }
 template<typename T> inline T Abs(T x) { return (x<0 ? -x : x); }
@@ -47,7 +47,7 @@ template<typename T> inline T NZero(T x)   { return (x==0? 1 : x); }
 inline bool isUDigit(TCHAR x) { return TEXT('0') <= x && x <= TEXT('9'); }
 inline bool isSDigit(TCHAR x) { return isUDigit(x) || x == TEXT('-'); }
 
-// コピー禁止オブジェクト
+// Copy prohibited object
 #if __cplusplus >= 201103L
 // In C++ 2011 we can use the = delete initializers.
 #define NOCOPY(T) T( const T& )=delete; T& operator=( const T& )=delete

@@ -54,7 +54,7 @@ void SearchManager::LoadFromINI()
 }
 
 //-------------------------------------------------------------------------
-// ダイアログ関係
+// Dialogue related
 //-------------------------------------------------------------------------
 
 void SearchManager::ShowDlg()
@@ -84,7 +84,7 @@ void SearchManager::on_init()
 	if( bIgnoreCase_ ) CheckItem( IDC_IGNORECASE );
 	if( bRegExp_ )     CheckItem( IDC_REGEXP );
 
-	// PCRE2 が有効な場合, 正規表現チェックボックスにバージョンを付加
+	// If PCRE2 is enabled, add version to regular expression checkbox
 	{
 		wchar_t ver[64];
 		if( PcreSearch::GetVersionStr( ver, countof(ver) ) )
@@ -102,7 +102,7 @@ void SearchManager::on_init()
 	// Set non multiline selection as find string.
 	if( edit_.getCursor().isSelected() && stt->tl == end->tl )
 	{
-		// 選択されている状態では、基本的にそれをボックスに表示
+		// When it's selected, it basically displays it in a box.
 		ulong dmy;
 		aarr<unicode> str = edit_.getCursor().getSelectedStr();
 
@@ -156,19 +156,19 @@ bool SearchManager::on_command( UINT cmd, UINT id, HWND ctrl )
 {
 	if( cmd==CBN_SELCHANGE || cmd == CBN_EDITCHANGE )
 	{
-		// 文字列変更があったことを記憶
+		// Remember that there was a string change
 		bChanged_ = true;
 	}
 	else if( cmd==BN_CLICKED )
 	{
 		switch( id )
 		{
-		// チェックボックスの変更があったことを記憶
+		// Remember checkbox changes
 		case IDC_IGNORECASE:
 		case IDC_REGEXP:
 			bChanged_ = true;
 			break;
-		// ボタンが押された場合
+		// if the button is pressed
 		case ID_FINDNEXT:
 			on_findnext();
 			break;
@@ -237,7 +237,7 @@ void SearchManager::on_replaceall()
 
 void SearchManager::UpdateData()
 {
-	// ダイアログから変更点を取り込み
+	// Import changes from dialog
 	bool IgnoreCase = isItemChecked( IDC_IGNORECASE );
 	bool RegExp     = isItemChecked( IDC_REGEXP );
 
@@ -275,7 +275,7 @@ void SearchManager::ConstructSearcher( bool down )
 	bChanged_ = (bChanged_ || (bDownSearch_ != down));
 	if( (bChanged_ || !isReady()) && findStr_.len()!=0 )
 	{
-		// 検索者作成
+		// Created by searcher
 		bDownSearch_ = down;
 		const unicode *u = findStr_.ConvToWChar();
 
@@ -303,7 +303,7 @@ void SearchManager::ConstructSearcher( bool down )
 
 		findStr_.FreeWCMem(u);
 
-		// 変更終了フラグ
+		// End of change flag
 		bChanged_ = false;
 	}
 }
@@ -343,17 +343,17 @@ void SearchManager::FindPrev()
 
 
 //-------------------------------------------------------------------------
-// 実際の処理の実装
+// Implementation of actual processing
 //-------------------------------------------------------------------------
 
 void SearchManager::FindNextImpl(bool redo)
 {
-	// カーソル位置取得
+	// Get cursor position
 	const VPos *stt, *end;
 	edit_.getCursor().getCurPos( &stt, &end );
 
-	// 選択範囲ありなら、選択範囲先頭の１文字先から検索
-	// そうでなければカーソル位置から検索
+	// If there is a selection range, search from the first character of the selection range
+	// Otherwise search from cursor position
 	DPos s = *stt;
 	if( *stt != *end )
 	{
@@ -362,17 +362,17 @@ void SearchManager::FindNextImpl(bool redo)
 		else
 			s = DPos( stt->tl, stt->ad+1 );
 	}
-	// 検索
+	// search
 	DPos b, e;
 	if( FindNextFromImpl( s, &b, &e ) )
 	{
-		// 見つかったら選択
+		// Select if found
 		edit_.getCursor().MoveCur( b, false );
 		edit_.getCursor().MoveCur( e, true );
 		return;
 	}
 
-	// 見つからなかった場合
+	// If not found
 	NotFound(!redo);
 }
 
@@ -391,37 +391,37 @@ void SearchManager::NotFound(bool GoingDown)
 
 void SearchManager::FindPrevImpl()
 {
-	// カーソル位置取得
+	// Get cursor position
 	const VPos *stt, *end;
 	edit_.getCursor().getCurPos( &stt, &end );
 
 	if( stt->ad!=0 || stt->tl!=0 )
 	{
-		// 選択範囲先頭の１文字前から検索
+		// Search from 1 character before the beginning of the selected range
 		DPos s;
 		if( stt->ad == 0 )
 			s = DPos( stt->tl-1, edit_.getDoc().len(stt->tl-1) );
 		else
 			s = DPos( stt->tl, stt->ad-1 );
 
-		// 検索
+		// search
 		DPos b, e;
 		if( FindPrevFromImpl( s, &b, &e ) )
 		{
-			// 見つかったら選択
+			// Select if found
 			edit_.getCursor().MoveCur( b, false );
 			edit_.getCursor().MoveCur( e, true );
 			return;
 		}
 	}
 
-	// 見つからなかった場合
+	// If not found
 	NotFound();
 }
 
 bool SearchManager::FindNextFromImpl( DPos s, DPos* beg, DPos* end )
 {
-	// １行ずつサー, Search one line at a time
+	// Search one line at a time
 	const doc::Document& d = edit_.getDoc();
 	for( ulong mbg,med,e=d.tln(); s.tl<e; ++s.tl, s.ad=0 )
 		if( searcher_ && searcher_->Search(
@@ -430,14 +430,14 @@ bool SearchManager::FindNextFromImpl( DPos s, DPos* beg, DPos* end )
 			beg->tl = end->tl = s.tl;
 			beg->ad = mbg;
 			end->ad = med;
-			return true; // 発見, Found!
+			return true; // Discovery, Found!
 		}
 	return false;
 }
 
 bool SearchManager::FindPrevFromImpl( DPos s, DPos* beg, DPos* end )
 {
-	// １行ずつサーチ, Search one line at a time
+	// Search one line at a time
 	const doc::Document& d = edit_.getDoc();
 	for( ulong mbg,med; ; s.ad=d.len(--s.tl) )
 	{
@@ -447,7 +447,7 @@ bool SearchManager::FindPrevFromImpl( DPos s, DPos* beg, DPos* end )
 			beg->tl = end->tl = s.tl;
 			beg->ad = mbg;
 			end->ad = med;
-			return true; // 発見, Found!
+			return true; // Discovery, Found!
 		}
 		if( s.tl==0 )
 			break;
@@ -511,11 +511,11 @@ static ulong DoExpandRepl(
 
 void SearchManager::ReplaceImpl()
 {
-	// カーソル位置取得
+	// Get cursor position
 	const VPos *stt, *end;
 	edit_.getCursor().getCurPos( &stt, &end );
 
-	// 選択範囲先頭から検索
+	// Search from the beginning of the selection range
 	DPos b, e;
 	if( FindNextFromImpl( *stt, &b, &e ) )
 	{
@@ -540,7 +540,7 @@ void SearchManager::ReplaceImpl()
 				ustr = const_cast<unicode*>(replPat);
 			}
 
-			// 置換
+			// replacement
 			edit_.getDoc().Execute( doc::Replace(b, e, ustr, ulen) );
 
 			if( bRegExp_ )
@@ -549,7 +549,7 @@ void SearchManager::ReplaceImpl()
 
 			if( FindNextFromImpl( DPos(b.tl,b.ad+ulen), &b, &e ) )
 			{
-				// 次を選択
+				// Select next
 				edit_.getCursor().MoveCur( b, false );
 				edit_.getCursor().MoveCur( e, true );
 				return;
@@ -557,22 +557,22 @@ void SearchManager::ReplaceImpl()
 		}
 		else
 		{
-			// そうでなければとりあえず選択
+			// If not, just select it
 			edit_.getCursor().MoveCur( b, false );
 			edit_.getCursor().MoveCur( e, true );
 			return;
 		}
 	}
-	// 見つからなかった場合
+	// If not found
 	NotFound();
 }
 
 void SearchManager::ReplaceAllImpl()
 {
-	// まず、実行する置換を全てここに登録する
+	// First, register all replacements to be executed here.
 	doc::MacroCommand mcr;
 
-	// 置換後文字列
+	// Replaced string
 	const wchar_t* replPat = replStr_.ConvToWChar();
 	const ulong replPatLen = my_lstrlenW( replPat );
 
@@ -592,7 +592,7 @@ void SearchManager::ReplaceAllImpl()
 		dend = *end; // End of selection
 	}
 
-	// 文書の頭から検索, Search from the beginning of the document (or selection)
+	// Search from the beginning of the document (or selection)
 	int dif=0;
 	ulong lastExpandedLen = replPatLen;
 	DPos b, e;
@@ -601,7 +601,7 @@ void SearchManager::ReplaceAllImpl()
 		if( s.tl != b.tl ) dif = 0;
 		s = e;
 
-		// 置換コマンドを登録
+		// Register replacement command
 		b.ad += dif, e.ad += dif;
 		if( bRegExp_ )
 		{
@@ -625,9 +625,9 @@ void SearchManager::ReplaceAllImpl()
 
 	if( mcr.size() > 0 )
 	{
-		// ここで連続置換
+		// Continuous replacement here
 		edit_.getDoc().Execute( mcr );
-		// カーソル移動
+		// Move cursor
 		e.ad = b.ad + lastExpandedLen;
 		if (noselection)
 		{
@@ -638,7 +638,7 @@ void SearchManager::ReplaceAllImpl()
 			edit_.getCursor().MoveCur( oristt, false );
 			edit_.getCursor().MoveCur( DPos(dend.tl, dend.ad+dif), true );
 		}
-		// 閉じる？
+		// close?
 		End( IDOK );
 	}
 

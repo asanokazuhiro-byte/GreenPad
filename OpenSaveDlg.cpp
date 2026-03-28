@@ -7,7 +7,7 @@ using namespace ki;
 #include <shobjidl.h>
 
 //------------------------------------------------------------------------
-// 文字コードリスト
+// character code list
 //------------------------------------------------------------------------
 
 // format: CHARSET_VALUE("short-name")
@@ -92,7 +92,7 @@ CharSetList::CharSetList()
 	#define Enroll(_id,_nm)  EnrollCs( _id, _nm | BOTH<<8 )
 	#define EnrollS(_id,_nm) EnrollCs( _id, _nm | SAVE<<8 )
 	#define EnrollL(_id,_nm) EnrollCs( _id, _nm | LOAD<<8 )
-	// 適宜登録
+	// Register as appropriate
 	                               EnrollL( AutoDetect,      0 );
 	if( ::IsValidCodePage(932) )   Enroll(  SJIS,            1 )
 	                             , Enroll(  EucJP,           2 )
@@ -167,12 +167,12 @@ CharSetList::CharSetList()
 	/* if( always ) */             Enroll(  DOSUS,          71 );
 
 
-	// 終了
+	// end
 	#undef Enroll
 	#undef EnrollS
 	#undef EnrollL
 
-	// chardet.dll が利用可能なら AutoDetect のラベルに (chardet) を付加する
+	// Add (chardet) to AutoDetect label if chardet.dll is available
 	if( TextFileR::IsChardetAvailable() )
 	{
 		static TCHAR s_label[64];
@@ -303,7 +303,7 @@ int CharSetList::GetCSIFromComboBox( HWND dlg, const CharSetList& csl, uint Open
 
 
 //------------------------------------------------------------------------
-// 「開く」ダイアログ
+// Open dialog
 //------------------------------------------------------------------------
 
 static UINT ParseFilterSpecs( const TCHAR* fltr, COMDLG_FILTERSPEC* specs, UINT maxSpecs )
@@ -432,7 +432,7 @@ bool OpenFileDlg::DoModal( HWND wnd, const TCHAR* fltr, const TCHAR* fnm )
 
 
 //------------------------------------------------------------------------
-// 「保存」ダイアログ
+// Save dialog
 //------------------------------------------------------------------------
 
 bool SaveFileDlg::DoModal( HWND wnd, const TCHAR* fltr, const TCHAR* fnm )
@@ -518,7 +518,7 @@ bool SaveFileDlg::DoModal( HWND wnd, const TCHAR* fltr, const TCHAR* fnm )
 
 
 //------------------------------------------------------------------------
-// ユーティリティー
+// utility
 //------------------------------------------------------------------------
 
 ki::aarr<TCHAR> OpenFileDlg::ConnectWithNull( const TCHAR *lst[], size_t num )
@@ -547,7 +547,7 @@ ki::aarr<TCHAR> OpenFileDlg::ConnectWithNull( const TCHAR *lst[], size_t num )
 
 
 //------------------------------------------------------------------------
-// 「開き直す」ダイアログ
+// "Reopen" dialog
 //------------------------------------------------------------------------
 
 ReopenDlg::ReopenDlg( const CharSetList& csl, int csi )
@@ -557,7 +557,7 @@ ReopenDlg::ReopenDlg( const CharSetList& csl, int csi )
 
 void ReopenDlg::on_init()
 {
-	// コンボボックスを埋めて、「自動選択」を選ぶ
+	// Fill in the combo box and select "Auto select"
 	ComboBox cb( hwnd(), IDC_CODELIST );
 	for( size_t i=0; i<csl_.size(); ++i )
 		if( csl_[i].type & 2 ) // 2:=LOAD
