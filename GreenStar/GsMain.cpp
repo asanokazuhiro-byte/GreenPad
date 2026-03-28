@@ -409,6 +409,7 @@ bool GreenStarWnd::HandleWsKey( MSG* msg )
 		{
 			switch( vk )
 			{
+			case 'O': on_openfile();                              return true;
 			case 'S': on_savefile();                              return true;
 			case 'D': on_savefileas();                            return true;
 			case 'X': if(Save_showDlgIfNeeded()) on_exit();      return true;

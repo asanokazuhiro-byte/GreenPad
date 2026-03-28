@@ -94,7 +94,6 @@ BEGIN
     VK_F8,          ID_CMD_SELECTIONLEN,    VIRTKEY, NOINVERT
     "J",            ID_CMD_JUMP,            VIRTKEY, CONTROL, NOINVERT
     "N",            ID_CMD_NEWFILE,         VIRTKEY, CONTROL, NOINVERT
-    "O",            ID_CMD_OPENFILE,        VIRTKEY, CONTROL, NOINVERT
     "P",            ID_CMD_PRINT,           VIRTKEY, CONTROL, NOINVERT
     "L",            ID_CMD_OPENELEVATED,    VIRTKEY, CONTROL, NOINVERT
     "L",            ID_CMD_LOWERCASE,       VIRTKEY, ALT, NOINVERT
@@ -144,12 +143,12 @@ BEGIN
     BEGIN
         MENUITEM "&New File\tCtrl+N",           ID_CMD_NEWFILE
         MENUITEM SEPARATOR
-        MENUITEM "&Open...\tCtrl+O",            ID_CMD_OPENFILE
+        MENUITEM "&Open...\t^KO",               ID_CMD_OPENFILE
         MENUITEM "&ReOpen...\tAlt+Enter",       ID_CMD_REOPENFILE
         MENUITEM "Re&fresh\tF5",                ID_CMD_REFRESHFILE
         MENUITEM "Open e&levated...\tCtrl+L",   ID_CMD_OPENELEVATED
         MENUITEM SEPARATOR
-        MENUITEM "&Save\tCtrl+KS",              ID_CMD_SAVEFILE
+        MENUITEM "&Save\t^KS",                  ID_CMD_SAVEFILE
         MENUITEM "Save &As...\tF12",            ID_CMD_SAVEFILEAS
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_CMD_PRINT
@@ -160,21 +159,21 @@ BEGIN
             MENUITEM "(no files)",                  ID_MENUITEM40030, GRAYED
         END
         MENUITEM SEPARATOR
-        MENUITEM "Save and E&xit\tCtrl+KX",  ID_CMD_SAVEEXIT
-        MENUITEM "&Discard and Exit\tCtrl+KQ",    ID_CMD_DISCARDEXIT
+        MENUITEM "Save and E&xit\t^KX",         ID_CMD_SAVEEXIT
+        MENUITEM "&Discard and Exit\t^KQ",        ID_CMD_DISCARDEXIT
         MENUITEM "E&xit\tCtrl+F4",               ID_CMD_EXIT
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo\tCtrl+U",               ID_CMD_UNDO
-        MENUITEM "&Redo\tCtrl+W",               ID_CMD_REDO
+        MENUITEM "&Undo\t^U",                   ID_CMD_UNDO
+        MENUITEM "&Redo\t^W",                   ID_CMD_REDO
         MENUITEM SEPARATOR
         MENUITEM "Cut\tShift+Del",              ID_CMD_CUT
         MENUITEM "&Copy\tCtrl+Ins",             ID_CMD_COPY
         MENUITEM "&Paste\tShift+Ins",           ID_CMD_PASTE
         MENUITEM "&Delete",                      ID_CMD_DELETE
         MENUITEM SEPARATOR
-        MENUITEM "Select &All\tCtrl+QA",        ID_CMD_SELECTALL
+        MENUITEM "Select &All\t^QA",            ID_CMD_SELECTALL
         MENUITEM SEPARATOR
         MENUITEM "Insert Date&&&Time\tF6",      ID_CMD_DATETIME
         MENUITEM "Insert U&nicode...",           ID_CMD_INSERTUNI
@@ -207,13 +206,13 @@ BEGIN
     END
     POPUP "&Search"
     BEGIN
-        MENUITEM "&Find\tCtrl+QF",              ID_CMD_FIND
+        MENUITEM "&Find\t^QF",                  ID_CMD_FIND
         MENUITEM "Find &Next\tF3",              ID_CMD_FINDNEXT
         MENUITEM "Find &Prev\tShift+F3",        ID_CMD_FINDPREV
         MENUITEM SEPARATOR
         MENUITEM "&Jump to Line\tCtrl+J",       ID_CMD_JUMP
         MENUITEM SEPARATOR
-        MENUITEM "&Grep...\tCtrl+QG",           ID_CMD_GREP
+        MENUITEM "&Grep...\t^QG",               ID_CMD_GREP
         MENUITEM "&Open Selection...\tF7",      ID_CMD_OPENSELECTION
     END
     POPUP "&View"
