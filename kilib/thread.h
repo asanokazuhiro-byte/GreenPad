@@ -89,9 +89,9 @@ private:
 //@{
 //	Multithread policy 1
 //
-//	Deriving from this class allows you to use the AutoLock class.
-//	By passing this pointer to this class, it enters an exclusive state, and in the destructor
-//	You will be able to get out. NoLockable::AutoLock doesn't actually do anything.
+//	Deriving from this class enables use of the AutoLock class.
+//	Passing a pointer to it enters exclusive mode; the destructor releases it.
+//	NoLockable::AutoLock is a no-op.
 //@}
 //=========================================================================
 
@@ -110,11 +110,10 @@ protected:
 //@{
 //	Multithread policy 2
 //
-//	Deriving from this class allows you to use the AutoLock class.
-//	By passing this pointer to this class, it enters an exclusive state, and in the destructor
-//	You will be able to get out. EzLockable::AutoLock is single-threaded
-//	A fast but
-//	Performs incomplete exclusive control. The moment when the second thread is launched is dangerous.
+//	Deriving from this class enables use of the AutoLock class.
+//	Passing a pointer to it enters exclusive mode; the destructor releases it.
+//	EzLockable::AutoLock provides fast but incomplete exclusive control for single-threaded use.
+//	It becomes unsafe the moment a second thread is spawned.
 //@}
 //=========================================================================
 class EzLockable

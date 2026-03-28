@@ -140,7 +140,7 @@ void ViewImpl::on_text_update
 
 
 //-------------------------------------------------------------------------
-// Wrap-around position calculation assistance routine, Wrap-around position calculation assistance routine
+// Helper routines for wrap position calculation
 //-------------------------------------------------------------------------
 
 void ViewImpl::UpdateTextCx()

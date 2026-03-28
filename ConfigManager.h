@@ -14,8 +14,8 @@ void SetFontSize(LOGFONT *font, HDC hDC, int fsiz, int fx);
 //@{
 //	Centralized management of settings
 //
-//	If you switch with SetDocType, the document type dependent items will be changed internally.
-//	I switch appropriately and do various things.
+//	Calling SetDocType switches the active document type and updates
+//	all document-type-dependent settings accordingly.
 //@}
 //=========================================================================
 

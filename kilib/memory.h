@@ -17,7 +17,7 @@ namespace ki {
 //#endif
 
 #ifdef WIN64
-	// Maximum size of objects considered small, Maximum size of objects considered small
+	// Maximum size of objects considered small
 	#define SMALL_MAX 254
 	// Size of heap block to be allocated at one time
 	#define BLOCK_SIZ 8192
@@ -43,7 +43,7 @@ struct MemBlock;
 //	When compiled with the SUPERTINY option, the standard
 //	APIs such as HeapAlloc cannot be used because malloc and free cannot be used.
 //	You will need to call it directly. But these guys really
-//	If you call directly each time, it will be slow. Are you an idiot or an idiot?
+//	If you call directly each time, it will be slow. Are you an AHO or an BAKA?
 //	It's so slow. Therefore, I mainly use new to dynamically create a small memory.
 //	I decided to use a simple allocator that focuses on allocating.
 //

@@ -57,10 +57,9 @@ public:
 //@{
 //	Operation command interface
 //
-//	The documentation for instances of classes derived from Command
-//	Perform various operations by calling operator(). for now
-//	Specifically, there are only three: Insert/Delete/Replace. later for macro commands
-//	I'm planning to create a class, but I'll put it on hold for now.
+//	Instances of classes derived from Command perform various operations
+//	when invoked via operator(). Concrete implementations include
+//	Insert, Delete, Replace, and MacroCommand.
 //@}
 //=========================================================================
 
@@ -170,11 +169,10 @@ private:
 //	macro command
 //
 //	Continuously execute multiple commands as one command.
-//	However, each time you perform Insert/Delete/Replace, the
-//	The position of the string changes, but the conversion process is
-//	Don't do it. i.e. something like Insert->Delete->Insert
-//	When writing continuous processing, consider changes in the number of lines and characters.
-//	It is necessary to determine the value. So I can't use it much (^^;
+//	Note: each Insert/Delete/Replace shifts string positions, but no automatic
+//	position adjustment is performed. When composing sequences like
+//	Insert->Delete->Insert, offsets must be calculated manually to account
+//	for changed line and character counts. (^^;
 //@}
 //=========================================================================
 
@@ -187,7 +185,7 @@ public:
 	//@{Number of commands //@}
 	ulong size() const { return arr_.size(); }
 
-	//@ destructor //@}
+	//@{ destructor //@}
 	~MacroCommand() override
 	{
 		for( ulong i=0,e=arr_.size(); i<e; ++i )

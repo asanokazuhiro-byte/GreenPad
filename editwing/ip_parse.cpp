@@ -10,8 +10,8 @@ using namespace editwing::doc;
 //=========================================================================
 //---- ip_parse.cpp Keyword parsing
 //
-//		Set the string to be retained according to the keyword definition file.
-//		Now is the time to properly separate them.
+//		Stores strings according to the keyword definition file,
+//		separating them here into appropriate categories.
 //
 //---- ip_text.cpp String manipulation/etc.
 //---- ip_wrap.cpp wrapping
@@ -25,73 +25,67 @@ using namespace editwing::doc;
 //=========================================================================
 //
 // Analysis result data specifications
-// It's true that they brought in so many palliative methods.
-// I don't know if it's faster or not...(^^;
+// Admittedly, many workarounds have been adopted here.
+// Whether this is actually faster is unclear... (^^;
 //
 // -----------------------------------------------
 //
 // Line::isLineHeadCommented_
 //    0: The beginning of the line is not inside the block comment
-//    1: The beginning of the line is inside a block comment,
+//    1: The beginning of the line is inside a block comment
 //
 // -----------------------------------------------
 //
 // Line::commentTransition_
-//   00: End of line always out of comment
-//   01: Comment state is reversed at the beginning of a line and at the end of a line
+//   00: End of line is always outside a comment
+//   01: Comment state is toggled between the beginning and end of a line
 //   10: Comment state is the same at the beginning of a line and at the end of a line
 //   11: The end of the line is always in the comment
 //
 // -----------------------------------------------
 //
-// Based on the above two flags, the information of the current line is extracted from the information of the previous line.
+// Using these two flags, the comment state of the current line can be derived from
+// that of the previous line:
 //   this.head = (prev.trans >> prev.head)&1;
-// You can calculate it sequentially.
-// The state of the internal buffer is rewritten during this calculation.
-// The cost is too high, so while looking at the flags shown below,
-// Adjust as appropriate just before drawing.
+// This allows sequential computation.
+// Since rewriting the internal buffer on every change would be too costly,
+// the comment bits are instead adjusted just before drawing, using the flags below.
 //
 // -----------------------------------------------
 //
 // Line::commentBitReady_
-//   Is the comment bit adjusted?
-//   Whether the comment bits have been adjusted or not
+//   Whether the comment bits have been adjusted
 //
 // -----------------------------------------------
 //
 // Line::str_[]
-//   String data is stored as is in UCS-2 solid.
-//   However, to speed up the parser, after the final character
-//   0x007f is added.
-//   UCS-2 solid, string data is stored as is.
-//   However, to speed up the parser, the last character is followed by
-//   0x007f is appended.
+//   String data is stored as raw UCS-2.
+//   However, to speed up the parser, 0x007F is appended after the last character.
 //
 // -----------------------------------------------
 //
 // Line::flg_
-//   Assign an 8-bit flag to each character as shown below.
-//   Assign an 8-bit flag as shown below for each character
+//   An 8-bit flag is assigned to each character as shown below.
 //   | aaabbbcd |
 //
 // -----------------------------------------------
 //
 // aaa == "PosInToken"
-//     0: Token on the way
-//   1-6: Token head. The next head is 1-6 characters ahead. , Token head. The next head is 1-6 characters ahead.
-//     7: Token head. The next beginning is at least 7 characters ahead. , Token head. The next head is at least 7 characters ahead.
+//     0: Mid-token (not at token head)
+//   1-6: Token head. The next head is 1-6 characters ahead.
+//     7: Token head. The next head is at least 7 characters ahead.
 //
 // -----------------------------------------------
 //
 // bbb == "TokenType"
-//     0: TAB: tab character, tab cahar
-//     1: WSP: white space, white space char
-//     2: TXT: normal text, normal text
-//     3: CE: comment start tag, comment-start tag
-//     4: CB: end-of-comment tag, end-of-comment tag
-//     5: LB: line comment start tag, line comment start tag
-//     6: Q1: '' Quote 1, Sinlge Quote
-//     7: Q2: "" Quote2, Double Quote
+//     0: TAB: tab character
+//     1: WSP: white space
+//     2: TXT: normal text
+//     3: CE: comment start tag
+//     4: CB: end-of-comment tag
+//     5: LB: line comment start tag
+//     6: Q1: ''  Single quote
+//     7: Q2: ""  Double quote
 //
 // -----------------------------------------------
 //
@@ -102,8 +96,8 @@ using namespace editwing::doc;
 // -----------------------------------------------
 //
 //  d  == "inComment?"
-//     0: not in a comment, not in a comment
-//     1: in a comment, in a comment
+//     0: not in a comment
+//     1: in a comment
 //
 // -----------------------------------------------
 
@@ -113,17 +107,16 @@ namespace {
 //-------------------------------------------------------------------------
 // Automaton for determining whether it is inside or outside a comment, etc.
 //
-// If /* appears, the area after it is a comment, and if */ appears, the area after it is a normal zone.
-// A simple rule like... won't work. For example, str"/*"str
-// You will be in trouble if it appears. So,
+// A naive rule such as "treat everything after /* as a comment until */" won't work.
+// For example, consider: str"/*"str — this would be incorrectly treated as a comment. So,
+// the input is divided into 5 states:
 //   - Normal text
 //   - Inside a block comment
 //   - Inside a line comment
 //   - Inside single quotes
 //   - Inside double quotes
-// Divided into 5 types of situations, and in each case, which symbol appears
-// It is necessary to process which state to move to next. The rules for that state change
-// It is given and managed as a 5x5 two-dimensional array.
+// For each state, the transitions triggered by each symbol are defined
+// in a 5×5 state transition table.
 //-------------------------------------------------------------------------
 
 enum CommentDFASymbol{ sCE, sCB, sLB, sQ1, sQ2, sXXX };
@@ -138,7 +131,7 @@ struct CommentDFA
 	//
 	// <symbol>
 	// In C++, it is as follows
-	// The value is now synchronized with the TokenType flag.
+	// Values are aligned with the TokenType flag values.
 	//   000: CE */              011: Q1 '
 	//   001: CB /*              100: Q2 "
 	//   010: LB //
@@ -147,7 +140,7 @@ struct CommentDFA
 	CommentDFA( bool inComment )
 		: state( inComment ? 3 : 0 ) {}
 
-	// State transition by giving input sign
+	// Performs a state transition given an input symbol
 	void transit( uchar sym )
 		{ state = tr_table[state][sym]; }
 
@@ -212,7 +205,7 @@ struct Keyword
 
 static bool compare_s(const unicode* a,const unicode* b, size_t l)
 {
-	// Case sensitive, Case sensitive
+	// Case-sensitive comparison
 	while( l-- )
 		if( *a++ != *b++ )
 			return false;
@@ -231,10 +224,8 @@ static bool compare_i(const unicode* a,const unicode* b,size_t l)
 
 
 //-------------------------------------------------------------------------
-// From the given symbol string, extract a meaningful token such as the start of a comment.
-// Structure for cutting out.
-// meaningful tokens from a given symbol string, such as the start of a comment.
-// Structure to cut out.
+// Structure for scanning a symbol string and extracting meaningful tokens
+// such as comment start/end markers.
 //-------------------------------------------------------------------------
 
 class TagMap
@@ -255,8 +246,8 @@ public:
 		, q2_ ( q2 )
 		, ar ( arbuf, sizeof(arbuf) )
 	{
-		// Are symbols starting with '/' used?
-		// Create a table that is used to check only the first character, such as
+		// Build a lookup table for the first character of each symbol tag,
+		// to quickly skip characters that cannot start a match.
 		tag_[0] = tag_[1] = tag_[2] = NULL;
 		mem00( map_, sizeof(map_) );
 		map_[L'\''] = q1;
@@ -284,12 +275,9 @@ public:
 	ulong SymbolLoop(
 		const unicode* str, ulong len, ulong& mlen, uchar& sym )
 	{
-		// Loop until a meaningful symbol is matched
-		// The return value is the number of characters skipped before matching,
-		// Returns information about the matched symbol to mlen,sym
-		// Loop until a meaningful symbol is matched.
-		// Return value is the number of characters skipped before the match.
-		// And the matched length/symbol are copied in mlen and sym.
+		// Scans forward until a meaningful symbol is matched.
+		// Returns the number of characters skipped before the match.
+		// The matched length and symbol type are returned via mlen and sym.
 
 		ulong ans=0;
 		for( sym=sXXX, mlen=1; ans<len; ++ans )
@@ -341,8 +329,7 @@ public:
 
 
 //-------------------------------------------------------------------------
-// Hash table for quickly determining whether a given string is a keyword
-// Hash table for fast determination of whether a given string is a keyword
+// Hash table for fast keyword lookup
 //-------------------------------------------------------------------------
 class KeywordMap
 {
@@ -402,12 +389,12 @@ public:
 
 		if( backet_[h] == 0 )
 		{
-			// If the hash table is empty, Hash table slot is free.
+			// Slot is empty; use it directly.
 			backet_[h] = x;
 		}
 		else
 		{
-			// When connecting to the end of a chain, chain to the existing element
+			// Slot is occupied; append to the end of the chain.
 			//MessageBoxW(NULL, backet_[h]->str, x->str , MB_OK);
 			ushort q=backet_[h], p=KW(q)->next;
 			while( p!=0 )
@@ -435,10 +422,8 @@ private:
 
 	static uint hash_i( const unicode* a, size_t al )
 	{
-		// A very crude hash function that collapses to 12 bits
-		// Because it is troublesome to separate routines, uppercase and lowercase letters are not always distinguished. (^^;
-		// Very messy hash function that collapses to 12 bits.
-		// case-insensitive.
+		// Simple hash function folding into 12 bits, case-insensitive.
+		// (Separate routines for case distinction would complicate things. (^^;)
 		uint h=0,i=0;
 		while( al-- )
 		{
@@ -506,10 +491,9 @@ public:
 	{
 		line.TransitCmt( cmst );
 
-		// ASCII sorting table.
-		// In order to be able to use it for TokenType without shifting,
-		// The value jumps by 4
-		// We want to separate the tabs from other non printable characters.
+		// Character classification table.
+		// Values are multiples of 4 so they map directly to TokenType fields without shifting.
+		// Tab is kept separate from other non-printable characters.
 		enum { T=1, W=4, A=8, S=12, O=0 };
 		static const uchar letter_type[768] = {
 			O,O,O,O,O,O,O,O,O,T,O,O,O,O,O,O, // NULL-SHI_IN
@@ -567,8 +551,7 @@ public:
 			A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,
 		};
 
-		// Distance encoder for PosInToken calculation (5bit shifted)
-		// Distance encoder for PosInToken calculation ( 5bit shifted )
+		// Distance encoder for PosInToken (5-bit shifted field)
 		//  ( _d>7 ? 7<<5 : _d<<5 )
 		#define tkenc(_d) ( (_d)>7 ? 0xe0 : (_d)<<5 )
 
@@ -577,12 +560,12 @@ public:
 		const uchar& cmtState  = dfa[line.isLineHeadCmt()].state;
 		uchar commentbit = cmtState&1;
 
-		// work area, workspace
+		// Workspace variables
 		uchar sym;
 		ulong j, k, um, m;
 		uchar t, f;
 
-		// Loop~
+		// Main loop
 		const unicode* str = line.str();
 		uchar*         flg = line.flg();
 		ulong           ie = line.size();
@@ -590,11 +573,9 @@ public:
 		{
 			j = i;
 
-			// Not ASCII char
-			// was 0x007f (ASCII) I replaced by 0x02ff
-			// that corresponds to all extended latin charatcter.
-			// This is needed if yu want to ctrl+select words that
-			// have a mix of ASCII and other LATIN characters.
+			// Non-Latin character (> U+02FF)
+			// Previously limited to 0x007F (ASCII only); extended to 0x02FF to cover
+			// all Latin Extended characters, enabling Ctrl+word-select across mixed scripts.
 			if( str[i] > 0x02ff ) // Non latin
 			{
 				f = (ALP | commentbit);
@@ -606,8 +587,7 @@ public:
 						flg[j] = f;
 				flg[i] = static_cast<uchar>(tkenc(j-i) | f);
 			}
-			// For ASCII characters?? (ASCII char?)
-			// All latin chars up to IPA Extensions 0x0000-0x02ff
+			// Latin character (U+0000–U+02FF, covering ASCII through IPA Extensions)
 			else
 			{
 				t = letter_type[str[i]];
@@ -623,7 +603,7 @@ public:
 
 				switch( t ) // letter type:
 				{
-				// Alphabets & Numbers (a-Z, 0-9)
+				// Alphanumeric (a-z, A-Z, 0-9)
 				case A:
 					if( str[i] < 0x007f ) // ASCII only
 						f |= kwd_.isKeyword( str+i, j-i );
@@ -631,7 +611,7 @@ public:
 
 				// CTL characters (0-32 + 127-160)
 				case O:
-				// Tabs/control characters, Tabs
+				// Tab character
 				case T:
 					// fall...
 
@@ -647,7 +627,7 @@ public:
 					k = i;
 					while( k < j )
 					{
-						// The part that did not match
+						// Unmatched portion — treat as plain symbols
 						um = tag_.SymbolLoop( str+k, j-k, m, sym );
 						f = (0x20 | ALP | commentbit);
 						while( um-- )
@@ -655,7 +635,7 @@ public:
 						if( k >= j )
 							break;
 
-						// matched part, matched part
+						// Matched portion — process as a special token
 						f = (CE | commentbit);
 						dfa[0].transit( sym );
 						dfa[1].transit( sym );
@@ -686,7 +666,6 @@ public:
 		CommentDFA dfa( line.isLineHeadCmt()==1 );
 		uchar commentbit = dfa.state&1;
 
-		// Loop~
 		// const unicode* str = line.str();
 		uchar*         flg = line.flg();
 		ulong         j,ie = line.size();
@@ -739,8 +718,8 @@ Document::Document( )
 
 Document::~Document()
 {
-	// If you don't put a destructor in this file,
-	// delete parser_ is no longer possible. ^^;
+	// The destructor must be defined in this file;
+	// otherwise, parser_'s deleter cannot see the complete type. ^^;
 }
 
 void Document::SetKeyword( const unicode* defbuf, size_t siz )
@@ -749,7 +728,7 @@ void Document::SetKeyword( const unicode* defbuf, size_t siz )
 	if( siz!=0 && *defbuf==0xfeff )
 		++defbuf, --siz;
 
-	// Ready to load
+	// Initialize parsing state
 	const unicode* str=NULL;
 	size_t       len=0;
 	UniReader r( defbuf, siz, &str, &len );
@@ -771,8 +750,7 @@ void Document::SetKeyword( const unicode* defbuf, size_t siz )
 			flags[i] = (str[i]==L'1');
 
 		// 2nd to 4th lines
-		//   Brocome start symbol, Brocome end symbol, Line comedy symbol
-		// comment start symbol, end symbol line comment symbol
+		//   Block comment start symbol, Block comment end symbol, Line comment symbol
 		for( int j=0; j<3; ++j )
 		{
 			r.getLine();
@@ -856,19 +834,16 @@ bool A_HOT Document::ReParse( ulong s, ulong e )
 	ulong i;
 	uchar cmt = text_[s].isLineHeadCmt();
 
-	// First, reanalyze the scope of the change
+	// First, re-parse the range of changed lines.
 	for( i=s; i<=e; ++i )
 		cmt = parser_->Parse( text_[i], cmt );
 
-	// If there is no change in the commented out status, end here.
-	// If there is no change in the commented-out status, we are done here.
+	// If the comment state at the boundary is unchanged, we are done.
 	if( i==tln() || text_[i].isLineHeadCmt()==cmt )
 		return false;
 
-	// For example, if /* is entered, the line below
-	// It is necessary to communicate changes in the commented out state.
-	// For example, if a /* is entered, then down to the bottom line.
-	// need to communicate the change in commented-out status.
+	// Otherwise (e.g., a /* was typed), propagate the changed comment state
+	// to subsequent lines until it stabilizes.
 	do
 		cmt = text_[i++].TransitCmt( cmt );
 	while( i<tln() && text_[i].isLineHeadCmt()!=cmt );

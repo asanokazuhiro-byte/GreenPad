@@ -49,11 +49,10 @@ namespace ki {
 //@{
 //	Overall application management
 //
-//	Responsible for application startup/termination processing.
-//	Unlike the old kilib, the application class on the user side
-//	It cannot be derived from here. The user's code is
-//	Execution always starts from the global function kmain().
-//	This App class itself mainly manages HINSTANCE.
+//	Manages application startup and termination.
+//	Unlike the old kilib, this class is not meant to be subclassed.
+//	User code always starts from the global function kmain().
+//	This class primarily manages the HINSTANCE.
 //@}
 //=========================================================================
 
@@ -66,8 +65,7 @@ public:
 	//@{
 	//	Initialize various modules
 	//
-	//	If you initialize it with this, it will be automatically activated when the app closes.
-	//	It is easy and convenient because the termination process is done.
+	//	Modules initialized here are automatically shut down when the app exits.
 	//	@param what CTL (common control), COM, OLE
 	//@}
 	void InitModule( imflag what );

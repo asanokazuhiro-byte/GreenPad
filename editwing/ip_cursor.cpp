@@ -86,7 +86,7 @@ static UINT GetInputCP()
 //		Should I read it as "caret"?
 //
 //---- ip_text.cpp String manipulation, etc.
-//---- ip_parse.cpp keyword parsing, keyword parsing
+//---- ip_parse.cpp keyword parsing
 //---- ip_wrap.cpp wrapping
 //---- ip_scroll.cpp Scroll
 //---- ip_draw.cpp Drawing/etc.
@@ -145,7 +145,7 @@ void Cursor::DelHandler( const CurEvHandler* ev )
 
 
 //-------------------------------------------------------------------------
-// helper function group, helper function group
+// Helper functions
 //-------------------------------------------------------------------------
 
 void Cursor::UpdateCaretPos()

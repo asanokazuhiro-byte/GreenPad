@@ -576,7 +576,6 @@ inline void Painter::ClearClip()
 void Painter::DrawHSP( int x, int y, int times )
 {
 	// Draw a half-width space symbol (staple core type)
-	// Draw a half-width space symbol (staple core type)
 	const int w=Wc(L' '), h=H();
 	const int rh = Max(h/4, 4);
 	const int pw = Max(h/16, 1);
@@ -600,7 +599,6 @@ void Painter::DrawHSP( int x, int y, int times )
 
 void Painter::DrawZSP( int x, int y, int times )
 {
-	// Draw a full-width space symbol (flat square)
 	// Draw a full-width space symbol (flat rectangle)
 	const int w=Wc(0x3000/*L'　'*/), h=H();
 	const int rh = Max(h/4, 4);
@@ -685,7 +683,7 @@ void A_HOT ViewImpl::on_paint( const PAINTSTRUCT& ps )
 	}
 	else
 	{
-		// case C: Both updates, Both updates
+		// case C: Both updates
 		DrawLNA( v, p );
 		p.SetClip( cvs_.zone() );
 		DrawTXT( v, p );
@@ -697,7 +695,7 @@ void A_HOT ViewImpl::on_paint( const PAINTSTRUCT& ps )
 
 
 //-------------------------------------------------------------------------
-// Line Number Zone Drawing, Line Number Zone Drawing
+// Line number zone drawing
 //-------------------------------------------------------------------------
 
 void ViewImpl::DrawLNA( const VDrawInfo& v, Painter& p )
@@ -714,7 +712,7 @@ void ViewImpl::DrawLNA( const VDrawInfo& v, Painter& p )
 		p.DrawLine( line, v.rc.top, line, v.YMAX );
 		p.SetColor( LN );
 
-		// line number indication, line number indication
+		// Line number rendering
 		ulong  n = v.TLMIN+1;
 		int    y = v.YMIN;
 		int edge = lna() - p.F();
@@ -753,12 +751,12 @@ inline void ViewImpl::Inv( int y, int xb, int xe, Painter& p )
 void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 {
 	if( doc_.isBusy() ) return;
-	// Constant 1, Constant 1
+	// Constants
 //	const int   TAB = p.T();
 	const int     H = p.H();
 	const ulong TLM = doc_.tln()-1;
 
-	// Working variable 1, Working variable 1
+	// Working variables
 	RECT  a = { 0, v.YMIN, 0, v.YMIN+p.H() };
 	int clr = -1;
 	int   x=0, x2;
@@ -771,7 +769,7 @@ void ViewImpl::DrawTXT( const VDrawInfo &v, Painter& p )
 		const uchar*   flg = doc_.pl(tl);
 		const int rYMAX = Min( v.YMAX, (int)(a.top+rln(tl)*H) );
 
-		// Working variable 2, Working variable 2
+		// Working variables (inner loop)
 		ulong stt=0, end, t, n;
 		ulong rl=0;
 		if( a.top <= -H )

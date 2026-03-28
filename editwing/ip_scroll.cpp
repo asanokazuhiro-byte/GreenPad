@@ -363,16 +363,16 @@ void ViewImpl::GetDrawPosInfo( VDrawInfo& v ) const
 
 void ViewImpl::ScrollView( int dx, int dy, bool update )
 {
-	// Scroll notification start, Scroll notification start
+	// Notify scroll start
 	cur_.on_scroll_begin();
 
 	const RECT* clip = (dy==0 ? &cvs_.zone() : NULL);
 	const int H = cvs_.font_.H();
 
-	// Scrollbar updated, Scrollbar updated
+	// Update horizontal scrollbar
 	if( dx != 0 )
 	{
-		// range check, range check
+		// Clamp to valid range
 		if( rlScr_.nPos+dx < 0 )
 			dx = -rlScr_.nPos;
 		else if( rlScr_.nMax-(signed)rlScr_.nPage < rlScr_.nPos+dx )
@@ -405,13 +405,12 @@ void ViewImpl::ScrollView( int dx, int dy, bool update )
 			::ScrollWindowEx( hwnd_, dx, dy, NULL,
 					clip, NULL, NULL, SW_INVALIDATE );
 
-			// Instant redraw? , Immediate redraw?
+			// Redraw immediately?
 			if( update )
 			{
-				// Vertical scrolling is one way to speed up the process.
+				// For vertical scroll, manually calculate the dirty region for faster redraw.
 				if( dy != 0 )
 				{
-					// Calculate the areas that need redrawing yourself
 					// Calculate the area that needs to be redrawn
 					RECT rc = { 0, 0, right(), bottom() };
 					if( dy < 0 ) rc.top  = rc.bottom + dy;

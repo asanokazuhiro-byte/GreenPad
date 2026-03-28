@@ -14,9 +14,9 @@ namespace editwing {
 //@{
 //	easy edit controls
 //
-//	For now, the characters can be displayed, the colors can be changed, and the cursor can be moved...
-//	This is a form that uses the basic functions of Doc/View as is.
-//	I might make a split-window compatible version soon.
+//	A basic edit control that exposes character display, color changes, and cursor movement
+//	by directly wrapping the core Doc/View functionality.
+//	A split-window variant may be added in the future.
 //@}
 //=========================================================================
 

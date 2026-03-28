@@ -16,20 +16,12 @@ class Parser;
 
 //=========================================================================
 //@{
-//	row buffer structure
+//	Row buffer structure
 //
-//	Store text data in UCS-2 solid format. Also, at the same time,
-//	for distinguishing between emphasized words specified by a keyword file.
-//	It also manages the buffer for analysis processing results. Terminating NUL in character data
-//	Although not included, the terminating U+007f is included to speed up analysis work.
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Row buffer structure
-//
-// Holds text data in the form of UCS-2 betas. And at the same time.
-// buffer for parsing results to distinguish emphasized words specified by the keyword file.
-// It also maintains a buffer for the result of parsing. Text data is not terminated with NULs.
-// The character data does not have a terminator NUL, but the terminator
-// U+007f is included to speed up the parsing process
+//	Holds text data as raw UCS-2. Also maintains a buffer for parse results
+//	used to distinguish keywords specified by the keyword file.
+//	Character data is not NUL-terminated; instead, U+007F is appended
+//	after the last character to speed up parsing.
 //@}
 //=========================================================================
 #ifdef USE_ORIGINAL_MEMMAN

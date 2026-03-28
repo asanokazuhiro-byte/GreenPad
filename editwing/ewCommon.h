@@ -83,11 +83,11 @@ enum TokenType
 	TAB = 0x00, // Tab
 	WSP = 0x04, // half-width space
 	ALP = 0x08, // normal character
-	 CE = 0x0c, // comment end tag, comment end tag
-	 CB = 0x10, // comment start tag, comment start tag
-	 LB = 0x14, // line comment start tag, line comment start tag
-	 Q1 = 0x18, // single quote, single quote
-	 Q2 = 0x1c  // double quote, double quote
+	 CE = 0x0c, // comment end tag
+	 CB = 0x10, // comment start tag
+	 LB = 0x14, // line comment start tag
+	 Q1 = 0x18, // single quote
+	 Q2 = 0x1c  // double quote
 };
 
 

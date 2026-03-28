@@ -79,7 +79,7 @@ public:
 
 	//@{ character width, character width (pixel) //@}
 	CW_INTTYPE Wc( const unicode ch ) const
-	{ // Direclty return the character width!
+	{ // Directly return the character width!
 	  // You must have initialized it before...
 		return widthTable_[ ch ];
 	}
