@@ -588,6 +588,9 @@ void GreenStarWnd::on_helpabout()
 			SetItemText(IDC_ABOUTSTR, s.c_str());
 			SetItemText(IDC_ABOUTURL, RzsString(IDS_PROJECT_URL).c_str());
 			SetCenter(hwnd(), parent_);
+			String title = TEXT("About ");
+			title += RzsString(IDS_APPNAME).c_str();
+			SetText(title.c_str());
 		}
 		HWND parent_;
 	} ahdlg (hwnd());

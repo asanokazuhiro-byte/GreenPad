@@ -172,7 +172,7 @@ BEGIN
         MENUITEM "Cut\tShift+Del",              ID_CMD_CUT
         MENUITEM "&Copy\tCtrl+Ins",             ID_CMD_COPY
         MENUITEM "&Paste\tShift+Ins",           ID_CMD_PASTE
-        MENUITEM "&Delete\tCtrl+G",             ID_CMD_DELETE
+        MENUITEM "&Delete",                      ID_CMD_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl+QA",        ID_CMD_SELECTALL
         MENUITEM SEPARATOR
@@ -396,7 +396,7 @@ BEGIN
     IDS_UNTITLED            "untitled"
     IDS_CHARSET_CAPTION     "Character Encoding:"
     IDS_CRLF_CAPTION        "Line ending:"
-    IDS_PROJECT_URL         "URL: https://github.com/Aile2017/GreenPad"
+    IDS_PROJECT_URL         "URL: https://github.com/Aile2017/GreenPad  (GreenStar)"
 END
 
 #endif
