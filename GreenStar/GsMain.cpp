@@ -1870,6 +1870,7 @@ int kmain()
 				else if( ++i < arg.size() ) optC = String::GetInt(arg[i]);
 				break;
 			case TEXT('l'):
+				if( lstrcmpiW(arg[i], TEXT("-lang")) == 0 ) { ++i; break; } // -lang xx-XX (consumed by LangManager)
 				if( arg[i][2] ) optL = String::GetInt(arg[i]+2);
 				else if( ++i < arg.size() ) optL = String::GetInt(arg[i]);
 				break;
